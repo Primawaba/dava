@@ -9,7 +9,7 @@ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];await installConnectedFixtures(page);page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:4177/?test=1');
- await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(315);
+ await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(316);
  await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:3});window.__CONQUER__.renderer.resize()});
  const results=await page.evaluate(()=>{
   const {Game,renderer:r}=window.__CONQUER__,failures=[];let samples=0;
@@ -75,5 +75,5 @@ try{
  await page.screenshot({path:'artifacts/procedural-materials-mobile.png'});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(errors,[]);
  await writeFile('artifacts/passages-results.json' ,JSON.stringify({...results,procedural},null,2));
- console.log(`PASS: ${results.samples} opaque passage centerline samples, 16 masks × 4 zoom levels; 315 PNG assets; 200 material/orientation pairs, cache invalidation, deterministic textures and reduced motion; three architectural cases and torch behavior; no browser errors.`);
+ console.log(`PASS: ${results.samples} opaque passage centerline samples, 16 masks × 4 zoom levels; 316 PNG assets; 200 material/orientation pairs, cache invalidation, deterministic textures and reduced motion; three architectural cases and torch behavior; no browser errors.`);
 }finally{await browser.close();server.kill()}

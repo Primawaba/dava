@@ -61,6 +61,7 @@ try{
   await writeFile(`public/assets/rooms/${type}-${variant}.png`,Buffer.from(result,'base64'));
  }
  for(const [type,frame]of Object.entries(SPRITE_FRAMES)){
+  if(type==='immortal'){await import('./immortal-art.mjs');continue}
   const result=await page.evaluate(({region})=>{
    const c=document.createElement('canvas');c.width=64;c.height=64;const ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;
    const [x,y,w,h]=region,scale=Math.min(60/w,60/h),dw=Math.round(w*scale),dh=Math.round(h*scale);

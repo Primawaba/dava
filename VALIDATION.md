@@ -4,7 +4,7 @@
 
 `releases/CONQUER-Jogar.html` reúne código, estilos, fontes e todas as imagens em um HTML autônomo, sem módulos externos e sem service worker. `npm run build:standalone` reproduz o arquivo e seu SHA-256.
 
-`npm run test:standalone` aprovou 7 verificações: recursos embutidos, 273 imagens de salas, 33 sprites e 9 módulos de passagens, nova campanha com exploração/construção/recrutamento, persistência após recarga, exportação/importação, combate automático real, viewport com toque de 390px e ausência de exceções ou requisições de rede externas. Relatório em `artifacts/standalone-results.json`.
+`npm run test:standalone` aprovou 7 verificações: recursos embutidos, 273 imagens de salas, 34 sprites e 9 módulos de passagens, nova campanha com exploração/construção/recrutamento, persistência após recarga, exportação/importação, combate automático real, viewport com toque de 390px e ausência de exceções ou requisições de rede externas. Relatório em `artifacts/standalone-results.json`.
 
 A política administrativa deste Chromium bloqueia navegações `file://`. A suíte registra esse limite e testa o mesmo HTML em uma navegação de loopback interceptada pelo Playwright, sem servidor ou recursos externos, com a rede desativada. Portanto, a execução do HTML foi validada, mas a navegação direta por `file://` não pôde ser homologada neste navegador gerenciado. O arquivo foi inspecionado para confirmar que não contém imports, scripts ou assets locais dependentes de servidor.
 
@@ -93,3 +93,13 @@ A compilação final 1.4.0 também aprovou as 21 verificações gerais do navega
 ## Revisão 1.4.1 — túnel do escavador
 
 71 testes do motor aprovados. A carta J♣ é forçada na linha do portão e primeira camada, do limite oeste ao leste (incluindo posições além da faixa protegida de magma): revela caverna, não deixa recompensa de combate pendente, não gera inimigo e preserva os guardas. Na segunda camada, o túnel e seu verme único continuam sendo gerados.
+
+## Revisão 1.5.0 — imortal passivo e retaliação ao chefe
+
+82 testes do motor aprovados. Os 11 novos cenários verificam: descoberta sem combate; invulnerabilidade mesmo a dano numérico extremo; imobilidade e neutralidade durante outra batalha; morte por água/magma/gás ignorando escudos; explosão versus dano comum e gás cegante; saves e migração; rejeição de criaturas corrompidas; retaliação contra quatro espécies de chefes de corpo a corpo; trocas repetidas de golpes; paredes/esquinas/alcance longo; corpo a corpo em gás cegante.
+
+Reprodução do problema: um chefe de alcance 0,5 podia parar fora dos 0,42 do soldado e golpear um guarda que permanecia no portão. A regressão mantém ambos em contato durante vários golpes e exige ataques nos dois sentidos, com o guarda permanecendo em (0,0). Isso confirma um defeito reproduzível, mas não identifica a espécie do chefe da partida relatada sem seu save.
+
+6 verificações específicas no navegador cobrem descoberta e sprite neutro sem cobrança; persistência de uma única criatura; dano comum versus líquido; retaliação repetida no portão; layout mobile de 390px; ausência de exceções. Capturas: `immortal-passive-blocker.png`, `boss-melee-retaliation.png` e `immortal-mobile.png`. A captura da criatura foi revisada visualmente.
+
+Nesta revisão também passaram as 21 verificações gerais de navegador, 10 verificações das animações de recursos e 7 verificações do HTML autônomo offline.

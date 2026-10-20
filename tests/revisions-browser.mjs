@@ -11,7 +11,7 @@ await mkdir('artifacts',{recursive:true});
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1000}});await installConnectedFixtures(page);page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:4175/?test=1');
  await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:212})});
- await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(315);
+ await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(316);
  async function select(x,y){
   await page.evaluate(({x,y})=>window.__CONQUER__.renderer.focus({x,y}),{x,y});
   const point=await page.evaluate(({x,y})=>{const r=window.__CONQUER__.renderer,b=r.canvas.getBoundingClientRect();return{x:b.left+r.width/2+(x*180-r.camera.x)*r.zoom,y:b.top+r.height/2+(y*144-r.camera.y)*r.zoom}},{x,y});

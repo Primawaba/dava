@@ -27,7 +27,7 @@ Execute `npm run test:directions` para verificar a interação por mouse, toque,
 
 ## Testar sem instalar nada
 
-O arquivo `JOGAR-CONQUER.html` na raiz do repositório é a edição pronta para abrir. Também é gerado como `releases/CONQUER-Jogar.html`; abra esse arquivo com Chrome ou Edge no computador. Ele contém o código, as fontes, a ilustração de abertura e as 273 artes de salas e 33 sprites. Não precisa descompactar, instalar Node, acessar a internet ou iniciar servidor. Clique em **Nova fortaleza** para começar. Use **Salvar** e, para preservar uma cópia independente do navegador, **Exportar jogo**.
+O arquivo `JOGAR-CONQUER.html` na raiz do repositório é a edição pronta para abrir. Também é gerado como `releases/CONQUER-Jogar.html`; abra esse arquivo com Chrome ou Edge no computador. Ele contém o código, as fontes, a ilustração de abertura e as 273 artes de salas e 34 sprites. Não precisa descompactar, instalar Node, acessar a internet ou iniciar servidor. Clique em **Nova fortaleza** para começar. Use **Salvar** e, para preservar uma cópia independente do navegador, **Exportar jogo**.
 
 Essa edição reúne todos os recursos no próprio HTML e usa JavaScript clássico para permitir abertura por `file://`. A execução com a rede desativada é validada pelo teste autônomo. A política administrativa do Chromium desta máquina bloqueia a navegação por `file://`; nesse ambiente, o teste renderiza o mesmo HTML em um documento de loopback interceptado, sem servidor e sem buscar recursos externos. As restrições de pré-visualização de arquivos no Android/iOS dependem do aplicativo usado para abrir o HTML; a versão web hospedada continua sendo o caminho indicado para testar em aparelhos móveis reais.
 
@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.4.1.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
+O resultado fica em `releases/conquer-web-1.5.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
 
 ## Conteúdo e controles
 
@@ -162,3 +162,11 @@ A camada de efeitos usa Canvas 2D, com um item por unidade e glifos reutilizados
 ### Primeira fileira — versão 1.4.1
 
 O Túnel de escavador não é gerado na linha do portão nem na primeira camada subterrânea, independentemente da distância lateral. A carta correspondente revela uma caverna vazia sem escavador e sem combate. A partir da segunda camada, o encontro continua normal.
+
+### Câmara do Imortal e retaliação — versão 1.5.0
+
+A descoberta coloca uma criatura neutra imóvel sobre a sala, com sprite próprio e símbolo ∞. Ela bloqueia a passagem e não ataca a base nem inicia combate. Dano comum não a fere; líquidos letais, gás venenoso e explosões a eliminam por morte instantânea. A ação de pagar 20♦ para aprisioná-la foi removida. Saves antigos com essa câmara são migrados ao carregar.
+
+Foi corrigido o contato corpo a corpo: chefes de alcance 0,5 já não podem golpear soldados de alcance 0,42 sem que estes consigam revidar. Isso mantém os guardas no portão e preserva as restrições de paredes e corredores. Chefes com projéteis continuam tendo vantagem de alcance sobre espadas.
+
+`npm run test:immortal` valida o bloqueio passivo, persistência, morte por líquido e retaliação no navegador. `npm run build:immortal-art` reproduz o sprite pixelado a partir da ilustração de origem gerada, mantida fora do pacote web final.

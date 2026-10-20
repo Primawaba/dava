@@ -27,3 +27,7 @@ O combate continua sendo uma adaptação em tempo real com IA. A campanha, os pl
 ## Coringas: diferença ainda pendente
 
 No DELVE, páginas impressas 33–36, o coringa preto desperta uma Monstruosidade Antiga; o vermelho gera um artefato lendário e pode revelar o Cristal do Vazio. Depois de usados, os coringas ficam fora do baralho por cinco turnos. Nesta versão digital, entram duas cartas iguais na profundidade 5 e ambas concedem recompensa genérica; não há distinção de cores, eventos próprios ou espera de cinco turnos. A vitória atual continua vinculada ao guardião na profundidade 12.
+
+## Criatura invencível — CONQUER.odt, tabela natural, entrada 12
+
+Regra do documento: “Criatura Invencível bloqueando a sala. Pode ser morta apenas por efeitos de morte instantânea (Líquidos, explosões, etc)”. A revisão 1.5.0 implementa uma criatura neutra imóvel, bloqueio de passagem e morte instantânea explícita. Foi retirada a adaptação anterior de aprisionamento por 20♦, que não tinha base nessa regra.

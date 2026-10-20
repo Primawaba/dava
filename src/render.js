@@ -10,6 +10,7 @@ export class Renderer{
   assets.push(...PASSAGES.map(name=>({id:`passage-${name}`,src:`./assets/passages/${name}.png`})));
   await Promise.all(assets.map(({id,src})=>new Promise(resolve=>{const i=new Image();i.onload=()=>{this.images[id]=i;resolve()};i.onerror=()=>resolve();i.src=src})));
   this.passages.cache.clear();
+  if(this.images['unit-immortal']){const outline=document.createElement('canvas');outline.width=outline.height=64;const c=outline.getContext('2d');c.drawImage(this.images['unit-immortal'],0,0,64,64);c.globalCompositeOperation='source-in';c.fillStyle='#b5a56f';c.fillRect(0,0,64,64);this.immortalOutline=outline}
  }
  resize(){const r=this.canvas.getBoundingClientRect();this.width=r.width;this.height=r.height;const dpr=Math.min(devicePixelRatio||1,2);this.canvas.width=Math.round(r.width*dpr);this.canvas.height=Math.round(r.height*dpr);this.dpr=dpr}
  screenToWorld(x,y){return{x:(x-this.width/2)/this.zoom+this.camera.x,y:(y-this.height/2)/this.zoom+this.camera.y}}
@@ -98,12 +99,14 @@ export class Renderer{
   c.save();c.translate(Math.round(x),Math.round(y)+bob);c.imageSmoothingEnabled=false;
   c.fillStyle='#26302138';c.fillRect(-size*.22,13,size*.44,3);
   if(u.facing<0)c.scale(-1,1);
+  if(u.type==='immortal'&&this.immortalOutline)for(const [dx,dy]of [[-2,0],[2,0],[0,-2],[0,2]])c.drawImage(this.immortalOutline,Math.round(-size/2)+dx,Math.round(15-size)+dy,Math.round(size),Math.round(size));
   if(image)c.drawImage(image,Math.round(-size/2)+attack,Math.round(15-size),Math.round(size),Math.round(size));
   else{c.fillStyle=ally?'#436d4b':'#9a563b';c.fillRect(-5,-10,10,22)}
   if(u.facing<0)c.scale(-1,1);
-  const marker=ally?'#356a4e':'#a44732';c.fillStyle=marker;c.fillRect(-3,17,6,3);
+  const marker=u.team==='neutral'?'#b5a56f':ally?'#356a4e':'#a44732';c.fillStyle=marker;c.fillRect(-3,17,6,3);
   if(u.order==='guard'&&ally){c.fillStyle='#a28748';c.fillRect(-2,21,4,2)}
-  if(this.game.s.combat){const width=Math.max(22,size*.55),top=12-size;
+  if(u.type==='immortal'){c.fillStyle='#d8c692';c.font='bold 17px Georgia';c.textAlign='center';c.fillText('∞',0,9-size);}
+  if(this.game.s.combat&&u.type!=='immortal'){const width=Math.max(22,size*.55),top=12-size;
    c.fillStyle='#302f26';c.fillRect(-width/2-1,top-1,width+2,5);c.fillStyle=marker;c.fillRect(-width/2,top,width*Math.max(0,u.hp/u.maxHp),3);
    if(u.shield>0){c.fillStyle='#79a0a2';c.fillRect(-width/2,top-4,width*Math.min(1,u.shield/20),2)}
   }c.restore();

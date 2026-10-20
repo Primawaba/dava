@@ -94,7 +94,7 @@ export const ROOMS={
  smalllair:{name:'Covil de criatura pequena',icon:'paw',desc:'Uma criatura territorial vivia aqui. Construível após o combate.'},
  largelair:{name:'Lar de criatura grande',icon:'skull',desc:'Um monstro de 40 STR, mais profundidade, protege este lar.'},
  burrow:{name:'Túnel de escavador',icon:'hammer',desc:'O escavador acordou com sua chegada. Construível após o combate.'},
- invincible:{name:'Câmara do Imortal',icon:'skull',desc:'Uma criatura invencível bloqueia a câmara. Pague 20♦ para prendê-la sob a rocha e liberar o espaço.'},
+ invincible:{name:'Câmara do Imortal',icon:'skull',desc:'Uma criatura imóvel bloqueia a passagem. Não invade nem ataca a fortaleza. Só pode morrer por efeitos de morte instantânea, como líquidos ou explosões.'},
  wandering:{name:'Caverna da criatura perdida',icon:'paw',desc:'Uma criatura perdida encontra abrigo. Pode ser reconstruída.'},
  elemental:{name:'Santuário de gemas',icon:'gem',desc:'Um elemental protege estes cristais. Gera 4♦ por exploração após a vitória.'},
  hive:{name:'Colmeia subterrânea',icon:'tree',desc:'Uma colônia de criaturas protege seu ninho. Gera 2♥ por exploração após a vitória.'},
@@ -133,8 +133,9 @@ export const REMNANTS=['ruins','crypt','well','sealed','mine','ancienttemple','r
 export const DIFFICULTIES={story:{name:'Crônica',enemy:0.65,desc:'Uma jornada mais tranquila. Inimigos com 65% da força.'},normal:{name:'Conquistador',enemy:1,desc:'A experiência padrão. Prepare suas defesas antes de descer.'},hard:{name:'Abismo',enemy:1.45,desc:'Inimigos com 145% da força. Cada decisão importa.'}};
 
 // Sprite cells in the generated 8 × 4 pixel atlas. Large creatures stay individual.
-export const SPRITE_FRAMES={soldier:0,archer:1,mage:2,cleric:3,dog:4,rat:5,thug:6,beast:7,alchemist:8,trapper:9,golem:10,siege:11,undead:12,hero:13,berserker:14,goblin:15,skeleton:16,insect:17,insectqueen:18,cultist:19,miner:20,automaton:21,cavewolf:22,worm:23,dragon:24,guardian:25,troll:26,elemental:27,fairy:28,champion:29,lich:30,spider:31,raider:15};
+export const SPRITE_FRAMES={soldier:0,archer:1,mage:2,cleric:3,dog:4,rat:5,thug:6,beast:7,alchemist:8,trapper:9,golem:10,siege:11,undead:12,hero:13,berserker:14,goblin:15,skeleton:16,insect:17,insectqueen:18,cultist:19,miner:20,automaton:21,cavewolf:22,worm:23,dragon:24,guardian:25,troll:26,elemental:27,fairy:28,champion:29,lich:30,spider:31,raider:15,immortal:32};
 export const ENEMIES={
+ immortal:{name:'Criatura Imortal',speed:0,range:0,size:2.3,single:true},
  goblin:{name:'Goblin',speed:.65,range:.42,size:1},
  skeleton:{name:'Morto-vivo da cripta',speed:.55,range:.42,size:1},
  insect:{name:'Inseto da colmeia',speed:.9,range:.38,size:.85},

@@ -13,3 +13,5 @@
 .catalog-card.mutiny-blocked .card-copy strong,.catalog-card.mutiny-blocked .reason,.catalog-card.mutiny-blocked .catalog-add{color:#e59481}
 .catalog-card.mutiny-blocked .catalog-icon{border-color:#a856466b;background:#a856461c}
 .catalog-card:disabled{cursor:not-allowed}.catalog-card.mutiny-blocked .card-copy small{color:#c89a85}
+
+.direction-action b{font-size:20px;line-height:1;width:24px;text-align:center;flex:none}.direction-action:focus-visible{outline:2px solid #b49a61;outline-offset:3px}

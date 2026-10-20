@@ -1,9 +1,10 @@
+import {ConnectedFixture} from './connected-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {Game} from '../src/engine.js';
 import {UNITS,SPRITE_FRAMES} from '../src/data.js';
-const rich=()=>{const g=new Game({seed:129});g.s.resources=1000;g.s.gold=1000;g.s.baseMorale=100;return g};
+const rich=()=>{const g=new ConnectedFixture({seed:129});g.s.resources=1000;g.s.gold=1000;g.s.baseMorale=100;return g};
 
 test('surface construction needs no exploration, spends height cost and consumes no cards',()=>{const g=rich(),cards=JSON.stringify(g.s.deck),r=g.s.resources;assert(!g.explore(0,-1).ok);assert(g.build('barracks',0,-1).ok);assert.equal(g.room(0,-1).type,'barracks');assert.equal(g.s.resources,r-9);assert.equal(JSON.stringify(g.s.deck),cards);assert.equal(g.s.card,null);assert.equal(g.s.turn,1);assert(!g.build('kennel',0,-2).ok);assert(g.advanceTurn().ok);assert(g.build('kennel',0,-2).ok);assert.equal(g.s.turn,2);assert.equal(JSON.stringify(g.s.deck),cards)});
 test('surface floor sits on ground; upper floors cannot cantilever into empty air',()=>{const g=rich();g.build('barracks',0,-1);g.advanceTurn();assert(g.build('kennel',0,-2).ok);g.advanceTurn();const gold=g.s.gold,resources=g.s.resources;const result=g.build('barracks',1,-2);assert(!result.ok);assert.match(result.reason,/apoio/);assert(!g.room(1,-2));assert.equal(g.s.gold,gold);assert.equal(g.s.resources,resources);assert(g.build('barracks',1,-1).ok)});

@@ -3,7 +3,7 @@ import {ROOMS,DIRS,SPRITE_FRAMES,PASSAGES} from './data.js';
 import {key} from './engine.js';
 export const CW=180,CH=144;
 export class Renderer{
- constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
+ constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
  async load(){
   const assets=Object.keys(ROOMS).flatMap(type=>[0,1,2].map(v=>({id:`${type}-${v}`,src:`./assets/rooms/${type}-${v}.png`})));
   assets.push(...Object.keys(SPRITE_FRAMES).map(type=>({id:`unit-${type}`,src:`./assets/sprites/${type}.png`})));
@@ -15,10 +15,18 @@ export class Renderer{
  screenToWorld(x,y){return{x:(x-this.width/2)/this.zoom+this.camera.x,y:(y-this.height/2)/this.zoom+this.camera.y}}
  point(event){const r=this.canvas.getBoundingClientRect();return{x:event.clientX-r.left,y:event.clientY-r.top}}
  tile(x,y){const p=this.screenToWorld(x,y);return{x:Math.round(p.x/CW),y:Math.round(p.y/CH)}}
+ directionAt(p){
+  if(!this.game)return null;
+  // Recompute against the current camera: focus/resize can precede the next frame.
+  for(const d of this.game.directions()){
+   const screenX=this.width/2+(d.from.x*CW+d.dx*CW/2-this.camera.x)*this.zoom,screenY=this.height/2+(d.from.y*CH+d.dy*CH/2-this.camera.y)*this.zoom;
+   if(Math.hypot(screenX-p.x,screenY-p.y)<=22)return {...d,screenX,screenY};
+  }return null;
+ }
  setupInput(){const c=this.canvas;
   c.addEventListener('pointerdown',e=>{const p=this.point(e);this.pointers.set(e.pointerId,p);c.setPointerCapture(e.pointerId);this.drag={start:p,last:p,moved:false};if(this.pointers.size===2){const a=[...this.pointers.values()];this.pinch={distance:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),zoom:this.zoom};this.drag.moved=true}this.onHover(null)});
-  c.addEventListener('pointermove',e=>{const p=this.point(e);if(this.pointers.has(e.pointerId)){this.pointers.set(e.pointerId,p);if(this.pointers.size===2&&this.pinch){const a=[...this.pointers.values()];this.zoom=Math.max(.35,Math.min(2.2,this.pinch.zoom*Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)/Math.max(1,this.pinch.distance)));return}if(this.drag){const d=this.drag;if(Math.hypot(p.x-d.start.x,p.y-d.start.y)>5)d.moved=true;if(d.moved){this.camera.x-=(p.x-d.last.x)/this.zoom;this.camera.y-=(p.y-d.last.y)/this.zoom}d.last=p}return}this.hover=this.tile(p.x,p.y);this.onHover({tile:this.hover,point:p})});
-  c.addEventListener('pointerup',e=>{const p=this.point(e);const clicked=this.drag&&!this.drag.moved&&!this.pinch;this.pointers.delete(e.pointerId);if(clicked){const t=this.tile(p.x,p.y);this.selected=t;this.onSelect(t)}if(!this.pointers.size){this.drag=null;this.pinch=null}else if(this.drag)this.drag.moved=true});
+  c.addEventListener('pointermove',e=>{const p=this.point(e);if(this.pointers.has(e.pointerId)){this.pointers.set(e.pointerId,p);if(this.pointers.size===2&&this.pinch){const a=[...this.pointers.values()];this.zoom=Math.max(.35,Math.min(2.2,this.pinch.zoom*Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)/Math.max(1,this.pinch.distance)));return}if(this.drag){const d=this.drag;if(Math.hypot(p.x-d.start.x,p.y-d.start.y)>5)d.moved=true;if(d.moved){this.camera.x-=(p.x-d.last.x)/this.zoom;this.camera.y-=(p.y-d.last.y)/this.zoom}d.last=p}return}this.hover=this.tile(p.x,p.y);this.onHover({tile:this.hover,point:p,direction:this.directionAt(p)})});
+  c.addEventListener('pointerup',e=>{const p=this.point(e);const clicked=this.drag&&!this.drag.moved&&!this.pinch;this.pointers.delete(e.pointerId);if(clicked){const arrow=this.directionAt(p);if(arrow)this.onSelect({...arrow,action:'direction'});else{const t=this.tile(p.x,p.y);this.selected=t;this.onSelect(t)}}if(!this.pointers.size){this.drag=null;this.pinch=null}else if(this.drag)this.drag.moved=true});
   c.addEventListener('pointercancel',e=>{this.pointers.delete(e.pointerId);this.drag=null;this.pinch=null});c.addEventListener('pointerleave',()=>{this.hover=null;this.onHover(null)});
   c.addEventListener('wheel',e=>{e.preventDefault();const p=this.point(e),before=this.screenToWorld(p.x,p.y);this.zoom=Math.max(.35,Math.min(2.2,this.zoom*Math.exp(-e.deltaY*.001)));const after=this.screenToWorld(p.x,p.y);this.camera.x+=before.x-after.x;this.camera.y+=before.y-after.y},{passive:false});
   c.addEventListener('keydown',e=>{const dirs={ArrowUp:[0,-1],ArrowRight:[1,0],ArrowDown:[0,1],ArrowLeft:[-1,0]};if(dirs[e.key]){e.preventDefault();const[dx,dy]=dirs[e.key];this.selected={x:this.selected.x+dx,y:this.selected.y+dy};this.onSelect(this.selected);this.focus(this.selected)}if(e.key==='Enter'){e.preventDefault();this.onSelect(this.selected)}});
@@ -35,7 +43,7 @@ export class Renderer{
   const image=name=>this.images['passage-'+name];
   if((r.closed||n.closed)&&image('grate'))c.drawImage(image('grate'),(x+nx)/2-16,(y+ny)/2-16,32,32);
  }
- draw(time=0){this.passageTime=time;const c=this.ctx,w=this.width,h=this.height;if(!w||!h)return;c.setTransform(this.dpr,0,0,this.dpr,0,0);c.imageSmoothingEnabled=false;c.fillStyle='#e5ddc6';c.fillRect(0,0,w,h);if(!this.game)return;
+ draw(time=0){this.passageTime=time;const c=this.ctx,w=this.width,h=this.height;if(!w||!h)return;c.setTransform(this.dpr,0,0,this.dpr,0,0);c.imageSmoothingEnabled=false;c.fillStyle='#e5ddc6';c.fillRect(0,0,w,h);if(!this.game){this.directionMarkers=[];return;}
   c.save();c.translate(w/2,h/2);c.scale(this.zoom,this.zoom);c.translate(-this.camera.x,-this.camera.y);
   const bounds={left:this.camera.x-w/2/this.zoom-CW,right:this.camera.x+w/2/this.zoom+CW,top:this.camera.y-h/2/this.zoom-CH,bottom:this.camera.y+h/2/this.zoom+CH};
   c.strokeStyle='#6e77551c';c.lineWidth=.65;for(let x=Math.floor(bounds.left/CW);x<=Math.ceil(bounds.right/CW);x++){c.beginPath();c.moveTo((x+.5)*CW,bounds.top);c.lineTo((x+.5)*CW,bounds.bottom);c.stroke()}for(let y=Math.floor(bounds.top/CH);y<=Math.ceil(bounds.bottom/CH);y++){c.beginPath();c.moveTo(bounds.left,(y+.5)*CH);c.lineTo(bounds.right,(y+.5)*CH);c.stroke();c.fillStyle='#7d82624a';c.font='9px Georgia';c.textAlign='left';c.fillText(y>=0?String(y).padStart(2,'0'):`+${-y}`,bounds.left+CW*.7,y*CH)}
@@ -46,16 +54,32 @@ export class Renderer{
   for(const r of visible){const x=r.x*CW,y=r.y*CH;if(r.y<0&&(r.y===-1||this.game.room(r.x,r.y+1))){c.fillStyle='#57594a';const bottom=r.y===-1?CH*.5:CH-54;for(const ox of [-53,47])c.fillRect(x+ox,y+40,6,bottom-40);c.fillStyle='#b1a889';for(const ox of [-51,49])c.fillRect(x+ox,y+40,2,bottom-40);}const image=this.images[`${r.type}-${r.variant}`];if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
   }
   // Composite every room first, then its doorway aprons; no room PNG can cover a neighbor's connection.
-  for(const r of visible)for(const[dx,dy]of [[1,0],[0,1]]){const n=this.game.room(r.x+dx,r.y+dy);if(n)this.corridor(r,n)}
+  for(const r of visible)for(const[dx,dy]of [[1,0],[0,1]]){const n=this.game.room(r.x+dx,r.y+dy);if(n&&this.game.linked(r,n))this.corridor(r,n)}
+  const directions=this.game.directions();
   for(const r of visible){const x=r.x*CW,y=r.y*CH;
    if(this.game.roomHazards(r).length){c.fillStyle=['lava','crater'].includes(r.type)||['lava','crater'].includes(r.contaminant)?'#b66d3f33':'#79927344';c.fillRect(x-65,y-35,130,65)}
    if(r.damaged){c.strokeStyle='#9e634b';c.lineWidth=2;c.beginPath();c.moveTo(x-35,y-26);c.lineTo(x-16,y-5);c.lineTo(x-23,y+5);c.lineTo(x+8,y+30);c.moveTo(x+32,y-30);c.lineTo(x+16,y-3);c.stroke()}
    if(r.trap){c.strokeStyle='#9c6149';c.lineWidth=1.5;c.beginPath();for(let i=0;i<6;i++){const px=x-17+i*7;c.moveTo(px,y+34);c.lineTo(px+4,y+25);c.lineTo(px+7,y+34)}c.stroke()}
    if(r.barricade?.hp>0){c.fillStyle='#897b5d';c.strokeStyle='#4c5040';c.lineWidth=1;c.fillRect(x-32,y+27,64,10);c.strokeRect(x-32,y+27,64,10)}
    const selected=this.selected.x===r.x&&this.selected.y===r.y;if(selected){c.strokeStyle='#8a7447';c.lineWidth=1.2;this.corners(x-83,y-64,166,121)}
-   c.textAlign='center';c.font='10px Georgia';c.fillStyle=r.damaged?'#925a40':'#505541';const label=ROOMS[r.type].name;const tw=c.measureText(label).width,labelX=this.game.room(r.x,r.y+1)?x-24-tw/2:x;c.fillStyle='#e5ddc6ee';c.fillRect(labelX-tw/2-4,y+54,tw+8,14);c.fillStyle=r.damaged?'#925a40':'#505541';c.fillText(label,labelX,y+64);
+   c.textAlign='center';c.font='10px Georgia';c.fillStyle=r.damaged?'#925a40':'#505541';const label=ROOMS[r.type].name;const tw=c.measureText(label).width,labelX=(this.game.linked(r,this.game.room(r.x,r.y+1))||directions.some(d=>d.from.x===r.x&&d.from.y===r.y&&d.dy===1))?x-30-tw/2:x;c.fillStyle='#e5ddc6ee';c.fillRect(labelX-tw/2-4,y+54,tw+8,14);c.fillStyle=r.damaged?'#925a40':'#505541';c.fillText(label,labelX,y+64);
   }
-  if(!this.game.s.combat&&this.game.s.status==='playing')for(const f of this.game.frontier()){const x=f.x*CW,y=f.y*CH;if(x<bounds.left||x>bounds.right||y<bounds.top||y>bounds.bottom)continue;const hover=this.hover?.x===f.x&&this.hover?.y===f.y,selected=this.selected.x===f.x&&this.selected.y===f.y;c.strokeStyle=selected?'#897447':hover?'#7a8461':'#8a947349';c.fillStyle=selected?'#b4a67b20':hover?'#d6d1b377':'#ddd8bd24';c.lineWidth=selected?1.4:1;c.setLineDash([3,5]);c.fillRect(x-64,y-43,128,86);c.strokeRect(x-64,y-43,128,86);c.setLineDash([]);c.strokeStyle=selected?'#8a7447':'#8e987759';c.lineWidth=1;c.beginPath();c.moveTo(x-6,y-3);c.lineTo(x+6,y-3);c.moveTo(x,y-9);c.lineTo(x,y+3);c.stroke();c.font='7px Arial';c.textAlign='center';c.fillStyle=selected?'#897447':'#8e987788';c.fillText('EXPLORAR',x,y+19)}
+  // The arrow encodes its source room, never just the destination cell.
+  this.directionMarkers=[];const seen=new Set();
+  for(const d of directions){
+   const origin=this.game.room(d.from.x,d.from.y),destination=this.game.room(d.x,d.y),id=destination?this.game.passageKey(origin,destination):`${d.from.x},${d.from.y}>${d.x},${d.y}`;
+   if(seen.has(id))continue;seen.add(id);
+   const x=d.from.x*CW+d.dx*CW/2,y=d.from.y*CH+d.dy*CH/2;
+   const screenX=w/2+(x-this.camera.x)*this.zoom,screenY=h/2+(y-this.camera.y)*this.zoom;
+   if(screenX< -22||screenX>w+22||screenY< -22||screenY>h+22)continue;
+   this.directionMarkers.push({...d,screenX,screenY});
+   c.save();c.translate(x,y);c.scale(1/this.zoom,1/this.zoom);
+   c.fillStyle=d.kind==='passage'?'#e0cca0':'#e5ddc6';c.strokeStyle=d.kind==='passage'?'#8c6b32':'#566447';c.lineWidth=1.5;
+   c.fillRect(-16,-16,32,32);c.strokeRect(-16,-16,32,32);
+   c.rotate(Math.atan2(d.dy,d.dx));c.beginPath();c.moveTo(-8,0);c.lineTo(8,0);c.moveTo(1,-6);c.lineTo(8,0);c.lineTo(1,6);c.stroke();
+   if(d.kind==='passage'){c.fillStyle='#8c6b32';c.fillRect(-11,-10,3,3);c.fillRect(-11,7,3,3)}
+   c.restore();
+  }
   if(!this.game.s.combat&&this.game.s.status==='playing')for(const f of this.game.surfaceSites()){
    const x=f.x*CW,y=f.y*CH;if(x<bounds.left||x>bounds.right||y<bounds.top||y>bounds.bottom)continue;
    const reason=this.game.surfaceReason(f),selected=this.selected.x===f.x&&this.selected.y===f.y;

@@ -4,7 +4,7 @@ export const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export class Game {
  constructor({seed=Date.now(),name='A Última Fortaleza',difficulty='normal'}={}){
-  this.s={version:1,rulesVersion:2,seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
+  this.s={version:1,rulesVersion:2,passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
   this.projectiles=[];this.effects=[];this.dead=[];this.events=[];this.tickBudget=0;
   this.addRoom(0,0,'gate');for(let i=0;i<5;i++){const u=this.addUnit('soldier',0,0,true);u.order=i<2?'guard':'defend'}
   this.shuffleDeck();
@@ -19,6 +19,36 @@ export class Game {
  note(text,kind='info'){this.s.log.unshift({text,kind,turn:this.s.turn});this.s.log=this.s.log.slice(0,100);this.events.push({type:'log',text,kind})}
  room(x,y){return this.s.rooms[key(x,y)]}
  addRoom(x,y,type){const r={x,y,type,variant:this.roll(3)-1,damaged:false,closed:false,prisoners:0,usedTurn:0,trap:null,barricade:null,secret:false,contaminant:null};this.s.rooms[key(x,y)]=r;return r}
+ passageKey(a,b){return [key(a.x,a.y),key(b.x,b.y)].sort().join('|')}
+ linked(a,b){return !!a&&!!b&&distance(a,b)===1&&this.s.passages[this.passageKey(a,b)]===true}
+ connectRooms(a,b){if(!a||!b||!this.room(a.x,a.y)||!this.room(b.x,b.y)||distance(a,b)!==1)return false;this.s.passages[this.passageKey(a,b)]=true;this._routeCache=null;return true}
+ directions(origin=null){
+  const out=[];if(this.s.status!=='playing'||this.s.combat)return out;
+  for(const r of origin?[origin]:this.rooms){if(!this.active(r))continue;
+   for(const [dx,dy]of DIRS){const x=r.x+dx,y=r.y+dy,n=this.room(x,y);
+    if(x< -20||x>20||y< -6||y>30||this.linked(r,n))continue;
+    // Empty surface cells are built directly; they are never explored.
+    if(!n&&y<0)continue;
+    out.push({x,y,from:{x:r.x,y:r.y},dx,dy,kind:n?'passage':'explore'});
+   }
+  }return out;
+ }
+ explorationTurn(){
+  if(!this.s.turnReady){this.s.turn++;this.s.built=false;this.s.traded=false;this.income();if(this.s.combat){this.s.turnReady=true;return false}}
+  this.s.turnReady=false;return true;
+ }
+ openPassage(from,to){
+  if(this.s.status!=='playing'||this.s.combat)return{ok:false,reason:'Resolva o combate antes de abrir passagens.'};
+  const a=from&&this.room(from.x,from.y),b=to&&this.room(to.x,to.y);
+  if(!a||!b||distance(a,b)!==1)return{ok:false,reason:'Escolha duas salas vizinhas já descobertas.'};
+  if(this.linked(a,b))return{ok:false,reason:'Essa passagem já está aberta.'};
+  if(!this.active(a))return{ok:false,reason:'Abra a passagem a partir de uma sala ativa da fortaleza.'};
+  if(!this.explorationTurn())return{ok:false,reason:'Um portal iniciou uma invasão antes da abertura.'};
+  this.connectRooms(a,b);if(['water','lava','crater'].includes(b.type))b.flowActive=true;if(['water','lava','crater'].includes(a.type))a.flowActive=true;
+  this.note(`Passagem aberta entre ${ROOMS[a.type].name} e ${ROOMS[b.type].name}.`,'good');
+  this.spreadHazards();this.checkMutiny();this.reconnectCaptured();
+  return{ok:true,room:b,passage:true};
+ }
  addUnit(type,x,y,loyal=false,team='ally',power=null){
   const d=(team==='enemy'?ENEMIES[type]:UNITS[type])||UNITS[type]||{power:power||5,speed:0.65,range:0.42};const p=power||d.power||5;
   const u={id:this.s.nextId++,type,team,loyal:loyal||d.mutiny===0,power:p,hp:p*8,maxHp:p*8,shield:0,x,y,home:key(x,y),cooldown:this.random()*0.6,attack:0,walk:0,shot:false,stun:0,order:'defend',size:d.size||1,facing:1};this.s.units.push(u);return u;
@@ -38,7 +68,7 @@ export class Game {
  immune(u,h){return u.type==='golem'||u.type==='automaton'||(u.team==='ally'&&h==='water'&&this.s.artifacts.includes('water'))||(u.team==='ally'&&['lava','crater'].includes(h)&&this.s.artifacts.includes('lava'))}
  lethalHazard(r,u){return this.roomHazards(r).some(h=>['water','lava','crater','gas'].includes(h)&&!this.immune(u,h))}
  passable(r,team='ally',unit=null){return !!r&&!r.closed&&!(team==='enemy'&&r.secret)&&!(r.trap?.level===3)&&!(unit&&this.lethalHazard(r,unit))}
- neighbors(r,team='ally',unit=null){return DIRS.map(([dx,dy])=>this.room(r.x+dx,r.y+dy)).filter(n=>this.passable(n,team,unit))}
+ neighbors(r,team='ally',unit=null){return DIRS.map(([dx,dy])=>this.room(r.x+dx,r.y+dy)).filter(n=>this.linked(r,n)&&this.passable(n,team,unit))}
  anchor(u){return this.s.rooms[u.moveTarget]||this.room(Math.round(u.x),Math.round(u.y))}
  path(start,end,team='ally',unit=null){
   const sk=typeof start==='string'?start:key(Math.round(start.x),Math.round(start.y));
@@ -84,15 +114,17 @@ export class Game {
   if(this.s.status!=='playing'||this.s.combat)return {ok:false,reason:'Resolva o combate antes de encerrar o turno.'};
   this.s.turn++;this.s.built=false;this.s.traded=false;this.s.turnReady=true;this.income();this.spreadHazards();this.checkMutiny();this.note('Um novo turno começa. Prepare a fortaleza antes de explorar.');return {ok:true};
  }
- frontier(){const out=new Map();for(const r of this.rooms){if(!this.active(r))continue;for(const[dx,dy]of DIRS){const x=r.x+dx,y=r.y+dy;if(x< -20||x>20||y<0||y>30||this.room(x,y))continue;out.set(key(x,y),{x,y})}}return [...out.values()]}
- explore(x,y){
+ frontier(){const out=new Map();for(const d of this.directions())if(d.kind==='explore')out.set(key(d.x,d.y),{x:d.x,y:d.y});return [...out.values()]}
+ explore(x,y,from=null){
   if(this.s.status!=='playing'||this.s.combat)return{ok:false,reason:'Resolva o combate antes de explorar.'};
   if(y<0)return{ok:false,reason:'A superfície não precisa ser explorada. Construa diretamente.'};
-  if(!this.frontier().some(p=>p.x===x&&p.y===y))return{ok:false,reason:'Escolha um espaço adjacente conectado.'};
-  if(!this.s.turnReady){this.s.turn++;this.s.built=false;this.s.traded=false;this.income();if(this.s.combat){this.s.turnReady=true;return{ok:false,reason:'Um portal iniciou uma invasão antes da exploração.'}}}
-  this.s.turnReady=false;this.s.maxDepth=Math.max(this.s.maxDepth,y);let c=this.draw(y);
+  const choices=this.directions().filter(d=>d.x===x&&d.y===y&&d.kind==='explore');
+  const choice=from?choices.find(d=>d.from.x===from.x&&d.from.y===from.y):choices.length===1?choices[0]:null;
+  if(!choice)return{ok:false,reason:'Escolha a seta da sala de origem para explorar nessa direção.'};
+  const approach=this.room(choice.from.x,choice.from.y);
+  if(!this.explorationTurn())return{ok:false,reason:'Um portal iniciou uma invasão antes da exploração.'};
+  this.s.maxDepth=Math.max(this.s.maxDepth,y);let c=this.draw(y);
   while(y<=1&&c.suit==='♠')c=this.draw(y);
-  const approach=DIRS.map(([dx,dy])=>this.room(x+dx,y+dy)).filter(r=>r&&this.active(r)).sort((a,b)=>(this.path(a,this.target)?.length??999)-(this.path(b,this.target)?.length??999))[0];
   this.s.card=c;let type='cave',enemy=0,enemyType='raider';let msg='';
   if(y>=12&&!this.rooms.some(r=>r.type==='void')&&!this.s.artifacts.includes('void')){type='void';enemy=110;enemyType='guardian';msg='O Cristal do Vazio! Seu guardião ancestral desperta.'}
   else if(c.suit==='♥'||c.suit==='♦'){
@@ -128,7 +160,7 @@ export class Game {
    if(n===16)this.magic(false);
    msg=`♠ ${c.rank} · ${ROOMS[type].name}.`;
   }else{type='vault';this.magic(true);this.gain(15,15);msg='★ Descoberta lendária: um artefato fortalece suas tropas.';this.s.blessings++}
-  const r=this.addRoom(x,y,type);r.rewardPending=enemy>0;r.flowActive=!(['water','lava','crater'].includes(type)&&approach?.x===x&&approach?.y===y-1);if(c.suit==='♠'&&c.rank===7)r.damaged=true;
+  const r=this.addRoom(x,y,type);this.connectRooms(approach,r);r.rewardPending=enemy>0;r.flowActive=!(['water','lava','crater'].includes(type)&&approach?.x===x&&approach?.y===y-1);if(c.suit==='♠'&&c.rank===7)r.damaged=true;
   this.note(msg,enemy?'danger':'good');
   if(type==='invincible')r.closed=true;
   if(type==='mushrooms'){if(this.roll(2)===1)this.s.baseMorale+=5;else this.gain(10,0)}
@@ -170,7 +202,7 @@ export class Game {
   if(d.requires?.some(t=>!this.has(t)))return`Exige: ${d.requires.map(t=>ROOMS[t].name).join(', ')}.`;
   const c=this.cost(type,r);if(this.s.resources<c.resources||this.s.gold<c.gold)return'Recursos insuficientes.';return'';
  }
- build(type,x,y){let r=this.site(x,y);const reason=this.buildReason(type,r);if(reason)return{ok:false,reason};const c=this.cost(type,r);if(!this.room(x,y))r=this.addRoom(x,y,'cave');this.s.resources-=c.resources;this.s.gold-=c.gold;r.type=type;r.variant=this.roll(3)-1;r.contaminant=null;this.s.built=true;
+ build(type,x,y){let r=this.site(x,y);const reason=this.buildReason(type,r);if(reason)return{ok:false,reason};const c=this.cost(type,r);if(!this.room(x,y)){const source=(y<0&&this.active(this.room(x,y+1))?this.room(x,y+1):null)||DIRS.map(([dx,dy])=>this.room(x+dx,y+dy)).find(n=>n&&this.active(n));r=this.addRoom(x,y,'cave');this.connectRooms(source,r);}this.s.resources-=c.resources;this.s.gold-=c.gold;r.type=type;r.variant=this.roll(3)-1;r.contaminant=null;this.s.built=true;
   if(type==='library')this.magic(true);if(type==='altar')this.addUnit('cleric',x,y,true);if(type==='tavern')this.addUnit('hero',x,y,true);this.spreadHazards();this.note(`${ROOMS[type].name} construída. −${c.resources}♥${c.gold?` −${c.gold}♦`:''}.`,'good');return{ok:true};
  }
  housing(type){const d=UNITS[type];if(!d)return[];if(d.requires&&!this.has(d.requires))return[];return this.rooms.filter(r=>d.homes.includes(r.type)&&this.active(r)&&this.capacity(r)>this.allies.filter(u=>u.home===key(r.x,r.y)).length&&(!(r.type==='hut'||r.type==='quarters')||this.allies.filter(u=>u.home===key(r.x,r.y)).reduce((a,u)=>a+u.power,0)+d.power<=(r.type==='hut'?30:50)))}
@@ -209,7 +241,7 @@ export class Game {
   if(horizontal&&Math.abs(a.y-Math.round(a.y))>eps)return false;
   const ax=Math.round(a.x),ay=Math.round(a.y),bx=Math.round(b.x),by=Math.round(b.y);
   const dx=Math.sign(bx-ax),dy=Math.sign(by-ay),n=Math.abs(bx-ax)+Math.abs(by-ay);
-  for(let i=0;i<=n;i++){const r=this.room(ax+dx*i,ay+dy*i);if(!r||r.closed||r.trap?.level===3||this.roomHazards(r).includes('blindgas')||(r.barricade?.kind==='defensive'&&r.barricade.hp>0))return false}return true;
+  for(let i=0;i<=n;i++){const r=this.room(ax+dx*i,ay+dy*i);if(i>0&&!this.linked(this.room(ax+dx*(i-1),ay+dy*(i-1)),r))return false;if(!r||r.closed||r.trap?.level===3||this.roomHazards(r).includes('blindgas')||(r.barricade?.kind==='defensive'&&r.barricade.hp>0))return false}return true;
  }
  unitData(u){return (u.team==='enemy'?ENEMIES[u.type]:UNITS[u.type])||UNITS[u.type]||{range:u.range||.42,speed:.6,power:u.power}}
  defenseGoal(u){
@@ -247,8 +279,8 @@ export class Game {
    u.attack=Math.max(0,u.attack-dt);u.cooldown-=dt;u.stun=Math.max(0,u.stun-dt);if(u.stun>0)continue;
    const d=this.unitData(u),at=this.room(Math.round(u.x),Math.round(u.y));if(!at)continue;
    if(this.lethalHazard(at,u)){this.damage(u,Number.MAX_SAFE_INTEGER);continue}
-   const crossingFoe=d.range<=.5&&actors.some(v=>v.team!==u.team&&v.hp>0&&distance(u,v)<=d.range&&(Math.abs(u.x-v.x)<.02||Math.abs(u.y-v.y)<.02));
-   if(u.moveTarget&&!crossingFoe){const destination=this.s.rooms[u.moveTarget];if(destination&&this.passable(destination,u.team,u)){this.moveUnit(u,destination,dt);continue}u.moveTarget=null;u.x=Math.round(u.x);u.y=Math.round(u.y);}
+   const crossingFoe=d.range<=.5&&actors.some(v=>v.team!==u.team&&v.hp>0&&distance(u,v)<=d.range&&(Math.abs(u.x-v.x)<.02||Math.abs(u.y-v.y)<.02)&&this.lineOfSight(u,v));
+   if(u.moveTarget&&!crossingFoe){const destination=this.s.rooms[u.moveTarget];if(destination&&this.passable(destination,u.team,u)&&((at.x===destination.x&&at.y===destination.y)||this.linked(at,destination))){this.moveUnit(u,destination,dt);continue}u.moveTarget=null;u.x=Math.round(u.x);u.y=Math.round(u.y);}
    if(u.team==='enemy'&&at.type==='arena'&&!u.loyal){this.damage(u,99999);this.s.baseMorale+=10;continue}
    if(u.team==='enemy'&&at.trap?.armed){if(at.trap.kind==='damage')this.damage(u,at.trap.level*10*8);else u.stun=at.trap.level*2;at.trap.armed=false;if(u.hp<=0)continue}
    if(u.type==='trapper'){for(const r of this.rooms)if(r.trap&&distance(r,u)<1.5)r.trap.armed=true}
@@ -342,12 +374,15 @@ export class Game {
     if(gas)r.gas=source.type;else r.fluid=source.type;
     if(!gas&&['lava','crater'].includes(source.type)&&!['pump','bridge','lava','crater'].includes(r.type))r.damaged=true;
     if(!gas&&source.flowActive===false)continue;
-    for(const[dx,dy]of DIRS){if(gas&&dy===1||!gas&&dy===-1||dx&&lateral>=2)continue;const n=this.room(r.x+dx,r.y+dy);if(n)queue.push({r:n,lateral:lateral+(dx?1:0)})}
+    for(const[dx,dy]of DIRS){if(gas&&dy===1||!gas&&dy===-1||dx&&lateral>=2)continue;const n=this.room(r.x+dx,r.y+dy);if(n&&this.linked(r,n))queue.push({r:n,lateral:lateral+(dx?1:0)})}
    }
   }
-  const ignition=this.rooms.some(r=>r.gas==='flammable'&&['forge','tavern','barracks'].includes(r.type));
-  if(ignition){
-   for(const r of this.rooms){if(r.gas!=='flammable'&&r.type!=='flammable')continue;if(ROOMS[r.type].r!==undefined)r.damaged=true;
+  const burning=this.rooms.filter(r=>r.gas==='flammable'&&['forge','tavern','barracks'].includes(r.type)),ignited=new Set();
+  for(let i=0;i<burning.length;i++){const r=burning[i],rk=key(r.x,r.y);if(ignited.has(rk))continue;ignited.add(rk);
+   for(const [dx,dy]of DIRS){const n=this.room(r.x+dx,r.y+dy);if(n&&this.linked(r,n)&&!r.closed&&!n.closed&&(n.gas==='flammable'||n.type==='flammable')&&!ignited.has(key(n.x,n.y)))burning.push(n)}
+  }
+  if(ignited.size){
+   for(const rk of ignited){const r=this.s.rooms[rk];if(ROOMS[r.type].r!==undefined)r.damaged=true;
     for(const u of this.s.units)if(u.hp>0&&Math.round(u.x)===r.x&&Math.round(u.y)===r.y)this.damage(u,Number.MAX_SAFE_INTEGER);
     r.gas=null;r.contaminant=null;if(r.type==='flammable')r.type='cave';
    }this.note('Gás inflamável alcançou uma forja, taverna ou quartel: explosão! Todas as salas atingidas foram danificadas.','danger');
@@ -373,6 +408,11 @@ export class Game {
   for(const p of data.projectiles)for(const n of ['x','y','tx','ty','target','damage','t','duration'])if(!finite(p[n])||p.duration<=0)throw Error('Projétil inválido.');
   if(data.dead.some(u=>!validUnit(u)))throw Error('Unidade caída inválida.');
   for(const r of Object.values(s.rooms)){if(r.garrison&&(!Array.isArray(r.garrison)||r.garrison.length>3000||r.garrison.some(u=>!knownType(u.type)||!finite(u.power)||u.power<=0)))throw Error('Guarnição inválida.')}
+  const passageLegacy=s.passageVersion===undefined;
+  if(!passageLegacy){
+   if(s.passageVersion!==1||!s.passages||typeof s.passages!=='object'||Array.isArray(s.passages)||Object.keys(s.passages).length>4000)throw Error('Passagens inválidas.');
+   for(const [id,value]of Object.entries(s.passages)){const ends=id.split('|'),a=s.rooms[ends[0]],b=s.rooms[ends[1]];if(value!==true||ends.length!==2||!a||!b||distance(a,b)!==1||ends.slice().sort().join('|')!==id)throw Error('Ligação inválida no mapa.');}
+  }else{s.passages={};for(const r of Object.values(s.rooms))for(const [dx,dy]of [[1,0],[0,1]]){const n=s.rooms[key(r.x+dx,r.y+dy)];if(n)s.passages[[key(r.x,r.y),key(n.x,n.y)].sort().join('|')]=true}s.passageVersion=1;}
   const legacy=!s.rulesVersion;if(legacy){
    const typeByRoom={largelair:'troll',hungry:'troll',burrow:'worm',elemental:'elemental',golemforge:'golem',vault:'golem',void:'guardian',dragon:'dragon',crypt:'skeleton',nest:'insect',hive:'insect'};
    const groups=new Map(),remap=new Map(),merged=[];

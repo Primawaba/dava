@@ -1,3 +1,4 @@
+import {ROOMS} from './data.js';
 // Software pixel shader: evaluate a mask, material transition and lighting once
 // per connection. Canvas 2D keeps the same result offline and on mobile GPUs.
 const PASSAGE_MATERIALS={
@@ -12,6 +13,7 @@ const PASSAGE_MATERIALS={
  crystal:{wall:[80,87,88],light:[148,163,157],floor:[26,33,35]},
  gas:{wall:[82,96,61],light:[147,165,104],floor:[29,40,25]}
 };
+export function passageArchitecture(room){return ROOMS[room.type]?.r!==undefined||['gate','crypt','ancienttemple','ancientlibrary','ancientprison','rivalhold','city','tomb','sealed','vault'].includes(room.type)?'built':'cavern'}
 export function passageMaterial(room){
  const type=room.contaminant||room.type;
  if(['water','sewer','well','laundry','pump','springs','mud'].includes(type))return 'water';
@@ -41,21 +43,22 @@ export class ProceduralPassages{
   const signature=r=>`${r.x},${r.y}:${r.type}:${r.variant}:${r.contaminant||''}:${!!r.damaged}`;
   const id=`${vertical?'v':'h'}|${signature(a)}|${signature(b)}`;
   if(this.cache.has(id)){const entry=this.cache.get(id);this.cache.delete(id);this.cache.set(id,entry);return entry}
-  const ma=passageMaterial(a),mb=passageMaterial(b),pa=PASSAGE_MATERIALS[ma],pb=PASSAGE_MATERIALS[mb];
-  const seed=passageHash(id),length=vertical?48:50,height=20,canvas=document.createElement('canvas');canvas.width=length;canvas.height=height;
+  const ma=passageMaterial(a),mb=passageMaterial(b),aa=passageArchitecture(a),ab=passageArchitecture(b),pa=PASSAGE_MATERIALS[ma],pb=PASSAGE_MATERIALS[mb];
+  const seed=passageHash(id),length=vertical?27:26,height=20,canvas=document.createElement('canvas');canvas.width=length;canvas.height=height;
   const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(length,height);
   const textures=[this.texture(images[`${a.type}-${a.variant}`]),this.texture(images[`${b.type}-${b.variant}`])];
   // Distort only the walls: the central walkable strip stays straight, matching
   // gameplay paths and ranged line of sight. All evaluation is in integer pixels.
   for(let x=0;x<length;x++){
-   const t=x/(length-1),blend=t*t*(3-2*t),envelope=Math.sin(t*Math.PI);
-   const warp=Math.round((passageNoise(Math.floor(x/4),0,seed)-.5)*3*envelope);
+   const t=x/(length-1),blend=aa===ab?t*t*(3-2*t):t<.5?0:1,envelope=Math.sin(t*Math.PI),architecture=t<.5?aa:ab;
+   const warp=architecture==='built'?0:Math.round((passageNoise(Math.floor(x/4),0,seed)-.5)*3*envelope);
    for(let y=0;y<height;y++){
-    const side=y<10?-1:1,edge=side<0?2+Math.round(envelope*2)+warp:17-Math.round(envelope*2)+warp,distance=side<0?y-edge:edge-y;
-    const noise=passageNoise(x,y,seed);if(distance<0&&(distance<-2||noise>.45))continue;
+    const side=y<10?-1:1,edge=side<0?(architecture==='built'?3:2+Math.round(envelope*2)+warp):(architecture==='built'?16:17-Math.round(envelope*2)+warp),distance=side<0?y-edge:edge-y;
+    const noise=passageNoise(x,y,seed);if(distance<0&&(architecture==='built'||distance<-2||noise>.45))continue;
     const center=y>=7&&y<=12;
     let color=center?passageMix(pa.floor,pb.floor,blend):passageMix(pa.wall,pb.wall,blend);
     if(!center){
+     if(architecture==='built'&&((y===5||y===14)||(x+(y<7?0:3))%6===0))color=[46,43,34];
      if(distance<=1)color=passageMix(pa.light,pb.light,blend);
      else if(noise<.24)color=color.map(v=>Math.round(v*.62));
      else if(noise>.8)color=passageMix(color,passageMix(pa.light,pb.light,blend),.45);
@@ -70,7 +73,7 @@ export class ProceduralPassages{
   ctx.putImageData(pixels,0,0);
   // Material-specific details fade out before the other room's entrance.
   for(let x=2;x<length-2;x++){
-   const t=x/(length-1),material=passageNoise(x,21,seed)<t?mb:ma;
+   const t=x/(length-1),material=aa!==ab?(t<.5?ma:mb):passageNoise(x,21,seed)<t?mb:ma;
    const palette=PASSAGE_MATERIALS[material];ctx.fillStyle=passageRGB(palette.light);
    if(vertical){if(x%4===0)ctx.fillRect(x,7,1,6);ctx.fillStyle=passageRGB(palette.wall);ctx.fillRect(x,6,1,1);ctx.fillRect(x,13,1,1)}
    if(material==='mine'){
@@ -85,7 +88,13 @@ export class ProceduralPassages{
    else if(material==='water'&&x%5===0){ctx.fillStyle='#709789';ctx.fillRect(x,12,3,1)}
    else if(material==='crystal'&&x%8===0){ctx.fillRect(x,3,1,3);ctx.fillRect(x-1,4,3,1)}
   }
-  const entry={canvas,ma,mb,seed,length,vertical};this.cache.set(id,entry);this.generated++;
+  // Door jambs belong only to the built endpoint. Cavern mouths retain rough rock.
+  for(const [architecture,x]of [[aa,0],[ab,length-3]])if(architecture==='built'){
+   ctx.fillStyle='#302e25';ctx.fillRect(x,2,3,5);ctx.fillRect(x,13,3,5);
+   ctx.fillStyle='#b3a783';ctx.fillRect(x,2,2,1);ctx.fillRect(x,13,2,1);
+   ctx.fillStyle='#777057';ctx.fillRect(x,3,2,3);ctx.fillRect(x,14,2,3);
+  }
+  const entry={canvas,ma,mb,aa,ab,seed,length,vertical};this.cache.set(id,entry);this.generated++;
   if(this.cache.size>this.limit)this.cache.delete(this.cache.keys().next().value);
   return entry;
  }
@@ -93,7 +102,7 @@ export class ProceduralPassages{
   const entry=this.get(a,b,vertical,images),{canvas,length,ma,mb,seed}=entry;
   ctx.save();ctx.imageSmoothingEnabled=false;
   // Local X always follows the connection, so the same mask joins all 4 ports.
-  ctx.translate(a.x*180+(vertical?0:40),a.y*144+(vertical?24:0));if(vertical)ctx.rotate(Math.PI/2);
+  ctx.translate(a.x*180+(vertical?0:64),a.y*144+(vertical?42:0));if(vertical)ctx.rotate(Math.PI/2);
   ctx.drawImage(canvas,0,-20,length*2,40);
   const phase=reduced?0:Math.floor(time/240)%8;
   for(let x=2;x<length-2;x+=4){
@@ -106,5 +115,12 @@ export class ProceduralPassages{
    }
   }
   ctx.restore();
+  if(entry.aa==='built'&&entry.ab==='built'){
+   const x=Math.round((a.x+b.x)*90+(vertical?15:0)),y=Math.round((a.y+b.y)*72+(vertical?-2:-13));
+   const flicker=reduced?0:Math.floor(time/160)%3;
+   ctx.save();ctx.translate(x,y);ctx.fillStyle='#d6a44918';ctx.fillRect(-12,-14,26,28);ctx.fillStyle='#c6954528';ctx.fillRect(-7,-9,16,17);
+   ctx.fillStyle='#302a20';ctx.fillRect(-2,0,6,11);ctx.fillStyle='#8a6238';ctx.fillRect(0,2,2,7);
+   ctx.fillStyle='#b87936';ctx.fillRect(-3,-4,8,6);ctx.fillStyle='#d7a148';ctx.fillRect(-1,-8-flicker*2,4,8+flicker*2);ctx.fillStyle='#ead9a0';ctx.fillRect(0,-5-flicker*2,2,5);ctx.restore();
+  }
  }
 }

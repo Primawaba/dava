@@ -67,3 +67,11 @@ O jogo exporta uma PWA estática. Publicação em lojas, instaladores nativos e 
 ## Coringas: diferença ainda pendente
 
 No DELVE, páginas impressas 33–36, o coringa preto desperta uma Monstruosidade Antiga; o vermelho gera um artefato lendário e pode revelar o Cristal do Vazio. Depois de usados, os coringas ficam fora do baralho por cinco turnos. Nesta versão digital, entram duas cartas iguais na profundidade 5 e ambas concedem recompensa genérica; não há distinção de cores, eventos próprios ou espera de cinco turnos. A vitória atual continua vinculada ao guardião na profundidade 12.
+
+## Revisão 1.3.0: conexões explícitas
+
+A exploração agora é uma ação dirigida a partir de uma sala ativa. A carta revela o destino, mas somente a origem escolhida é ligada a ele. Salas adjacentes não se conectam por proximidade. Abrir uma passagem entre salas já conhecidas é uma ação sem carta de descoberta ou custo adicional, com o avanço de turno e produção normais da exploração. IA, projéteis e perigos consultam o mesmo grafo de passagens. A explosão de gás afeta somente a bolsa alcançável por passagens abertas.
+
+A construção na superfície preserva apoio estrutural independentemente das ligações de trânsito; recebe uma ligação à sala ativa abaixo ou, na ausência desta, a uma vizinha ativa. As demais paredes ficam fechadas. Saves anteriores são migrados conservando suas conexões históricas.
+
+O acabamento escolhido usa portas e corredores curtos: caverna/caverna escuro e rochoso; construção/caverna dividido no ponto médio; construção/construção em alvenaria com tocha. Não há interpolação arquitetônica entre as metades da ligação mista. A textura e as cores ainda acompanham o conteúdo e a contaminação das salas.

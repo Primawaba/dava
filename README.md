@@ -11,6 +11,20 @@ Jogo single player de exploração, construção e defesa de uma fortaleza subte
 
 Esse HTML contém o jogo inteiro e não precisa de instalação ou servidor. No GitHub, clicar no nome do HTML mostra seu código; baixe o ZIP antes de abri-lo no computador.
 
+
+## Exploração por setas — versão 1.3.0
+
+- Clique em uma seta que parte de uma sala ativa para explorar imediatamente naquela direção. A descoberta abre **somente essa passagem**; estar ao lado de outra sala não cria ligação.
+- Setas douradas entre salas conhecidas permitem abrir uma passagem depois. Não há custo de recursos nem carta de descoberta; a ação segue o mesmo avanço de turno da exploração, incluindo produção normal.
+- O painel de cada sala oferece as mesmas direções com botões acessíveis por teclado. Quando várias salas apontam ao mesmo espaço, é necessário escolher uma origem.
+- Movimento, caminhos de invasão, tiros, líquidos, gases e explosões respeitam as passagens efetivamente abertas. Uma parede sem passagem bloqueia a conexão mesmo com um caminho alternativo ao redor.
+- A superfície continua sendo construída diretamente. Cada construção nova recebe uma ligação: preferencialmente à sala ativa abaixo, ou a outra sala ativa vizinha; não se conecta automaticamente a todas as vizinhas.
+- Salvamentos antigos preservam o mapa anterior, convertendo uma única vez as antigas adjacências em passagens explícitas. Nos novos saves, as paredes ainda fechadas continuam fechadas ao carregar.
+
+O visual usa portas nas bordas e trechos curtos em pixel art. Entre cavernas, as paredes são cavernosas e o vão é escuro; em ligações mistas, a metade construída termina no meio e a outra metade é cavernosa. Entre duas salas construídas, todo o corredor é construído e recebe uma tocha com chama discreta. Movimento reduzido congela a chama. Ruínas com arquitetura preservada (como criptas e bibliotecas antigas) usam acabamento construído.
+
+Execute `npm run test:directions` para verificar a interação por mouse, toque, teclado e persistência das ligações. `npm run test:passages` confere os materiais, encaixes e os três casos arquitetônicos.
+
 ## Testar sem instalar nada
 
 O arquivo `JOGAR-CONQUER.html` na raiz do repositório é a edição pronta para abrir. Também é gerado como `releases/CONQUER-Jogar.html`; abra esse arquivo com Chrome ou Edge no computador. Ele contém o código, as fontes, a ilustração de abertura e as 273 artes de salas e 33 sprites. Não precisa descompactar, instalar Node, acessar a internet ou iniciar servidor. Clique em **Nova fortaleza** para começar. Use **Salvar** e, para preservar uma cópia independente do navegador, **Exportar jogo**.
@@ -58,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.2.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
+O resultado fica em `releases/conquer-web-1.3.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
 
 ## Conteúdo e controles
 

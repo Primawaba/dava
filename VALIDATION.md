@@ -64,3 +64,14 @@ O pacote web e seu checksum são gerados por `scripts/release.mjs`. O servidor d
 `npm run test:passages` aprovou 200 combinações de materiais/orientação (10 × 10 × 2), com faixa central opaca, dez resultados visuais distintos na galeria de transições, cache com limite e reutilização, atualização ao construir/inundar, retorno ao visual anterior após drenagem, geração determinística, animação de água e congelamento por movimento reduzido. Também aprovou as 6.144 amostras das 16 máscaras em quatro níveis de zoom. Capturas em `artifacts/procedural-materials-desktop.png` e `artifacts/procedural-materials-mobile.png`; nenhuma rolagem horizontal na viewport de 390px. A captura desktop foi revisada visualmente.
 
 Canvas 2D realiza o processamento de máscara, distorção, materiais e iluminação em baixa resolução; não foi introduzida dependência de WebGL. A validação de navegador é feita em Chromium, incluindo emulação mobile; não representa homologação em todos os aparelhos físicos.
+
+## Revisão 1.3.0 — setas, passagens explícitas e portas
+
+- **63 testes do motor aprovados**: 50 cenários anteriores com ligações explicitamente abertas em seus fixtures, mais 13 cenários que usam o motor real sem conexões automáticas. Cobrem origem escolhida, destino ambíguo, parede entre salas vizinhas, abertura posterior sem nova sala/carta/recurso, turno, tiros sem atravessar paredes, líquidos e gases, explosão isolada, construção na superfície, bloqueios por combate, persistência, migração e rejeição de grafos inválidos.
+- **8 verificações direcionais no navegador**: clique imediato na seta; descoberta adjacente sem atalho; ausência de corredor atrás da seta de abertura; conexão posterior sem descoberta/recompensa; save; escolha de origem por teclado; toque em viewport de 390px; ausência de exceções. Relatório `artifacts/directions-results.json`.
+- **3.264 amostras de continuidade** nas 16 máscaras e quatro zooms para os novos corredores curtos; 200 pares de materiais/orientação e três casos arquitetônicos. Tocha animada somente entre duas salas construídas, além do teste de movimento reduzido.
+- Capturas `directions-before-opening.png`, `directions-after-opening.png`, `directions-mobile.png` e `doorway-architecture-cases.png` documentam a interação e o acabamento. Casos arquitetônicos e setas foram revisados visualmente.
+
+O teste de seleção na superfície também cobre mudanças de câmera: o hit-test das setas calcula a posição atual, mesmo antes do próximo frame. Os limites de homologação do navegador e de `file://` continuam descritos acima.
+
+Na compilação final 1.3.0 também passaram as **21 verificações gerais do navegador**, **8 verificações da revisão anterior** e **7 verificações do HTML autônomo**. O HTML único e o build web incluem o novo grafo de passagens, os controles direcionais e as portas com acabamento contextual.

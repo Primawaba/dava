@@ -160,6 +160,7 @@ export class Game {
    if(n===16)this.magic(false);
    msg=`♠ ${c.rank} · ${ROOMS[type].name}.`;
   }else{type='vault';this.magic(true);this.gain(15,15);msg='★ Descoberta lendária: um artefato fortalece suas tropas.';this.s.blessings++}
+  if(y<=1&&type==='burrow'){type='cave';enemy=0;msg=`${c.suit} ${c.rank} · Caverna vazia.`;}
   // Protect the gate's starting strip before hazards can spread or kill units.
   if(y<=1&&Math.abs(x)<=2&&['lava','crater'].includes(type)){type='cave';msg=`${c.suit} ${c.rank} · Uma caverna de rocha vulcânica fria.`;}
   const r=this.addRoom(x,y,type);this.connectRooms(approach,r);r.rewardPending=enemy>0;r.flowActive=!(['water','lava','crater'].includes(type)&&approach?.x===x&&approach?.y===y-1);if(c.suit==='♠'&&c.rank===7)r.damaged=true;

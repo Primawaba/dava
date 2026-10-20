@@ -89,3 +89,7 @@ Na compilação final 1.3.0 também passaram as **21 verificações gerais do na
 Capturas `resource-hearts-in-flight.png` e `resource-flights-mobile.png`. A captura desktop foi revisada visualmente. O teste controla o relógio do navegador para conferir a quantidade antes da primeira chegada e o valor durante a animação.
 
 A compilação final 1.4.0 também aprovou as 21 verificações gerais do navegador e as 7 verificações do HTML autônomo offline.
+
+## Revisão 1.4.1 — túnel do escavador
+
+71 testes do motor aprovados. A carta J♣ é forçada na linha do portão e primeira camada, do limite oeste ao leste (incluindo posições além da faixa protegida de magma): revela caverna, não deixa recompensa de combate pendente, não gera inimigo e preserva os guardas. Na segunda camada, o túnel e seu verme único continuam sendo gerados.

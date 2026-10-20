@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.4.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
+O resultado fica em `releases/conquer-web-1.4.1.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
 
 ## Conteúdo e controles
 
@@ -158,3 +158,7 @@ Cada unidade efetivamente recebida gera um símbolo: ♥ para recursos e ♦ par
 Os ganhos continuam disponíveis imediatamente para construir, recrutar e salvar. Somente a apresentação do contador é escalonada. O limite do estoque é respeitado: se couberem apenas três recursos, voam três símbolos. Ganhos simultâneos e gastos durante o voo são conciliados com o saldo real. Carregar outra partida, voltar ao menu ou ocultar a janela encerra os efeitos pendentes. Movimento reduzido aplica os números sem animação de voo.
 
 A camada de efeitos usa Canvas 2D, com um item por unidade e glifos reutilizados. Não captura mouse/toque, não é gravada no save e está incluída no HTML autônomo. Execute `npm run test:resource-flights` para validar a interação e a contagem.
+
+### Primeira fileira — versão 1.4.1
+
+O Túnel de escavador não é gerado na linha do portão nem na primeira camada subterrânea, independentemente da distância lateral. A carta correspondente revela uma caverna vazia sem escavador e sem combate. A partir da segunda camada, o encontro continua normal.

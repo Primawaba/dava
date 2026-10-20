@@ -1,13 +1,15 @@
+import {ProceduralPassages} from './passages.js';
 import {ROOMS,DIRS,SPRITE_FRAMES,PASSAGES} from './data.js';
 import {key} from './engine.js';
 export const CW=180,CH=144;
 export class Renderer{
- constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
+ constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
  async load(){
   const assets=Object.keys(ROOMS).flatMap(type=>[0,1,2].map(v=>({id:`${type}-${v}`,src:`./assets/rooms/${type}-${v}.png`})));
   assets.push(...Object.keys(SPRITE_FRAMES).map(type=>({id:`unit-${type}`,src:`./assets/sprites/${type}.png`})));
   assets.push(...PASSAGES.map(name=>({id:`passage-${name}`,src:`./assets/passages/${name}.png`})));
   await Promise.all(assets.map(({id,src})=>new Promise(resolve=>{const i=new Image();i.onload=()=>{this.images[id]=i;resolve()};i.onerror=()=>resolve();i.src=src})));
+  this.passages.cache.clear();
  }
  resize(){const r=this.canvas.getBoundingClientRect();this.width=r.width;this.height=r.height;const dpr=Math.min(devicePixelRatio||1,2);this.canvas.width=Math.round(r.width*dpr);this.canvas.height=Math.round(r.height*dpr);this.dpr=dpr}
  screenToWorld(x,y){return{x:(x-this.width/2)/this.zoom+this.camera.x,y:(y-this.height/2)/this.zoom+this.camera.y}}
@@ -29,20 +31,11 @@ export class Renderer{
   if(!vertical&&r.y!==n.y)return;
   if((vertical&&r.y>n.y)||(!vertical&&r.x>n.x))[r,n]=[n,r];
   const x=r.x*CW,y=r.y*CH,nx=n.x*CW,ny=n.y*CH;
-  const variant=Math.abs(r.x+r.y+n.x+n.y)%2,tile=this.images[`passage-${vertical?'v':'h'}-${variant}`];
-  c.save();c.imageSmoothingEnabled=false;
-  const start=vertical?y+24:x+40,end=vertical?ny-24:nx-40;
-  c.beginPath();if(vertical)c.rect(x-16,start,32,end-start);else c.rect(start,y-16,end-start,32);c.clip();
-  for(let p=Math.floor(start/32)*32;p<end;p+=32){
-   if(tile){if(vertical)c.drawImage(tile,x-16,p,32,32);else c.drawImage(tile,p,y-16,32,32)}
-   else{c.fillStyle='#161714';if(vertical)c.fillRect(x-12,p,24,32);else c.fillRect(p,y-12,32,24)}
-  }c.restore();
+  this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced);
   const image=name=>this.images['passage-'+name];
-  if(vertical){if(image('door-s'))c.drawImage(image('door-s'),x-16,y+24,32,48);if(image('door-n'))c.drawImage(image('door-n'),nx-16,ny-72,32,48)}
-  else{if(image('door-e'))c.drawImage(image('door-e'),x+40,y-16,48,32);if(image('door-w'))c.drawImage(image('door-w'),nx-88,ny-16,48,32)}
   if((r.closed||n.closed)&&image('grate'))c.drawImage(image('grate'),(x+nx)/2-16,(y+ny)/2-16,32,32);
  }
- draw(time=0){const c=this.ctx,w=this.width,h=this.height;if(!w||!h)return;c.setTransform(this.dpr,0,0,this.dpr,0,0);c.imageSmoothingEnabled=false;c.fillStyle='#e5ddc6';c.fillRect(0,0,w,h);if(!this.game)return;
+ draw(time=0){this.passageTime=time;const c=this.ctx,w=this.width,h=this.height;if(!w||!h)return;c.setTransform(this.dpr,0,0,this.dpr,0,0);c.imageSmoothingEnabled=false;c.fillStyle='#e5ddc6';c.fillRect(0,0,w,h);if(!this.game)return;
   c.save();c.translate(w/2,h/2);c.scale(this.zoom,this.zoom);c.translate(-this.camera.x,-this.camera.y);
   const bounds={left:this.camera.x-w/2/this.zoom-CW,right:this.camera.x+w/2/this.zoom+CW,top:this.camera.y-h/2/this.zoom-CH,bottom:this.camera.y+h/2/this.zoom+CH};
   c.strokeStyle='#6e77551c';c.lineWidth=.65;for(let x=Math.floor(bounds.left/CW);x<=Math.ceil(bounds.right/CW);x++){c.beginPath();c.moveTo((x+.5)*CW,bounds.top);c.lineTo((x+.5)*CW,bounds.bottom);c.stroke()}for(let y=Math.floor(bounds.top/CH);y<=Math.ceil(bounds.bottom/CH);y++){c.beginPath();c.moveTo(bounds.left,(y+.5)*CH);c.lineTo(bounds.right,(y+.5)*CH);c.stroke();c.fillStyle='#7d82624a';c.font='9px Georgia';c.textAlign='left';c.fillText(y>=0?String(y).padStart(2,'0'):`+${-y}`,bounds.left+CW*.7,y*CH)}

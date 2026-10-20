@@ -58,3 +58,9 @@ O pacote web e seu checksum são gerados por `scripts/release.mjs`. O servidor d
 ## Revisão 1.1.1 — passagens em pixel art
 
 `npm run test:passages` aprovou 6.144 amostras de faixa interna opaca nas 16 combinações de conexão, em zoom 0,5 / 1 / 1,5 / 2, sem exceções. As amostras cobrem entradas, repetições horizontais e poços verticais; os nomes ficam fora dos poços. Captura geral das combinações: `artifacts/passages-16-masks.png`. A captura de fortaleza foi revisada visualmente. Os 50 testes do motor, 21 verificações gerais de navegador e 7 verificações do HTML autônomo também passaram nesta revisão.
+
+## Revisão 1.2.0 — geração procedural adaptada às salas
+
+`npm run test:passages` aprovou 200 combinações de materiais/orientação (10 × 10 × 2), com faixa central opaca, dez resultados visuais distintos na galeria de transições, cache com limite e reutilização, atualização ao construir/inundar, retorno ao visual anterior após drenagem, geração determinística, animação de água e congelamento por movimento reduzido. Também aprovou as 6.144 amostras das 16 máscaras em quatro níveis de zoom. Capturas em `artifacts/procedural-materials-desktop.png` e `artifacts/procedural-materials-mobile.png`; nenhuma rolagem horizontal na viewport de 390px. A captura desktop foi revisada visualmente.
+
+Canvas 2D realiza o processamento de máscara, distorção, materiais e iluminação em baixa resolução; não foi introduzida dependência de WebGL. A validação de navegador é feita em Chromium, incluindo emulação mobile; não representa homologação em todos os aparelhos físicos.

@@ -634,15 +634,129 @@ class Game {
 }
 
 
+// passages.js
+// Software pixel shader: evaluate a mask, material transition and lighting once
+// per connection. Canvas 2D keeps the same result offline and on mobile GPUs.
+const PASSAGE_MATERIALS={
+ rock:{wall:[89,84,66],light:[163,153,119],floor:[27,29,24]},
+ masonry:{wall:[99,95,78],light:[176,166,134],floor:[30,31,27]},
+ mine:{wall:[103,82,55],light:[173,146,99],floor:[33,29,22]},
+ water:{wall:[66,91,80],light:[125,164,145],floor:[24,47,43]},
+ fire:{wall:[109,71,47],light:[191,135,75],floor:[47,28,22]},
+ organic:{wall:[105,97,51],light:[177,159,90],floor:[38,35,21]},
+ forest:{wall:[69,86,53],light:[138,157,98],floor:[25,35,23]},
+ crypt:{wall:[91,89,77],light:[175,169,140],floor:[28,28,25]},
+ crystal:{wall:[80,87,88],light:[148,163,157],floor:[26,33,35]},
+ gas:{wall:[82,96,61],light:[147,165,104],floor:[29,40,25]}
+};
+function passageMaterial(room){
+ const type=room.contaminant||room.type;
+ if(['water','sewer','well','laundry','pump','springs','mud'].includes(type))return 'water';
+ if(['lava','crater','forge','golemforge','kitchen','dragon'].includes(type))return 'fire';
+ if(['gas','flammable','miasma','blindgas'].includes(type))return 'gas';
+ if(['hive','nest','breeder'].includes(type))return 'organic';
+ if(['forest','fungus','fungi','mushrooms'].includes(type))return 'forest';
+ if(['mine','rivalmine','rails','shaft','elevator','workshop'].includes(type))return 'mine';
+ if(['crypt','tomb','ancientprison','desolate'].includes(type))return 'crypt';
+ if(['crystal','portal','stabilizer','artifact','ritual','chaos'].includes(type))return 'crystal';
+ if(['cave','surface','ruins','chasm'].includes(type))return 'rock';
+ return 'masonry';
+}
+function passageNoise(x,y,seed){let n=Math.imul(x+seed,374761393)^Math.imul(y+seed,668265263);n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967296}
+function passageHash(text){let n=2166136261;for(const char of text)n=Math.imul(n^char.charCodeAt(0),16777619);return n>>>0}
+function passageMix(a,b,t){return a.map((v,i)=>Math.round(v+(b[i]-v)*t))}
+function passageRGB(a){return `rgb(${a.join(',')})`}
+class ProceduralPassages{
+ constructor(limit=256){this.cache=new Map();this.textures=new WeakMap();this.limit=limit;this.generated=0}
+ texture(image){
+  if(!image)return null;if(this.textures.has(image))return this.textures.get(image);
+  const tile=document.createElement('canvas');tile.width=32;tile.height=24;
+  const ctx=tile.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0,32,24);
+  const data=ctx.getImageData(0,0,32,24).data;this.textures.set(image,data);return data;
+ }
+ get(a,b,vertical,images){
+  const signature=r=>`${r.x},${r.y}:${r.type}:${r.variant}:${r.contaminant||''}:${!!r.damaged}`;
+  const id=`${vertical?'v':'h'}|${signature(a)}|${signature(b)}`;
+  if(this.cache.has(id)){const entry=this.cache.get(id);this.cache.delete(id);this.cache.set(id,entry);return entry}
+  const ma=passageMaterial(a),mb=passageMaterial(b),pa=PASSAGE_MATERIALS[ma],pb=PASSAGE_MATERIALS[mb];
+  const seed=passageHash(id),length=vertical?48:50,height=20,canvas=document.createElement('canvas');canvas.width=length;canvas.height=height;
+  const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(length,height);
+  const textures=[this.texture(images[`${a.type}-${a.variant}`]),this.texture(images[`${b.type}-${b.variant}`])];
+  // Distort only the walls: the central walkable strip stays straight, matching
+  // gameplay paths and ranged line of sight. All evaluation is in integer pixels.
+  for(let x=0;x<length;x++){
+   const t=x/(length-1),blend=t*t*(3-2*t),envelope=Math.sin(t*Math.PI);
+   const warp=Math.round((passageNoise(Math.floor(x/4),0,seed)-.5)*3*envelope);
+   for(let y=0;y<height;y++){
+    const side=y<10?-1:1,edge=side<0?2+Math.round(envelope*2)+warp:17-Math.round(envelope*2)+warp,distance=side<0?y-edge:edge-y;
+    const noise=passageNoise(x,y,seed);if(distance<0&&(distance<-2||noise>.45))continue;
+    const center=y>=7&&y<=12;
+    let color=center?passageMix(pa.floor,pb.floor,blend):passageMix(pa.wall,pb.wall,blend);
+    if(!center){
+     if(distance<=1)color=passageMix(pa.light,pb.light,blend);
+     else if(noise<.24)color=color.map(v=>Math.round(v*.62));
+     else if(noise>.8)color=passageMix(color,passageMix(pa.light,pb.light,blend),.45);
+     // Grain from the actual room illustrations, dithered across the transition.
+     const source=textures[noise<blend?1:0];
+     if(source){const i=((y%24)*32+(x%32))*4,lum=(source[i]+source[i+1]+source[i+2])/3;if(source[i+3]>128&&lum<190&&lum>25)color=passageMix(color,[source[i],source[i+1],source[i+2]],.3)}
+    }
+    if((a.damaged&&t<.5||b.damaged&&t>.5)&&((x+y*2)%13===0))color=[39,32,27];
+    const index=(y*length+x)*4;pixels.data.set([...color,255],index);
+   }
+  }
+  ctx.putImageData(pixels,0,0);
+  // Material-specific details fade out before the other room's entrance.
+  for(let x=2;x<length-2;x++){
+   const t=x/(length-1),material=passageNoise(x,21,seed)<t?mb:ma;
+   const palette=PASSAGE_MATERIALS[material];ctx.fillStyle=passageRGB(palette.light);
+   if(vertical){if(x%4===0)ctx.fillRect(x,7,1,6);ctx.fillStyle=passageRGB(palette.wall);ctx.fillRect(x,6,1,1);ctx.fillRect(x,13,1,1)}
+   if(material==='mine'){
+    if(!vertical){ctx.fillRect(x,7,1,1);ctx.fillRect(x,12,1,1);if(x%7===0){ctx.fillStyle='#66563a';ctx.fillRect(x,3,2,4);ctx.fillRect(x,13,2,4)}}
+   }else if(material==='masonry'||material==='crypt'){
+    if(x%6===0){ctx.fillStyle='#302f27';ctx.fillRect(x,3,1,3);ctx.fillRect(x+2,14,1,3)}
+    if(material==='crypt'&&x%13===0){ctx.fillStyle='#b0a68a';ctx.fillRect(x,4,2,2);ctx.fillStyle='#24251f';ctx.fillRect(x,5,1,1)}
+   }else if(material==='forest'||material==='organic'){
+    if(x%3===0){ctx.fillRect(x,5,2,1);ctx.fillRect(x+1,6,1,1)}
+    if(material==='organic'&&x%5===0){ctx.fillStyle='#494325';ctx.fillRect(x,14,3,2);ctx.fillStyle='#9c8a4f';ctx.fillRect(x+1,14,1,1)}
+   }else if(material==='fire'&&x%4===0){ctx.fillStyle='#b67d44';ctx.fillRect(x,14,2,1)}
+   else if(material==='water'&&x%5===0){ctx.fillStyle='#709789';ctx.fillRect(x,12,3,1)}
+   else if(material==='crystal'&&x%8===0){ctx.fillRect(x,3,1,3);ctx.fillRect(x-1,4,3,1)}
+  }
+  const entry={canvas,ma,mb,seed,length,vertical};this.cache.set(id,entry);this.generated++;
+  if(this.cache.size>this.limit)this.cache.delete(this.cache.keys().next().value);
+  return entry;
+ }
+ draw(ctx,a,b,vertical,images,time,reduced){
+  const entry=this.get(a,b,vertical,images),{canvas,length,ma,mb,seed}=entry;
+  ctx.save();ctx.imageSmoothingEnabled=false;
+  // Local X always follows the connection, so the same mask joins all 4 ports.
+  ctx.translate(a.x*180+(vertical?0:40),a.y*144+(vertical?24:0));if(vertical)ctx.rotate(Math.PI/2);
+  ctx.drawImage(canvas,0,-20,length*2,40);
+  const phase=reduced?0:Math.floor(time/240)%8;
+  for(let x=2;x<length-2;x+=4){
+   const t=x/(length-1),material=t<.5?ma:mb;
+   if(material==='water'||material==='fire'){
+    ctx.fillStyle=material==='water'?'#80a899':'#c38c50';const y=material==='water'?10:14;
+    ctx.fillRect((x+(phase+Math.floor(seed%3))%3)*2,(y-10)*2,4,2);
+   }else if(material==='gas'){
+    ctx.fillStyle='#8c9c6077';const y=6+(x+phase)%7;ctx.fillRect(x*2,(y-10)*2,6,2);
+   }
+  }
+  ctx.restore();
+ }
+}
+
+
 // render.js
 const CW=180,CH=144;
 class Renderer{
- constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
+ constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
  async load(){
   const assets=Object.keys(ROOMS).flatMap(type=>[0,1,2].map(v=>({id:`${type}-${v}`,src:`./assets/rooms/${type}-${v}.png`})));
   assets.push(...Object.keys(SPRITE_FRAMES).map(type=>({id:`unit-${type}`,src:`./assets/sprites/${type}.png`})));
   assets.push(...PASSAGES.map(name=>({id:`passage-${name}`,src:`./assets/passages/${name}.png`})));
   await Promise.all(assets.map(({id,src})=>new Promise(resolve=>{const i=new Image();i.onload=()=>{this.images[id]=i;resolve()};i.onerror=()=>resolve();i.src=embeddedAssets[src.replace('./assets/','')]})));
+  this.passages.cache.clear();
  }
  resize(){const r=this.canvas.getBoundingClientRect();this.width=r.width;this.height=r.height;const dpr=Math.min(devicePixelRatio||1,2);this.canvas.width=Math.round(r.width*dpr);this.canvas.height=Math.round(r.height*dpr);this.dpr=dpr}
  screenToWorld(x,y){return{x:(x-this.width/2)/this.zoom+this.camera.x,y:(y-this.height/2)/this.zoom+this.camera.y}}
@@ -664,20 +778,11 @@ class Renderer{
   if(!vertical&&r.y!==n.y)return;
   if((vertical&&r.y>n.y)||(!vertical&&r.x>n.x))[r,n]=[n,r];
   const x=r.x*CW,y=r.y*CH,nx=n.x*CW,ny=n.y*CH;
-  const variant=Math.abs(r.x+r.y+n.x+n.y)%2,tile=this.images[`passage-${vertical?'v':'h'}-${variant}`];
-  c.save();c.imageSmoothingEnabled=false;
-  const start=vertical?y+24:x+40,end=vertical?ny-24:nx-40;
-  c.beginPath();if(vertical)c.rect(x-16,start,32,end-start);else c.rect(start,y-16,end-start,32);c.clip();
-  for(let p=Math.floor(start/32)*32;p<end;p+=32){
-   if(tile){if(vertical)c.drawImage(tile,x-16,p,32,32);else c.drawImage(tile,p,y-16,32,32)}
-   else{c.fillStyle='#161714';if(vertical)c.fillRect(x-12,p,24,32);else c.fillRect(p,y-12,32,24)}
-  }c.restore();
+  this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced);
   const image=name=>this.images['passage-'+name];
-  if(vertical){if(image('door-s'))c.drawImage(image('door-s'),x-16,y+24,32,48);if(image('door-n'))c.drawImage(image('door-n'),nx-16,ny-72,32,48)}
-  else{if(image('door-e'))c.drawImage(image('door-e'),x+40,y-16,48,32);if(image('door-w'))c.drawImage(image('door-w'),nx-88,ny-16,48,32)}
   if((r.closed||n.closed)&&image('grate'))c.drawImage(image('grate'),(x+nx)/2-16,(y+ny)/2-16,32,32);
  }
- draw(time=0){const c=this.ctx,w=this.width,h=this.height;if(!w||!h)return;c.setTransform(this.dpr,0,0,this.dpr,0,0);c.imageSmoothingEnabled=false;c.fillStyle='#e5ddc6';c.fillRect(0,0,w,h);if(!this.game)return;
+ draw(time=0){this.passageTime=time;const c=this.ctx,w=this.width,h=this.height;if(!w||!h)return;c.setTransform(this.dpr,0,0,this.dpr,0,0);c.imageSmoothingEnabled=false;c.fillStyle='#e5ddc6';c.fillRect(0,0,w,h);if(!this.game)return;
   c.save();c.translate(w/2,h/2);c.scale(this.zoom,this.zoom);c.translate(-this.camera.x,-this.camera.y);
   const bounds={left:this.camera.x-w/2/this.zoom-CW,right:this.camera.x+w/2/this.zoom+CW,top:this.camera.y-h/2/this.zoom-CH,bottom:this.camera.y+h/2/this.zoom+CH};
   c.strokeStyle='#6e77551c';c.lineWidth=.65;for(let x=Math.floor(bounds.left/CW);x<=Math.ceil(bounds.right/CW);x++){c.beginPath();c.moveTo((x+.5)*CW,bounds.top);c.lineTo((x+.5)*CW,bounds.bottom);c.stroke()}for(let y=Math.floor(bounds.top/CH);y<=Math.ceil(bounds.bottom/CH);y++){c.beginPath();c.moveTo(bounds.left,(y+.5)*CH);c.lineTo(bounds.right,(y+.5)*CH);c.stroke();c.fillStyle='#7d82624a';c.font='9px Georgia';c.textAlign='left';c.fillText(y>=0?String(y).padStart(2,'0'):`+${-y}`,bounds.left+CW*.7,y*CH)}
@@ -810,7 +915,7 @@ function slots(mode='load'){modal(`<span class="eyebrow">PRESERVE SUA CRÔNICA</
 function exportGame(){if(!game)return;const blob=new Blob([game.serialize()],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`conquer-${game.s.name.replace(/[^\p{L}\p{N}]+/gu,'-').slice(0,40)}-turno-${game.s.turn}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Arquivo de jornada exportado.')}
 $('#import-file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;if(f.size>5_000_000){toast('Arquivo muito grande. Limite de 5 MB.');e.target.value='';return}try{const raw=await f.text();Game.restore(raw);loadRaw(raw);save('auto',true)}catch(err){toast(err.message)}e.target.value=''});
 function tutorial(){modal(`<span class="eyebrow">BEM-VINDO, CONQUISTADOR</span><h2 id="modal-title">Sua primeira expedição.</h2><p>Você começa com <b>20♥, 20♦, 10 de moral</b> e cinco soldados leais. Seu objetivo é chegar à <b>profundidade 12</b> e derrotar o Guardião do Cristal do Vazio.</p><div class="help-grid"><div class="help-step"><span>01</span><div><h3>Explore uma sala</h3><p>Toque em um espaço pontilhado e confirme em Explorar. O primeiro andar não revela inimigos de ♠.</p></div></div><div class="help-step"><span>02</span><div><h3>Prepare a fortaleza</h3><p>Construa um Quartel por 8♥ em uma caverna vazia. Recrute soldados com ♦ antes de continuar a descida.</p></div></div><div class="help-step"><span>03</span><div><h3>Defenda com inteligência</h3><p>O combate acontece em tempo real. Suas tropas lutam por conta própria. Use pausa tática e controle a velocidade.</p></div></div></div><button data-modal="close" class="primary">${icon('compass')}Começar minha crônica</button>`,true)}
-function help(){modal(`<span class="eyebrow">O LIVRO DO CONQUISTADOR</span><h2 id="modal-title">A pedra guarda histórias.</h2><p>Uma adaptação single player de CONQUER. Explore por cartas, construa uma fortaleza e proteja seu último reduto. O combate foi adaptado para tempo real com IA.</p><div class="suit-guide"><span><b>♥</b> Recursos</span><span><b>♦</b> Riquezas</span><span><b>♣</b> Natureza</span><span><b>♠</b> Ruínas & ameaças</span></div><div class="help-grid"><div class="help-step"><span>01</span><div><h3>Uma carta por exploração</h3><p>Selecione um espaço adjacente pontilhado. ♥ e ♦ concedem valor da carta + profundidade, até o limite de 50. Armazéns e Tesourarias aumentam o limite em 50. A exploração seguinte inicia outro turno e recolhe a produção.</p></div></div><div class="help-step"><span>02</span><div><h3>Uma sala por turno</h3><p>No subterrâneo, selecione uma caverna e abra Construir. Na superfície, construa diretamente: o térreo apoia no chão e os andares superiores exigem uma sala abaixo. Veja custos e pré-requisitos no catálogo. Armadilhas e barricadas são adicionais. Oficina reduz custos próximos; salas danificadas ou desconectadas não funcionam.</p></div></div><div class="help-step"><span>03</span><div><h3>Recrute com cuidado</h3><p>Ocupantes dividem a capacidade de seu abrigo. Recrutamentos com motim imediato aparecem em vermelho e ficam bloqueados. Se a moral cair depois, recrutados comuns ainda podem se amotinar. Use festivais, Taverna, Arena ou Parlatório para manter a lealdade.</p></div></div><div class="help-step"><span>04</span><div><h3>IA em tempo real</h3><p>Dois guardas permanecem no último reduto; os demais interceptam rotas de invasão; invasores buscam o caminho mais curto até o portão ou trono. Arqueiros e magos disparam a até 2 salas em linha reta. Clérigos dão escudos. Tropas sobreviventes recuperam a vida após vencer.</p></div></div><div class="help-step"><span>05</span><div><h3>O ambiente é uma arma</h3><p>Líquidos descem, gases sobem e ambos fluem até 2 salas lateralmente. Água, magma e gás venenoso derrotam unidades atingidas imediatamente, mesmo fora de combate. Magma danifica salas; drenar não repara o dano. Construa pontes ou drene perigos. Bombas e barricadas defensivas bloqueiam a propagação. Passagens secretas e pontes fechadas podem isolar parte da fortaleza.</p></div></div><div class="help-step"><span>06</span><div><h3>Conquiste o abismo</h3><p>Na profundidade 12 você encontra o Cristal do Vazio e seu guardião. Vença a batalha para terminar a campanha. Portais estabilizados oferecem 13 expedições opcionais com recompensas permanentes.</p></div></div></div><div class="modal-rule"></div><p class="key-guide"><b>PC:</b> arraste para mover · roda do mouse para zoom · <kbd>E</kbd> explorar · <kbd>Espaço</kbd> pausar combate · <kbd>F</kbd> centralizar · <kbd>Esc</kbd> menu · <kbd>Ctrl+S</kbd> salvar · setas e <kbd>Enter</kbd> para selecionar salas.<br><b>Mobile:</b> toque para selecionar, arraste com um dedo e use pinça ou +/− para zoom. As descrições também aparecem no painel, sem depender de hover.</p><p class="warning-note">Adaptação digital: magias são condensadas em 4 bênçãos e 3 maldições; expedições planares são batalhas no portal, sem mapas separados. Salas de múltiplos espaços ocupam uma célula. Os dois coringas ainda usam uma recompensa genérica: os eventos distintos de coringa vermelho/preto e o retorno após cinco turnos ainda não estão implementados.</p><div class="modal-rule"></div><p class="inline-note">Referências fornecidas: CONQUER.odt (regras) e DELVE, de Anna Blackwell (direção visual). Ilustrações novas, sem reutilizar as páginas do PDF. CONQUER · Crônicas do Abismo · v1.1.1.</p><button data-modal="close" class="primary">Voltar à jornada</button>`,true)}
+function help(){modal(`<span class="eyebrow">O LIVRO DO CONQUISTADOR</span><h2 id="modal-title">A pedra guarda histórias.</h2><p>Uma adaptação single player de CONQUER. Explore por cartas, construa uma fortaleza e proteja seu último reduto. O combate foi adaptado para tempo real com IA.</p><div class="suit-guide"><span><b>♥</b> Recursos</span><span><b>♦</b> Riquezas</span><span><b>♣</b> Natureza</span><span><b>♠</b> Ruínas & ameaças</span></div><div class="help-grid"><div class="help-step"><span>01</span><div><h3>Uma carta por exploração</h3><p>Selecione um espaço adjacente pontilhado. ♥ e ♦ concedem valor da carta + profundidade, até o limite de 50. Armazéns e Tesourarias aumentam o limite em 50. A exploração seguinte inicia outro turno e recolhe a produção.</p></div></div><div class="help-step"><span>02</span><div><h3>Uma sala por turno</h3><p>No subterrâneo, selecione uma caverna e abra Construir. Na superfície, construa diretamente: o térreo apoia no chão e os andares superiores exigem uma sala abaixo. Veja custos e pré-requisitos no catálogo. Armadilhas e barricadas são adicionais. Oficina reduz custos próximos; salas danificadas ou desconectadas não funcionam.</p></div></div><div class="help-step"><span>03</span><div><h3>Recrute com cuidado</h3><p>Ocupantes dividem a capacidade de seu abrigo. Recrutamentos com motim imediato aparecem em vermelho e ficam bloqueados. Se a moral cair depois, recrutados comuns ainda podem se amotinar. Use festivais, Taverna, Arena ou Parlatório para manter a lealdade.</p></div></div><div class="help-step"><span>04</span><div><h3>IA em tempo real</h3><p>Dois guardas permanecem no último reduto; os demais interceptam rotas de invasão; invasores buscam o caminho mais curto até o portão ou trono. Arqueiros e magos disparam a até 2 salas em linha reta. Clérigos dão escudos. Tropas sobreviventes recuperam a vida após vencer.</p></div></div><div class="help-step"><span>05</span><div><h3>O ambiente é uma arma</h3><p>Líquidos descem, gases sobem e ambos fluem até 2 salas lateralmente. Água, magma e gás venenoso derrotam unidades atingidas imediatamente, mesmo fora de combate. Magma danifica salas; drenar não repara o dano. Construa pontes ou drene perigos. Bombas e barricadas defensivas bloqueiam a propagação. Passagens secretas e pontes fechadas podem isolar parte da fortaleza.</p></div></div><div class="help-step"><span>06</span><div><h3>Conquiste o abismo</h3><p>Na profundidade 12 você encontra o Cristal do Vazio e seu guardião. Vença a batalha para terminar a campanha. Portais estabilizados oferecem 13 expedições opcionais com recompensas permanentes.</p></div></div></div><div class="modal-rule"></div><p class="key-guide"><b>PC:</b> arraste para mover · roda do mouse para zoom · <kbd>E</kbd> explorar · <kbd>Espaço</kbd> pausar combate · <kbd>F</kbd> centralizar · <kbd>Esc</kbd> menu · <kbd>Ctrl+S</kbd> salvar · setas e <kbd>Enter</kbd> para selecionar salas.<br><b>Mobile:</b> toque para selecionar, arraste com um dedo e use pinça ou +/− para zoom. As descrições também aparecem no painel, sem depender de hover.</p><p class="warning-note">Adaptação digital: magias são condensadas em 4 bênçãos e 3 maldições; expedições planares são batalhas no portal, sem mapas separados. Salas de múltiplos espaços ocupam uma célula. Os dois coringas ainda usam uma recompensa genérica: os eventos distintos de coringa vermelho/preto e o retorno após cinco turnos ainda não estão implementados.</p><div class="modal-rule"></div><p class="inline-note">Referências fornecidas: CONQUER.odt (regras) e DELVE, de Anna Blackwell (direção visual). Ilustrações novas, sem reutilizar as páginas do PDF. CONQUER · Crônicas do Abismo · v1.2.0.</p><button data-modal="close" class="primary">Voltar à jornada</button>`,true)}
 function journal(){if(!game)return;modal(`<span class="eyebrow">${escape(game.s.name)}</span><h2 id="modal-title">Crônica da fortaleza</h2><p>Cada sala é uma memória. Cada batalha, uma cicatriz.</p>${game.s.log.map(e=>`<div class="journal-entry"><time>TURNO ${e.turn}</time><p class="${e.kind==='danger'?'danger-text':e.kind==='good'?'good-text':''}">${escape(e.text)}</p></div>`).join('')}<button data-modal="export-chronicle" class="primary">${icon('download')}Exportar crônica</button>`,true)}
 function planes(){modal(`<span class="eyebrow">ALÉM DA REALIDADE</span><h2 id="modal-title">Os treze planos</h2><p>Envie seus defensores através de um portal estável. Nesta adaptação, a batalha acontece no próprio portal. Cada expedição custa 20♦ e concede um artefato permanente.</p>${PLANES.map((p,i)=>`<div class="plane-card"><div><strong>${p.name}</strong><p>${p.desc}<br><span class="gold">${p.artifact}</span></p></div><button class="secondary" data-modal="expedition" data-arg="${i}" ${game.s.artifacts.includes(p.effect)||game.s.gold<20?'disabled':''}>${game.s.artifacts.includes(p.effect)?'Conquistado':'20♦ →'}</button></div>`).join('')}`,true)}
 function showEnd(){if(!game)return;const s=game.s,won=s.status==='won';modal(`<span class="eyebrow">O FIM DE UMA CRÔNICA</span><div class="end-emblem">${won?'◇':'♠'}</div><h2 id="modal-title" style="text-align:center;margin-right:0">${won?'O abismo tem um novo rei.':'Até a pedra pode cair.'}</h2><p style="text-align:center">${escape(s.name)} ${won?'conquistou o Cristal do Vazio. Sua história atravessará as eras.':'resistiu à escuridão. A fortaleza caiu, mas sua história permanece.'}</p><div class="end-stats"><div><b>${s.turn}</b><small>TURNOS</small></div><div><b>${s.maxDepth}</b><small>PROFUNDIDADE</small></div><div><b>${s.kills}</b><small>INIMIGOS VENCIDOS</small></div></div><div class="button-stack"><button class="primary" data-modal="journal">${icon('book')}Ler minha crônica</button><button data-modal="export">${icon('save')}Exportar jornada</button><button data-modal="new">${icon('plus')}Fundar uma nova fortaleza</button><button data-modal="close">${icon('eye')}Contemplar o mapa</button><button data-modal="title">${icon('exit')}Menu inicial</button></div>`)}

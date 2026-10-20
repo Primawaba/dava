@@ -58,7 +58,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.1.1.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
+O resultado fica em `releases/conquer-web-1.2.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
 
 ## Conteúdo e controles
 
@@ -124,3 +124,11 @@ A fonte DejaVu Serif é redistribuída sob os termos em `public/assets/FONT-LICE
 Conexões horizontais, verticais, entradas e grades usam nove módulos PNG de pixel art, com faixa interna contínua e desenho sem suavização. Os nomes das salas se afastam dos poços verticais.
 
 **Coringas:** ambos ainda concedem a mesma recompensa genérica. Não estão implementados os eventos distintos do coringa preto (Monstruosidade Antiga) e vermelho (artefato lendário, com possibilidade de Cristal do Vazio), nem a retirada por cinco turnos descrita no DELVE.
+
+### Corredores procedurais — revisão 1.2.0
+
+Cada conexão é gerada em tempo de execução por um shader de pixels em software (Canvas 2D). A máscara alarga as entradas, distorce as paredes em pixels e preserva o caminho central reto. O acabamento mistura materiais das duas salas e amostra o grão de suas ilustrações; trilhos, escoras, raízes, favos, juntas, ossos e cristais aparecem conforme o conteúdo. Água, brasas e gases têm animação discreta, desativada por movimento reduzido.
+
+O gerador usa dez famílias de materiais. Construção, variante visual, dano e contaminação entram na chave do cache; o resultado é estável ao salvar/carregar. Um cache LRU de até 256 conexões evita recalcular as texturas a cada quadro. A geometria da simulação e as regras de tiro continuam alinhadas à faixa central. A implementação funciona sem WebGL, tanto no build web quanto no HTML único offline.
+
+`npm run test:passages` verifica os encaixes, as transições de materiais, a atualização do cache, a estabilidade visual e o movimento reduzido.

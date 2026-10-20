@@ -9,7 +9,7 @@ for(const dir of ['rooms','sprites','passages'])for(const name of (await readdir
 let css=await readFile('style.css','utf8');
 for(const name of ['serif.ttf','fortress.png'])css=css.replaceAll(`./assets/${name}`,await dataUrl(name));
 let bundle=`(()=>{'use strict';\nconst embeddedAssets=${JSON.stringify(embeddedAssets)};\n`;
-for(const name of ['data','icons','engine','render','audio','app']){
+for(const name of ['data','icons','engine','passages','render','audio','app']){
  let source=await readFile(`src/${name}.js`,'utf8');
  source=source.replace(/^import[^\n]*\n/gm,'').replace(/^export /gm,'');
  if(name==='render'){

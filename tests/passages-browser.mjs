@@ -32,8 +32,39 @@ try{
   window.__CONQUER__.setGame(g);r.camera={x:1080,y:864};r.zoom=.25;r.draw();
   return{samples,failures};
  });
+ const procedural=await page.evaluate(()=>{
+  const r=window.__CONQUER__.renderer,Generator=r.passages.constructor,p=new Generator(16);
+  const types=['cave','barracks','mine','water','forge','hive','forest','crypt','crystal','gas'];
+  const room=(type,x=0,y=0)=>({type,x,y,variant:0,damaged:false,contaminant:null});
+  let checked=0;const fingerprints=[];
+  for(const vertical of [false,true])for(const ta of types)for(const tb of types){
+   const a=room(ta),b=room(tb,vertical?0:1,vertical?1:0),e=p.get(a,b,vertical,r.images);
+   const data=e.canvas.getContext('2d').getImageData(0,10,e.length,1).data;
+   for(let x=0;x<e.length;x++){if(data[x*4+3]!==255||data[x*4]>=220)throw Error('Broken material transition '+ta+tb)}
+   checked++;if(!vertical&&ta==='cave')fingerprints.push(e.canvas.toDataURL());
+  }
+  const a=room('cave'),b=room('mine',1),first=p.get(a,b,false,r.images),repeat=p.get(a,b,false,r.images);
+  const cached=first===repeat,original=first.canvas.toDataURL();
+  b.type='hive';const rebuilt=p.get(a,b,false,r.images).canvas.toDataURL()!==original;
+  b.type='mine';b.contaminant='water';const flooded=p.get(a,b,false,r.images).canvas.toDataURL()!==original;
+  b.contaminant=null;const restored=p.get(a,b,false,r.images).canvas.toDataURL()===original;
+  const p2=new Generator(),deterministic=p2.get(a,b,false,r.images).canvas.toDataURL()===original;
+  const frame=(time,reduced)=>{const canvas=document.createElement('canvas');canvas.width=180;canvas.height=60;const c=canvas.getContext('2d');c.translate(-40,25);p2.draw(c,room('cave'),room('water',1),false,r.images,time,reduced);return canvas.toDataURL()};
+  return{checked,distinct:new Set(fingerprints).size,cached,rebuilt,flooded,restored,deterministic,bounded:p.cache.size<=16,animated:frame(0,false)!==frame(240,false),reduced:frame(0,true)===frame(240,true)};
+ });
+ assert.equal(procedural.checked,200);assert.equal(procedural.distinct,10);
+ for(const [key,value]of Object.entries(procedural))if(typeof value==='boolean')assert(value,key);
  assert.deepEqual(results.failures.slice(0,12),[]);assert(results.samples>6000);assert.deepEqual(errors,[]);
  await mkdir('artifacts',{recursive:true});await page.screenshot({path:'artifacts/passages-16-masks.png'});
- await writeFile('artifacts/passages-results.json',JSON.stringify(results,null,2));
- console.log(`PASS: ${results.samples} opaque passage centerline samples, 16 masks × 4 zoom levels; 315 PNG assets; no browser errors.`);
+ await page.evaluate(()=>{
+  const {Game,renderer:r}=window.__CONQUER__,g=new Game({seed:17});g.s.rooms={};g.s.units=[];g.s.combat=true;g.s.paused=true;
+  [['cave','mine','forge'],['water','cave','forest'],['hive','crypt','crystal'],['gas','barracks','lava']].forEach((row,y)=>row.forEach((type,x)=>g.addRoom(x-1,y,type)));
+  window.__CONQUER__.setGame(g);r.camera={x:0,y:210};r.zoom=1.15;r.selected={x:99,y:99};r.draw(240);
+ });
+ await page.screenshot({path:'artifacts/procedural-materials-desktop.png'});
+ await page.setViewportSize({width:390,height:844});await page.evaluate(()=>{const r=window.__CONQUER__.renderer;r.resize();r.zoom=.6;r.draw(240)});
+ await page.screenshot({path:'artifacts/procedural-materials-mobile.png'});
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+ await writeFile('artifacts/passages-results.json' ,JSON.stringify({...results,procedural},null,2));
+ console.log(`PASS: ${results.samples} opaque passage centerline samples, 16 masks × 4 zoom levels; 315 PNG assets; 200 material/orientation pairs, cache invalidation, deterministic textures and reduced motion; no browser errors.`);
 }finally{await browser.close();server.kill()}

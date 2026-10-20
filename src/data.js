@@ -19,6 +19,7 @@ export const UNITS={
 };
 // Content is explicit so prices, requirements and tooltips share one source.
 export const ROOMS={
+ surface:{name:'Terreno de superfície',icon:'home',desc:'Construa diretamente, sem comprar carta. Acima do térreo, exige uma sala de apoio imediatamente abaixo.'},
  gate:{name:'Portão da Fortaleza',icon:'gate',desc:'Seu último reduto. Se um invasor o alcançar sem oposição, a fortaleza cai.'},
  cave:{name:'Caverna vazia',icon:'mountain',desc:'Espaço explorado. Pode receber uma construção.'},
  barracks:{name:'Quartel',icon:'sword',r:8,g:0,group:'Tropas',desc:'Abriga até 10 soldados ou arqueiros.'},
@@ -51,11 +52,11 @@ export const ROOMS={
  workshop:{name:'Oficina',icon:'hammer',r:15,g:0,group:'Economia',desc:'Metade do custo de construções a até 2 salas.'},
  museum:{name:'Museu',icon:'crown',r:50,g:50,group:'Economia',desc:'Registra troféus de grandes inimigos. Cada troféu concede +2 de dano.'},
  masonry:{name:'Pedraria',icon:'hammer',r:20,g:0,group:'Infraestrutura',desc:'Libera barricadas, colunas e salas avançadas.'},
- bridge:{name:'Ponte',icon:'bridge',r:5,g:0,group:'Infraestrutura',desc:'Permite atravessar água, magma e gás com segurança.'},
+ bridge:{name:'Ponte',icon:'bridge',r:5,g:0,group:'Infraestrutura',desc:'Permite atravessar líquidos com segurança. Gases precisam ser drenados.'},
  drawbridge:{name:'Ponte levadiça',icon:'bridge',r:15,g:0,group:'Infraestrutura',desc:'Abra ou feche no painel da sala. Fechada, interrompe a conexão.'},
  elevator:{name:'Elevador',icon:'stairs',r:5,g:0,group:'Infraestrutura',desc:'Aliados movem-se duas vezes mais rápido nesta sala.'},
  rails:{name:'Trilhos',icon:'stairs',r:5,g:0,group:'Infraestrutura',desc:'Aliados movem-se duas vezes mais rápido nesta sala.'},
- pump:{name:'Bomba de fluido',icon:'water',r:8,g:0,group:'Infraestrutura',desc:'Protege contra líquidos e gases nas 4 salas adjacentes.'},
+ pump:{name:'Bomba de fluido',icon:'water',r:8,g:0,group:'Infraestrutura',desc:'Líquidos não atravessam nem danificam esta célula. Não protege salas vizinhas nem bloqueia gás.'},
  columns:{name:'Colunas',icon:'bars',r:1,g:0,group:'Infraestrutura',requires:['masonry'],desc:'Sala de sustentação. Pode ser substituída por outra construção.'},
  puzzle:{name:'Sala de quebra-cabeça',icon:'cards',r:12,g:5,group:'Avançadas',requires:['masonry','forge'],desc:'Inimigos movem-se 65% mais devagar nesta sala.'},
  artificer:{name:'Artificiaria',icon:'flask',r:100,g:50,group:'Avançadas',requires:['forge','library','warehouse'],desc:'Permite inventar melhorias permanentes por 50♦.'},
@@ -63,13 +64,13 @@ export const ROOMS={
  throne:{name:'Sala do trono',icon:'crown',r:100,g:100,group:'Avançadas',requires:['treasury','warehouse'],unique:true,desc:'Substitui o portão como objetivo dos inimigos.'},
  stabilizer:{name:'Estabilizador planar',icon:'portal',r:50,g:0,group:'Avançadas',on:'portal',desc:'Estabiliza um portal. Libera expedições a 13 planos.'},
  forest:{name:'Floresta subterrânea',icon:'tree',desc:'Produz 2♥ por exploração. Pode ser cortada para construir.'},
- gas:{name:'Gás venenoso',icon:'cloud',hazard:true,desc:'Nuvem perigosa. Afeta 2 salas laterais e sobe por salas conectadas. Drene por 5♦.'},
- flammable:{name:'Gás inflamável',icon:'flame',hazard:true,desc:'Pode explodir quando um combate começa. Drene por 5♦.'},
- miasma:{name:'Miasma',icon:'cloud',hazard:true,desc:'Reduz moral em 3. Drene por 5♦.'},
+ gas:{name:'Gás venenoso',icon:'cloud',hazard:true,desc:'Derrota ocupantes imediatamente, também fora de combate. Espalha-se duas salas para os lados e sobe. Drene por 5♦.'},
+ flammable:{name:'Gás inflamável',icon:'flame',hazard:true,desc:'Explode imediatamente ao alcançar Forja, Taverna ou Quartel, derrotando ocupantes e danificando salas. Drene por 5♦.'},
+ miasma:{name:'Miasma',icon:'cloud',hazard:true,desc:'Reduz moral em 3 por abrigo atingido. Drene por 5♦.'},
  blindgas:{name:'Gás cegante',icon:'cloud',hazard:true,desc:'Impede ataques à distância na nuvem. Drene por 5♦.'},
- water:{name:'Rio subterrâneo',icon:'water',hazard:true,desc:'Flui lateralmente e desce por salas conectadas. Construa uma ponte ou drene por 5♦.'},
- lava:{name:'Magma',icon:'flame',hazard:true,desc:'Letal às unidades desprotegidas. Uma ponte permite atravessar. Drene por 20♦.'},
- crystal:{name:'Caverna de cristal',icon:'gem',desc:'Gera 3♦ por exploração. Pode ser substituída por uma construção.'},
+ water:{name:'Rio subterrâneo',icon:'water',hazard:true,desc:'Derrota unidades atingidas imediatamente. Flui para os lados e para baixo; escavar de cima não derrama o reservatório. Ponte ou drenagem de 5♦.'},
+ lava:{name:'Magma',icon:'flame',hazard:true,desc:'Derrota unidades imediatamente e danifica salas atingidas. Drene por 20♦ e repare a construção. Pontes permitem atravessar.'},
+ crystal:{name:'Caverna de cristal',icon:'gem',desc:'A cada turno, compre uma carta e receba seu valor + profundidade em ♦. Um A♦ esgota a caverna; depois ela só permite passagem.'},
  nest:{name:'Ninho de criaturas',icon:'paw',desc:'Antigo covil de criaturas. Pode ser reconstruído após a batalha.'},
  ruins:{name:'Ruínas antigas',icon:'mountain',desc:'Vestígios de uma civilização esquecida. Terreno construível.'},
  crypt:{name:'Cripta esquecida',icon:'skull',desc:'Permite recrutar até 20 mortos-vivos após ser conquistada.'},
@@ -130,3 +131,29 @@ export const BUILD_GROUPS=['Tropas','Fortaleza','Economia','Infraestrutura','Ava
 export const NATURAL=['forest','gas','fairy','water','cave','crystal','nest','crater','smalllair','largelair','burrow','invincible','wandering','mud','mushrooms','fairy','springs','elemental','hive','hungry'];
 export const REMNANTS=['ruins','crypt','well','sealed','mine','ancienttemple','ruins','ancientlibrary','portal','golemforge','artifact','dragon','desolate','shaft','rivalmine','ritual','city','tomb','labyrinth','chaos','vault','ancientprison','challenge','rivalhold'];
 export const DIFFICULTIES={story:{name:'Crônica',enemy:0.65,desc:'Uma jornada mais tranquila. Inimigos com 65% da força.'},normal:{name:'Conquistador',enemy:1,desc:'A experiência padrão. Prepare suas defesas antes de descer.'},hard:{name:'Abismo',enemy:1.45,desc:'Inimigos com 145% da força. Cada decisão importa.'}};
+
+// Sprite cells in the generated 8 × 4 pixel atlas. Large creatures stay individual.
+export const SPRITE_FRAMES={soldier:0,archer:1,mage:2,cleric:3,dog:4,rat:5,thug:6,beast:7,alchemist:8,trapper:9,golem:10,siege:11,undead:12,hero:13,berserker:14,goblin:15,skeleton:16,insect:17,insectqueen:18,cultist:19,miner:20,automaton:21,cavewolf:22,worm:23,dragon:24,guardian:25,troll:26,elemental:27,fairy:28,champion:29,lich:30,spider:31,raider:15};
+export const ENEMIES={
+ goblin:{name:'Goblin',speed:.65,range:.42,size:1},
+ skeleton:{name:'Morto-vivo da cripta',speed:.55,range:.42,size:1},
+ insect:{name:'Inseto da colmeia',speed:.9,range:.38,size:.85},
+ insectqueen:{name:'Rainha da colmeia',speed:.45,range:.5,size:2.4,single:true},
+ cultist:{name:'Cultista',speed:.6,range:1.8,size:1},
+ miner:{name:'Mineiro rival',speed:.6,range:.42,size:1},
+ automaton:{name:'Autômato',speed:.45,range:.45,size:1.4},
+ cavewolf:{name:'Lobo cavernoso',speed:1.1,range:.4,size:1.15},
+ worm:{name:'Verme escavador',speed:.65,range:.5,size:2.2,single:true},
+ dragon:{name:'Dragão antigo',speed:.45,range:2,size:3.2,single:true},
+ guardian:{name:'Guardião do Vazio',speed:.5,range:1.2,size:2.8,single:true},
+ troll:{name:'Criatura gigante',speed:.5,range:.5,size:2.6,single:true},
+ elemental:{name:'Elemental de gema',speed:.45,range:.5,size:2.2,single:true},
+ fairy:{name:'Fada',speed:1,range:1.5,size:.7},
+ champion:{name:'Campeão',speed:.7,range:.5,size:1.6,single:true},
+ lich:{name:'Lich',speed:.5,range:2,size:1.4,single:true},
+ spider:{name:'Aranha gigante',speed:.9,range:.5,size:2.2,single:true},
+ beast:{name:'Fera',speed:1,range:.5,size:1.8,single:true},
+ golem:{name:'Golem guardião',speed:.45,range:.5,size:2,single:true},
+ undead:{name:'Morto-vivo',speed:.55,range:.42,size:1},
+ raider:{name:'Invasor',speed:.65,range:.42,size:1}
+};

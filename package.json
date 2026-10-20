@@ -1,6 +1,21 @@
 {
-  "name": "conquer-fortaleza", "version": "1.0.0", "private": true, "type": "module",
+  "name": "conquer-fortaleza",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
   "description": "CONQUER — estratégia single player de fortaleza subterrânea",
-  "scripts": {"dev": "node scripts/serve.mjs", "start": "node scripts/serve.mjs dist", "build": "node scripts/build.mjs", "build:standalone": "node scripts/standalone.mjs", "test": "node --test tests/*.test.mjs", "test:browser": "node tests/browser.mjs", "test:standalone": "node tests/standalone.mjs"},
-  "devDependencies": {"@playwright/test": "1.61.1"}
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs dist",
+    "build": "node scripts/build.mjs",
+    "build:standalone": "node scripts/standalone.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "test:standalone": "node tests/standalone.mjs",
+    "build:art": "node scripts/pixel-art.mjs",
+    "test:revisions": "node tests/revisions-browser.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1"
+  }
 }

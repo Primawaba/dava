@@ -4,17 +4,27 @@
 
 `releases/CONQUER-Jogar.html` reúne código, estilos, fontes e todas as imagens em um HTML autônomo, sem módulos externos e sem service worker. `npm run build:standalone` reproduz o arquivo e seu SHA-256.
 
-`npm run test:standalone` aprovou 7 verificações: recursos embutidos e 270 imagens, nova campanha com exploração/construção/recrutamento, persistência após recarga, exportação/importação, combate automático real, viewport com toque de 390px e ausência de exceções ou requisições de rede externas. Relatório em `artifacts/standalone-results.json`.
+`npm run test:standalone` aprovou 7 verificações: recursos embutidos, 273 imagens de salas e 33 sprites, nova campanha com exploração/construção/recrutamento, persistência após recarga, exportação/importação, combate automático real, viewport com toque de 390px e ausência de exceções ou requisições de rede externas. Relatório em `artifacts/standalone-results.json`.
 
 A política administrativa deste Chromium bloqueia navegações `file://`. A suíte registra esse limite e testa o mesmo HTML em uma navegação de loopback interceptada pelo Playwright, sem servidor ou recursos externos, com a rede desativada. Portanto, a execução do HTML foi validada, mas a navegação direta por `file://` não pôde ser homologada neste navegador gerenciado. O arquivo foi inspecionado para confirmar que não contém imports, scripts ou assets locais dependentes de servidor.
 
+## Revisão 1.1 — regras e pixel art
+
+Além das 21 verificações gerais, **8 verificações da revisão** foram aprovadas no navegador: construir na superfície sem carta, recusar andares sem apoio, bloquear recrutamento em vermelho, reabilitar recrutamento após festival, renderizar salas em pixel art e monstros grandes, drenar construção preservando tipo/dano, operar o painel por toque e ausência de exceções. Resultado em `artifacts/revisions-browser-results.json`.
+
+Os testes de motor adicionados verificam guarnição, movimento ortogonal sem oscilação, rotas alternativas, tiro sem arredondamento de esquinas, perigos imediatos fora de combate, direção de descoberta de líquidos, drenagem/reparo, tipos de inimigos, monstros indivisíveis, sprites distintos, conversão de saves anteriores, produção de cristais e integridade de atributos visuais importados.
+
+As capturas `revision-surface.png`, `revision-red-recruitment.png`, `revision-pixel-art-and-monsters.png` e `revision-mobile-recruitment.png` documentam os novos comportamentos. Atlas de origem gerados e PNGs exportados são mantidos no repositório; o build web exclui os atlas brutos porque usa somente os recortes prontos.
+
+Uma medição sintética com 50 salas e 43 unidades na máquina de teste passou de aproximadamente 23 para 3 ms por atualização da simulação após reutilizar rotas dentro do mesmo frame. Isso não constitui homologação de FPS em aparelhos físicos.
+
 ## Resultados executados
 
-- **27 testes do motor aprovados**, sem falhas ou testes ignorados.
+- **50 testes do motor aprovados**, sem falhas ou testes ignorados.
 - **21 verificações de navegador aprovadas**, sem exceções JavaScript não tratadas.
 - Verificação direcionada adicional aprovada: salvar pelo menu inicial, salvar após reiniciar o navegador e layout mobile desse menu. Resultado em `artifacts/title-save-results.json`.
-- Build estático: 285 arquivos mais o service worker.
-- 90 tipos de sala, 41 construções, 15 unidades, 13 expedições e 270 ilustrações vetoriais.
+- Build estático: 321 arquivos mais o service worker.
+- 90 tipos de sala, 41 construções, 15 unidades, 13 expedições, 273 ilustrações PNG de sala/terreno e 33 sprites PNG.
 
 O relatório completo da execução de navegador está em `artifacts/browser-results.json`. As capturas `01` a `11` registram menu, fortaleza, corredores, combate, regras, telas mobile, vitória e derrota.
 

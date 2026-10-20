@@ -13,7 +13,7 @@ Esse HTML contém o jogo inteiro e não precisa de instalação ou servidor. No 
 
 ## Testar sem instalar nada
 
-O arquivo `JOGAR-CONQUER.html` na raiz do repositório é a edição pronta para abrir. Também é gerado como `releases/CONQUER-Jogar.html`; abra esse arquivo com Chrome ou Edge no computador. Ele contém o código, as fontes, a ilustração de abertura e as 270 artes de salas. Não precisa descompactar, instalar Node, acessar a internet ou iniciar servidor. Clique em **Nova fortaleza** para começar. Use **Salvar** e, para preservar uma cópia independente do navegador, **Exportar jogo**.
+O arquivo `JOGAR-CONQUER.html` na raiz do repositório é a edição pronta para abrir. Também é gerado como `releases/CONQUER-Jogar.html`; abra esse arquivo com Chrome ou Edge no computador. Ele contém o código, as fontes, a ilustração de abertura e as 273 artes de salas e 33 sprites. Não precisa descompactar, instalar Node, acessar a internet ou iniciar servidor. Clique em **Nova fortaleza** para começar. Use **Salvar** e, para preservar uma cópia independente do navegador, **Exportar jogo**.
 
 Essa edição reúne todos os recursos no próprio HTML e usa JavaScript clássico para permitir abertura por `file://`. A execução com a rede desativada é validada pelo teste autônomo. A política administrativa do Chromium desta máquina bloqueia a navegação por `file://`; nesse ambiente, o teste renderiza o mesmo HTML em um documento de loopback interceptado, sem servidor e sem buscar recursos externos. As restrições de pré-visualização de arquivos no Android/iOS dependem do aplicativo usado para abrir o HTML; a versão web hospedada continua sendo o caminho indicado para testar em aparelhos móveis reais.
 
@@ -58,18 +58,21 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.0.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
+O resultado fica em `releases/conquer-web-1.1.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
 
 ## Conteúdo e controles
 
 - Campanha com início, vitória e derrota; três dificuldades e sementes de mundo.
 - Baralho com 52 cartas; coringas adicionados na profundidade 5.
-- 90 tipos de salas e descobertas, cada um com **3 ilustrações vetoriais originais**: 270 assets de sala. A variante é escolhida ao descobrir/construir, preservada no save e não muda a cada frame.
+- 90 tipos de salas e descobertas, cada um com **3 ilustrações PNG em pixel art**, além de 3 imagens do terreno de superfície: 273 assets de sala. Dois atlas raster originais gerados sustentam as artes das salas e os 33 arquivos de sprites de unidades e inimigos. A variante é escolhida ao descobrir/construir, preservada no save e não muda a cada frame.
 - 41 salas construíveis, pré-requisitos e efeitos descritos diretamente no catálogo.
-- 15 tipos de unidades, capacidade compartilhada de alojamentos, moral, lealdade e motins.
+- 15 tipos de unidades, cada um com sprite próprio; capacidade compartilhada, moral e motins. Recrutamentos que causariam motim imediato aparecem em vermelho e são bloqueados sem cobrar recursos.
+- Dois defensores ficam de guarnição no portão/trono. As demais tropas interceptam rotas de invasão com caminhos estáveis e evitam perigos letais.
+- Monstros grandes são entidades individuais, com tamanho proporcional; criptas, colmeias, vilas, minas e outros eventos usam espécies próprias.
 - Combate automático com caminhos ortogonais, pausa tática, velocidades 0,5× / 1× / 2×, ataques corpo a corpo, flechas, orbes, frascos e virotes de cerco.
 - Linha de tiro, escudos de clérigos, hospitais, armadilhas, barricadas, pontes levadiças e passagens secretas.
-- Líquidos e gases, propagação por gravidade, bombas de fluido, drenagem e explosões de gás inflamável.
+- Líquidos e gases com efeitos imediatos, mesmo fora de combate. Magma danifica salas; drenar preserva a construção e não substitui reparos. Gás inflamável explode ao tocar Forja, Taverna ou Quartel.
+- Superfície construída diretamente, sem carta de exploração; térreo apoiado no chão e andares acima exigem sala de apoio. O botão Encerrar turno permite continuar construindo sem escavar.
 - 13 expedições opcionais, com artefatos permanentes.
 - Autosave e três espaços manuais. Exportação/importação JSON entre dispositivos e exportação da crônica em texto. Dados permanecem locais, sem sincronização por conta.
 - Sons sintetizados, controle de volume, opção de reduzir movimento e pausa ao ocultar a janela.
@@ -80,9 +83,9 @@ O resultado fica em `releases/conquer-web-1.0.0.zip`, com `index.html` na raiz. 
 
 ## Regras e decisões de adaptação
 
-Referências fornecidas pelo usuário: `CONQUER.odt` para regras e `DELVE November 8th Checked Version Pages.pdf`, de Anna Blackwell, para direção visual. O PDF não foi incluído no jogo. A ilustração de abertura foi gerada para este projeto usando a referência de linguagem visual; salas, personagens, ícones e efeitos são desenhos novos. Consulte [ADAPTATION.md](ADAPTATION.md) para as diferenças detalhadas entre o documento e a versão digital.
+Referências fornecidas pelo usuário: `CONQUER.odt` para regras e `DELVE November 8th Checked Version Pages.pdf`, de Anna Blackwell, para direção visual. O PDF não foi incluído no jogo. A ilustração de abertura foi gerada para este projeto usando a referência de linguagem visual; salas e personagens são pixel art raster original gerada para esta revisão; ícones e efeitos têm desenho próprio. Consulte [ADAPTATION.md](ADAPTATION.md) para as diferenças detalhadas entre o documento e a versão digital.
 
-O documento CONQUER menciona várias tabelas não anexadas. Esta implementação faz escolhas explícitas para fechar a campanha: objetivo na profundidade 12, magias e invenções condensadas, eventos resolvidos automaticamente, ocupação de uma célula por sala e expedições planares sem mapas separados. **Não é uma transcrição integral de todas as regras do documento.**
+Consulte também [PDF-RULES.md](PDF-RULES.md) para a revisão de regras a partir das páginas do PDF. O documento CONQUER menciona várias tabelas não anexadas. Esta implementação faz escolhas explícitas para fechar a campanha: objetivo na profundidade 12, magias e invenções condensadas, eventos resolvidos automaticamente, ocupação de uma célula por sala e expedições planares sem mapas separados. **Não é uma transcrição integral de todas as regras do documento.**
 
 ## Verificação e limites da entrega
 
@@ -107,8 +110,8 @@ Validação executada em Chromium Linux e emulação de viewport/toque. **Não h
 | `src/render.js` | Canvas, câmera, corredores, personagens e projéteis |
 | `src/app.js` | Interface, diálogos, controles e persistência |
 | `src/audio.js` | Efeitos sonoros com Web Audio |
-| `public/assets/rooms/` | 270 ilustrações originais de salas |
-| `scripts/art.mjs` | Gerador reproduzível das ilustrações vetoriais |
+| `public/assets/rooms/` | 273 ilustrações PNG em pixel art |
+| `scripts/pixel-art.mjs` | Pipeline reproduzível dos atlas raster para PNGs de salas e sprites |
 | `scripts/build.mjs` | Build estático e service worker offline |
 | `tests/` | Regressões do motor e testes de navegador |
 

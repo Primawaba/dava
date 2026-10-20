@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 const mime={svg:'image/svg+xml',png:'image/png',ttf:'font/ttf'};
 async function dataUrl(path){const ext=path.split('.').at(-1);return `data:${mime[ext]};base64,${(await readFile('public/assets/'+path)).toString('base64')}`}
 const embeddedAssets={};
-for(const name of (await readdir('public/assets/rooms')).filter(n=>n.endsWith('.svg')))embeddedAssets['rooms/'+name]=await dataUrl('rooms/'+name);
+for(const dir of ['rooms','sprites'])for(const name of (await readdir('public/assets/'+dir)).filter(n=>n.endsWith('.png')))embeddedAssets[dir+'/'+name]=await dataUrl(dir+'/'+name);
 let css=await readFile('style.css','utf8');
 for(const name of ['serif.ttf','fortress.png'])css=css.replaceAll(`./assets/${name}`,await dataUrl(name));
 let bundle=`(()=>{'use strict';\nconst embeddedAssets=${JSON.stringify(embeddedAssets)};\n`;
@@ -13,15 +13,16 @@ for(const name of ['data','icons','engine','render','audio','app']){
  let source=await readFile(`src/${name}.js`,'utf8');
  source=source.replace(/^import[^\n]*\n/gm,'').replace(/^export /gm,'');
  if(name==='render'){
-  const needle='i.src=`./assets/rooms/${type}-${v}.svg`';
-  if(!source.includes(needle))throw Error('Room renderer changed; update standalone asset mapping.');
-  source=source.replace(needle,'i.src=embeddedAssets[`rooms/${type}-${v}.svg`]');
+  if(!source.includes('i.src=src'))throw Error('Asset loader changed; update standalone mapping.');
+  source=source.replace('i.src=src',"i.src=embeddedAssets[src.replace('./assets/','')]");
  }
  if(name==='app'){
-  const needle='src="./assets/rooms/${r.type}-${r.variant}.svg"';
-  if(!source.includes(needle))throw Error('Room portrait changed; update standalone asset mapping.');
-  source=source.replace(needle,'src="${embeddedAssets[`rooms/${r.type}-${r.variant}.svg`]}"');
-  source=source.replace(/^if\('serviceWorker'in navigator\).*$/m,'// Standalone needs no service worker: all files are embedded.');
+  for(const needle of ['src="./assets/rooms/${r.type}-${r.variant}.png"','src="./assets/sprites/${t}.png"']){
+   if(!source.includes(needle))throw Error('Asset portrait changed; update standalone mapping.');
+   const mapped=needle.includes('/rooms/')?'src="${embeddedAssets[`rooms/${r.type}-${r.variant}.png`]}"':'src="${embeddedAssets[`sprites/${t}.png`]}"';
+   source=source.replaceAll(needle,mapped);
+  }
+  source=source.replace(/^if\('serviceWorker'in navigator\).*$/m,'// All assets are embedded: no service worker required.');
  }
  bundle+=`\n// ${name}.js\n${source}\n`;
 }

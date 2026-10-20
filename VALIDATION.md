@@ -75,3 +75,7 @@ Canvas 2D realiza o processamento de máscara, distorção, materiais e ilumina�
 O teste de seleção na superfície também cobre mudanças de câmera: o hit-test das setas calcula a posição atual, mesmo antes do próximo frame. Os limites de homologação do navegador e de `file://` continuam descritos acima.
 
 Na compilação final 1.3.0 também passaram as **21 verificações gerais do navegador**, **8 verificações da revisão anterior** e **7 verificações do HTML autônomo**. O HTML único e o build web incluem o novo grafo de passagens, os controles direcionais e as portas com acabamento contextual.
+
+## Revisão 1.3.1 — magma perto do portão
+
+66 testes do motor aprovados. Os novos casos forçam as duas origens de magma (4♣ com resultado lava e 8♣/cratera), em ambos os lados e no centro da faixa inicial, verificando sala segura, ausência de contaminação/dano ao portão e sobrevivência dos guardas. Casos de fronteira confirmam que magma/cratera continuam possíveis fora de dois espaços laterais e na segunda camada. O cenário de drenagem/reparo de magma foi deslocado para a segunda camada para continuar verificando o perigo real.

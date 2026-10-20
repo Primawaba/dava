@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.3.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
+O resultado fica em `releases/conquer-web-1.3.1.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
 
 ## Conteúdo e controles
 
@@ -146,3 +146,7 @@ Cada conexão é gerada em tempo de execução por um shader de pixels em softwa
 O gerador usa dez famílias de materiais. Construção, variante visual, dano e contaminação entram na chave do cache; o resultado é estável ao salvar/carregar. Um cache LRU de até 256 conexões evita recalcular as texturas a cada quadro. A geometria da simulação e as regras de tiro continuam alinhadas à faixa central. A implementação funciona sem WebGL, tanto no build web quanto no HTML único offline.
 
 `npm run test:passages` verifica os encaixes, as transições de materiais, a atualização do cache, a estabilidade visual e o movimento reduzido.
+
+### Proteção inicial — versão 1.3.1
+
+Novas descobertas de magma e crateras vulcânicas na faixa inicial (linha do portão e primeira camada subterrânea, até dois espaços para cada lado) resultam em uma caverna segura. A substituição acontece antes de fluidos ou danos serem aplicados. Além dessa faixa, e a partir da segunda camada subterrânea, os encontros de magma continuam normais.

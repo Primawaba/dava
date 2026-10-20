@@ -160,3 +160,6 @@ export const ENEMIES={
 };
 
 export const PASSAGES=['h-0','h-1','v-0','v-1','door-e','door-w','door-n','door-s','grate'];
+
+export const DAMAGEABLE_ROOMS=Object.keys(ROOMS).filter(type=>ROOMS[type].r!==undefined||type==='gate');
+export const CRYSTAL_PALETTE={floor:[22,37,52],wall:[62,88,112],light:[127,180,215]};

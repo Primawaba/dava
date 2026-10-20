@@ -1,12 +1,13 @@
-import {DIRS,ROOMS,UNITS,SUITS,NATURAL,REMNANTS,PLANES,DIFFICULTIES,ENEMIES} from './data.js';
+import {planDefense} from './tactics.js';
+import {DIRS,ROOMS,UNITS,SUITS,NATURAL,REMNANTS,PLANES,DIFFICULTIES,ENEMIES,DAMAGEABLE_ROOMS} from './data.js';
 export const key=(x,y)=>`${x},${y}`;
 export const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export class Game {
  constructor({seed=Date.now(),name='A Última Fortaleza',difficulty='normal'}={}){
-  this.s={version:1,rulesVersion:2,immortalVersion:1,passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
+  this.s={version:1,rulesVersion:2,immortalVersion:1,barricadeVersion:1,barricades:{},passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
   this.projectiles=[];this.effects=[];this.dead=[];this.events=[];this.tickBudget=0;
-  this.addRoom(0,0,'gate');for(let i=0;i<5;i++){const u=this.addUnit('soldier',0,0,true);u.order=i<2?'guard':'defend'}
+  this.addRoom(0,0,'gate');for(let i=0;i<5;i++)this.addUnit('soldier',0,0,true);
   this.shuffleDeck();
   this.note('Os portões se abrem. Cinco guerreiros leais aguardam suas ordens.','good');
  }
@@ -21,7 +22,28 @@ export class Game {
  addRoom(x,y,type){const r={x,y,type,variant:this.roll(3)-1,damaged:false,closed:false,prisoners:0,usedTurn:0,trap:null,barricade:null,secret:false,contaminant:null};this.s.rooms[key(x,y)]=r;if(type==='invincible')this.placeImmortal(r);return r}
  passageKey(a,b){return [key(a.x,a.y),key(b.x,b.y)].sort().join('|')}
  linked(a,b){return !!a&&!!b&&distance(a,b)===1&&this.s.passages[this.passageKey(a,b)]===true}
- connectRooms(a,b){if(!a||!b||!this.room(a.x,a.y)||!this.room(b.x,b.y)||distance(a,b)!==1)return false;this.s.passages[this.passageKey(a,b)]=true;this._routeCache=null;return true}
+ connectRooms(a,b){if(!a||!b||!this.room(a.x,a.y)||!this.room(b.x,b.y)||distance(a,b)!==1)return false;this.s.passages[this.passageKey(a,b)]=true;this._routeCache=null;this._tacticsDirty=true;return true}
+ barricade(a,b){const d=a&&b&&this.s.barricades[this.passageKey(a,b)];return d?.hp>0?d:null}
+ passageDefenses(r){return DIRS.map(([dx,dy])=>this.room(r.x+dx,r.y+dy)).filter(n=>n&&this.linked(r,n)).map(n=>({room:n,id:this.passageKey(r,n),door:this.s.barricades[this.passageKey(r,n)]||null}))}
+ fortifyPassage(a,b,kind){
+  if(this.s.status!=='playing'||this.s.combat)return{ok:false,reason:'Instale portas fora de combate.'};
+  if(!a||!b||!this.linked(a,b))return{ok:false,reason:'Escolha uma passagem já aberta entre duas salas.'};
+  if(!['defensive','offensive'].includes(kind))return{ok:false,reason:'Tipo de barricada inválido.'};
+  if(!this.has('masonry'))return{ok:false,reason:'Exige Pedraria.'};
+  if(!this.active(a)&&!this.active(b))return{ok:false,reason:'A passagem precisa alcançar uma sala ativa.'};
+  if(this.barricade(a,b))return{ok:false,reason:'Esta passagem já tem uma porta reforçada.'};
+  const gold=kind==='defensive'?10:20;if(this.s.gold<gold)return{ok:false,reason:'Riquezas insuficientes.'};
+  this.s.gold-=gold;this.s.barricades[this.passageKey(a,b)]={kind,level:1,hp:kind==='defensive'?400:160};this._routeCache=null;this._tacticsDirty=true;
+  this.note('Porta reforçada instalada no corredor. Bloqueia invasores, tiros, líquidos e gases.','good');return{ok:true};
+ }
+ upgradePassage(a,b){
+  const d=this.barricade(a,b);if(this.s.combat||this.s.status!=='playing'||!d||d.level>=3)return{ok:false,reason:'Porta indisponível para aprimorar.'};
+  if(this.s.resources<10)return{ok:false,reason:'Aprimorar custa 10♥.'};this.s.resources-=10;d.level++;d.hp+=d.kind==='defensive'?400:160;this._routeCache=null;this._tacticsDirty=true;return{ok:true};
+ }
+ damageBarricade(a,b,amount){
+  const d=this.barricade(a,b);if(!d)return;d.hp=Math.max(0,d.hp-amount);
+  if(d.hp===0){this._routeCache=null;this._tacticsDirty=true;this.note('Uma porta reforçada foi destruída. O corredor ficou desprotegido.','danger');this.spreadHazards();this.events.push({type:'door-destroyed'})}
+ }
  directions(origin=null){
   const out=[];if(this.s.status!=='playing'||this.s.combat)return out;
   for(const r of origin?[origin]:this.rooms){if(!this.active(r))continue;
@@ -51,7 +73,7 @@ export class Game {
  }
  addUnit(type,x,y,loyal=false,team='ally',power=null){
   const d=(team!=='ally'?ENEMIES[type]:UNITS[type])||UNITS[type]||{power:power||5,speed:0.65,range:0.42};const p=power||d.power||5;
-  const u={id:this.s.nextId++,type,team,loyal:loyal||d.mutiny===0,power:p,hp:p*8,maxHp:p*8,shield:0,x,y,home:key(x,y),cooldown:this.random()*0.6,attack:0,walk:0,shot:false,stun:0,order:'defend',size:d.size||1,facing:1};this.s.units.push(u);return u;
+  const u={id:this.s.nextId++,type,team,loyal:loyal||d.mutiny===0,power:p,hp:p*8,maxHp:p*8,shield:0,x,y,home:key(x,y),cooldown:this.random()*0.6,attack:0,walk:0,shot:false,stun:0,order:'defend',size:d.size||1,facing:1};this.s.units.push(u);this._tacticsDirty=true;return u;
  }
  shuffleDeck(){this.s.deck=[];for(const suit of SUITS)for(let rank=1;rank<=13;rank++)this.s.deck.push({suit,rank});if(this.s.jokerAdded)this.s.deck.push({suit:'★',rank:0},{suit:'★',rank:0});for(let i=this.s.deck.length-1;i>0;i--){const j=Math.floor(this.random()*(i+1));[this.s.deck[i],this.s.deck[j]]=[this.s.deck[j],this.s.deck[i]]}}
  draw(depth=0){
@@ -78,7 +100,7 @@ export class Game {
  path(start,end,team='ally',unit=null){
   const sk=typeof start==='string'?start:key(Math.round(start.x),Math.round(start.y));
   const ek=typeof end==='string'?end:key(Math.round(end.x),Math.round(end.y));
-  const ck=`${sk}|${ek}|${team}|${unit?.type||'-'}|${unit?.team||'-'}`;if(this._routeCache?.has(ck))return this._routeCache.get(ck);
+  const ck=`${sk}|${ek}|${team}|${unit?.type||'-'}|${unit?.team||'-'}|${unit?.power||'-'}`;if(this._routeCache?.has(ck))return this._routeCache.get(ck);
   const finish=result=>{this._routeCache?.set(ck,result);return result};
   if(!this.s.rooms[sk]||!this.s.rooms[ek])return finish(null);
   if(sk===ek)return finish([]);
@@ -88,11 +110,12 @@ export class Game {
    open.sort((a,b)=>a.cost-b.cost);const {k,cost:spent}=open.shift();if(spent!==cost.get(k))continue;
    if(k===ek){const out=[];let t=ek;while(t!==sk){out.unshift(this.s.rooms[t]);t=prev.get(t)}return finish(out)}
    for(const n of this.neighbors(this.s.rooms[k],team,unit)){
-    const nk=key(n.x,n.y),step=['mud','labyrinth'].includes(n.type)?2:team==='enemy'&&n.type==='puzzle'?3:1;
+    const nk=key(n.x,n.y),door=this.barricade(this.s.rooms[k],n),step=(team==='enemy'&&door?door.hp/Math.max(1,(unit?.power||10)*1.8)*(unit?this.unitData(unit).speed:.65):0)+(['mud','labyrinth'].includes(n.type)?2:team==='enemy'&&n.type==='puzzle'?3:1);
     const nc=spent+step;if(nc>=(cost.get(nk)??Infinity))continue;cost.set(nk,nc);prev.set(nk,k);open.push({k:nk,cost:nc});
    }
   }return finish(null);
  }
+ damageable(r){return !!r&&DAMAGEABLE_ROOMS.includes(r.type)}
  supported(r){return r.y>=-1||!!this.room(r.x,r.y+1)&&!this.room(r.x,r.y+1).damaged&&this.supported(this.room(r.x,r.y+1))}
  active(r){return !!r&&this.supported(r)&&!r.damaged&&!this.roomHazards(r).length&&this.passable(r)&&this.path(r,this.target,'ally',{type:'soldier'})!==null}
  has(type){return this.rooms.some(r=>r.type===type&&this.active(r))}
@@ -233,13 +256,12 @@ export class Game {
   const n=d.single?1:Math.min(8,Math.max(1,Math.ceil(total/8)));
   for(let i=0;i<n;i++){const u=this.addUnit(type,r.x,r.y,true,'enemy',total/n);u.range=d.range;u.size=d.size;u.enemyName=d.name;}
  }
- ensureGuards(){const guards=this.allies.filter(u=>u.order==='guard');if(guards.length>=2)return;const candidates=this.allies.filter(u=>u.order!=='guard'&&this.unitData(u).range<=.5&&this.unitData(u).speed>0).sort((a,b)=>distance(a,this.target)-distance(b,this.target)||b.power-a.power||a.id-b.id);for(const u of candidates.slice(0,2-guards.length))u.order='guard'}
- beginCombat(){if(this.s.combat)return;this.s.combat=true;this.s.paused=false;this.dead=[];this.ensureGuards();
+ beginCombat(){if(this.s.combat)return;this.s.combat=true;this.s.paused=false;this.dead=[];this._tactics=null;this._tacticsDirty=true;
   for(const u of this.s.units){u.shot=false;u.cooldown=this.random();u.shield=0;u.moveTarget=null;u.targetId=null;
-   if(u.team==='ally'){const r=this.s.rooms[u.home];if(r){u.x=r.x;u.y=r.y}if(this.has('temple'))u.shield+=20}
+   if(u.team==='ally'){u.order='defend';u.frontTarget=null;const r=this.s.rooms[u.home];if(r){u.x=r.x;u.y=r.y}if(this.has('temple'))u.shield+=20}
   }
   this.spreadHazards();
-  this.note('Às armas! A guarnição mantém o último reduto; as outras tropas interceptam os invasores.','danger');this.events.push({type:'combat'});
+  this.note('Às armas! Os defensores se dividem entre os núcleos inimigos por força, distância e urgência.','danger');this.events.push({type:'combat'});
  }
  lineOfSight(a,b,melee=false){
   const eps=.015,vertical=Math.abs(a.x-b.x)<eps,horizontal=Math.abs(a.y-b.y)<eps;
@@ -248,7 +270,7 @@ export class Game {
   if(horizontal&&Math.abs(a.y-Math.round(a.y))>eps)return false;
   const ax=Math.round(a.x),ay=Math.round(a.y),bx=Math.round(b.x),by=Math.round(b.y);
   const dx=Math.sign(bx-ax),dy=Math.sign(by-ay),n=Math.abs(bx-ax)+Math.abs(by-ay);
-  for(let i=0;i<=n;i++){const r=this.room(ax+dx*i,ay+dy*i);if(i>0&&!this.linked(this.room(ax+dx*(i-1),ay+dy*(i-1)),r))return false;if(!r||r.closed||this.blockedByImmortal(r)||r.trap?.level===3||!melee&&this.roomHazards(r).includes('blindgas')||(r.barricade?.kind==='defensive'&&r.barricade.hp>0))return false}return true;
+  for(let i=0;i<=n;i++){const r=this.room(ax+dx*i,ay+dy*i);if(i>0){const previous=this.room(ax+dx*(i-1),ay+dy*(i-1));if(!this.linked(previous,r)||this.barricade(previous,r))return false;}if(!r||r.closed||this.blockedByImmortal(r)||r.trap?.level===3||!melee&&this.roomHazards(r).includes('blindgas'))return false}return true;
  }
  meleeContact(a,b){
   if(a.team==='neutral'||b.team==='neutral')return false;
@@ -256,38 +278,41 @@ export class Game {
   return distance(a,b)<=reach+.00001&&(Math.abs(a.x-b.x)<.02||Math.abs(a.y-b.y)<.02)&&this.lineOfSight(a,b,true)&&this.path(a,b,a.team,a)!==null;
  }
  unitData(u){return (u.team==='enemy'?ENEMIES[u.type]:UNITS[u.type])||UNITS[u.type]||{range:u.range||.42,speed:.6,power:u.power}}
- defenseGoal(u){
-  const here=this.anchor(u),objective=this.target;if(!here)return objective;
-  if(u.order==='guard')return objective;
-  const threats=this.enemies.map(e=>({e,route:this.path(this.anchor(e)||e,objective,'enemy',e)})).filter(t=>t.route!==null).sort((a,b)=>a.route.length-b.route.length||a.e.id-b.e.id);
-  if(!threats.length)return objective;
-  const threat=threats[0],data=this.unitData(u);
-  if(data.range>.5){
-   const choices=this.rooms.filter(r=>this.path(r,objective,'ally',u)!==null&&distance(r,objective)<=2&&distance(r,threat.e)<=data.range&&this.lineOfSight(r,threat.e));
-   choices.sort((a,b)=>(this.path(here,a,'ally',u)?.length??999)-(this.path(here,b,'ally',u)?.length??999)||distance(a,objective)-distance(b,objective));
-   return choices[0]||objective;
-  }
-  const route=threat.route;const intercept=route.length>2?route[route.length-3]:(this.anchor(threat.e)||objective);
-  return this.path(here,intercept,'ally',u)!==null?intercept:objective;
+ refreshDefensePlan(){
+  const roster=this.enemies.map(e=>e.id).join(',')+'|'+this.allies.map(u=>u.id).join(',');
+  if(!this._tactics||this._tacticsDirty||this._tacticsRoster!==roster||this.s.seconds-this._tactics.at>=.6){this._tactics=planDefense(this);this._tacticsRoster=roster;this._tacticsDirty=false}
+ }
+ defenseGoal(u){this.refreshDefensePlan();return this._tactics.assignments.get(u.id)?.goal||this.target}
+ movementOrigin(u,next){const dx=next.x-u.x,dy=next.y-u.y;if(Math.abs(dx)>.00001)return this.room(next.x-Math.sign(dx),next.y);if(Math.abs(dy)>.00001)return this.room(next.x,next.y-Math.sign(dy));return null}
+ attackPassageDoor(u,origin,next){
+  const door=this.barricade(origin,next);if(!door)return false;
+  if(u.cooldown<=0){this.damageBarricade(origin,next,u.power*1.8);if(door.kind==='offensive')this.damage(u,20*door.level);u.cooldown=1;u.attack=.3;this.events.push({type:'door-hit',unit:u.id})}
+  return true;
  }
  moveUnit(u,next,dt){
   const at=this.room(Math.round(u.x),Math.round(u.y))||next,d=this.unitData(u);
   let speed=d.speed;if(u.team==='ally'&&['elevator','rails','shaft'].includes(at.type))speed*=2;
   if(['mud','labyrinth'].includes(at.type))speed*=.5;if(u.team==='enemy'&&at.type==='puzzle')speed*=.35;
   if(u.team==='ally'&&this.s.artifacts.includes('speed'))speed*=1.15;
+  const origin=this.movementOrigin(u,next),door=u.team==='enemy'&&origin&&this.barricade(origin,next);
+  if(door){
+   const dx=next.x-origin.x,dy=next.y-origin.y,stop={x:origin.x+dx*.46,y:origin.y+dy*.46};
+   if(distance(origin,u)>=.46-.00001){u.moveTarget=key(next.x,next.y);this.attackPassageDoor(u,origin,next);return}
+   const travel=Math.min(speed*dt,distance(u,stop));u.x+=dx*travel;u.y+=dy*travel;u.walk+=travel*12;if(dx)u.facing=Math.sign(dx);u.moveTarget=key(next.x,next.y);return;
+  }
   const dx=next.x-u.x,dy=next.y-u.y,len=Math.hypot(dx,dy),step=Math.min(len,speed*dt);
   if(len>0){u.x+=dx/len*step;u.y+=dy/len*step;u.walk+=step*12;if(dx)u.facing=Math.sign(dx)}
   u.moveTarget=key(next.x,next.y);
   if(len<=speed*dt+.00001){u.x=next.x;u.y=next.y;u.moveTarget=null;u.cooldown=Math.max(u.cooldown,d.range>.5?.18:0)}
  }
- damage(u,amount,{instant=false}={}){if(u.hp<=0||u.type==='immortal'&&!instant)return;if(instant)amount=u.hp+u.shield;const absorb=Math.min(u.shield,amount);u.shield-=absorb;u.hp-=amount-absorb;this.effects.push({x:u.x,y:u.y,kind:'hit',life:0.35});if(u.hp<=0){u.hp=0;this.effects.push({x:u.x,y:u.y,kind:'death',life:0.8});if(u.team==='enemy'){this.s.kills++;if(u.type==='guardian'&&this.s.rooms[u.home]?.type==='void')this.s.voidDefeated=true}else if(u.team==='ally')this.dead.push({...u});if(u.type==='immortal'){this.s.units=this.s.units.filter(v=>v.id!==u.id);const r=this.s.rooms[u.home];if(r){r.immortalId=null;if(r.type==='invincible')r.type='cave';r.closed=false;}this._routeCache=null;this.note('A criatura imortal foi eliminada por morte instantânea. A passagem está livre.','good')}this.events.push({type:'death',team:u.team})}}
+ damage(u,amount,{instant=false}={}){if(u.hp<=0||u.type==='immortal'&&!instant)return;if(instant)amount=u.hp+u.shield;const absorb=Math.min(u.shield,amount);u.shield-=absorb;u.hp-=amount-absorb;this.effects.push({x:u.x,y:u.y,kind:'hit',life:0.35});if(u.hp<=0){this._tacticsDirty=true;u.hp=0;this.effects.push({x:u.x,y:u.y,kind:'death',life:0.8});if(u.team==='enemy'){this.s.kills++;if(u.type==='guardian'&&this.s.rooms[u.home]?.type==='void')this.s.voidDefeated=true}else if(u.team==='ally')this.dead.push({...u});if(u.type==='immortal'){this.s.units=this.s.units.filter(v=>v.id!==u.id);const r=this.s.rooms[u.home];if(r){r.immortalId=null;if(r.type==='invincible')r.type='cave';r.closed=false;}this._routeCache=null;this.note('A criatura imortal foi eliminada por morte instantânea. A passagem está livre.','good')}this.events.push({type:'death',team:u.team})}}
  killInstant(u){this.damage(u,u.hp+u.shield,{instant:true})}
  update(dt){
   if(!this.s.combat||this.s.paused||this.s.status!=='playing')return;
   dt=Math.min(dt,0.1)*this.s.speed;this.s.seconds+=dt;
   for(const e of this.effects)e.life-=dt;this.effects=this.effects.filter(e=>e.life>0);
   for(const p of this.projectiles){p.t+=dt/p.duration;if(p.t>=1){const t=this.s.units.find(u=>u.id===p.target);if(t&&t.hp>0&&this.lineOfSight({x:p.x,y:p.y},t)&&Math.hypot(t.x-p.tx,t.y-p.ty)<.6)this.damage(t,p.damage)}}this.projectiles=this.projectiles.filter(p=>p.t<1);
-  this._routeCache=new Map();this.ensureGuards();const actors=[...this.s.units].filter(u=>u.hp>0&&u.team!=='neutral');const hits=[];
+  this._routeCache=new Map();this.refreshDefensePlan();const actors=[...this.s.units].filter(u=>u.hp>0&&u.team!=='neutral');const hits=[];
   for(const u of actors){
    u.attack=Math.max(0,u.attack-dt);u.cooldown-=dt;u.stun=Math.max(0,u.stun-dt);if(u.stun>0)continue;
    const d=this.unitData(u),at=this.room(Math.round(u.x),Math.round(u.y));if(!at)continue;
@@ -300,8 +325,6 @@ export class Game {
    if(u.type==='cleric'&&u.team==='ally'&&u.cooldown<=0){for(const v of this.allies)if(distance(u,v)<=1.5)v.shield=Math.min(16,v.shield+16);u.cooldown=2.5;u.attack=0.3;continue}
    const opponents=actors.filter(v=>v.team!==u.team&&v.hp>0).sort((a,b)=>distance(u,a)-distance(u,b)||a.id-b.id);
    let target=opponents.find(v=>d.range>.5?distance(u,v)<=d.range&&this.lineOfSight(u,v):this.meleeContact(u,v));
-   const barrier=u.team==='enemy'&&at.barricade?.hp>0?at.barricade:null;
-   if(barrier){if(u.cooldown<=0){barrier.hp-=u.power*1.8;if(barrier.kind==='offensive')this.damage(u,20*barrier.level);u.cooldown=1;u.attack=0.3}continue}
    if(target&&!(u.type==='siege'&&u.shot)){
     if(u.cooldown<=0){let damage=u.power*1.8;if(u.team==='ally'){damage*=1+this.s.blessings*0.06+this.s.inventions*0.15;if(this.nearby(at,'kitchen',1).length)damage*=1.5;damage+=this.s.trophies*2;if(this.s.artifacts.includes('power'))damage*=1.1;if(this.s.artifacts.includes('invention'))damage*=1.2}
      if(target.x!==u.x)u.facing=Math.sign(target.x-u.x);u.attack=0.35;u.cooldown=u.type==='archer'?1.35:u.type==='mage'?1.5:1.1;u.shot=true;this.events.push({type:'attack',ranged:d.range>0.5,attacker:u.id,target:target.id,team:u.team});
@@ -312,7 +335,7 @@ export class Game {
    let goal=u.team==='enemy'?this.target:this.defenseGoal(u);if(!goal)continue;
    let route=this.path(u,goal,u.team,u);
    if(route===null&&u.team==='enemy'){
-    if(u.cooldown<=0){if(!at.captured){at.captured=true;at.damaged=at.type!=='gate'&&at.type!=='throne';this.note(`${ROOMS[at.type].name} tomada pelos invasores.`, 'warn')}const next=this.neighbors(at,'enemy').find(r=>!r.captured);if(next)goal=next;else{at.garrison??=[];at.garrison.push({type:u.type,power:u.power});u.hp=0;this.note('Invasores se instalaram na área desconectada. Reconecte para retomá-la.','warn');continue}route=this.path(u,goal,'enemy');u.cooldown=1}
+    if(u.cooldown<=0){if(!at.captured){at.captured=true;at.damaged=this.damageable(at);this.note(`${ROOMS[at.type].name} tomada pelos invasores.`, 'warn')}const next=this.neighbors(at,'enemy').find(r=>!r.captured);if(next)goal=next;else{at.garrison??=[];at.garrison.push({type:u.type,power:u.power});u.hp=0;this.note('Invasores se instalaram na área desconectada. Reconecte para retomá-la.','warn');continue}route=this.path(u,goal,'enemy');u.cooldown=1}
    }
    let next=route?.[0];
    if(!next){if(u.team==='enemy'&&distance(u,this.target)<.25&&!this.allies.some(a=>distance(a,this.target)<.55)){this.lose();break}continue}
@@ -338,7 +361,7 @@ export class Game {
  lose(){this.s.status='lost';this.s.combat=false;this.note('Um invasor atravessou o último reduto. Sua fortaleza caiu.','danger');this.events.push({type:'lost'})}
  action(action,x,y,arg){
   const r=this.room(x,y);if(!r||this.s.status!=='playing')return{ok:false,reason:'Sala indisponível.'};
-  if(action==='toggle'&&r.type==='drawbridge'){r.closed=!r.closed;if(r.closed){for(const u of this.enemies)if(Math.round(u.x)===x&&Math.round(u.y)===y)this.damage(u,400)}this.note(`Ponte levadiça ${r.closed?'fechada':'aberta'}.`);if(!r.closed)this.reconnectCaptured();this.spreadHazards();return{ok:true}}
+  if(action==='toggle'&&r.type==='drawbridge'){this._tacticsDirty=true;r.closed=!r.closed;if(r.closed){for(const u of this.enemies)if(Math.round(u.x)===x&&Math.round(u.y)===y)this.damage(u,400)}this.note(`Ponte levadiça ${r.closed?'fechada':'aberta'}.`);if(!r.closed)this.reconnectCaptured();this.spreadHazards();return{ok:true}}
   if(this.s.combat)return{ok:false,reason:'Indisponível em combate.'};
   if(action==='repair'){if(this.roomHazards(r).length)return{ok:false,reason:'Drene o fluido ou gás antes de reparar.'};const c=this.cost(r.type,r)||{resources:10,gold:0};const a=Math.floor(c.resources/2),b=Math.floor(c.gold/2);if(!r.damaged||this.s.resources<a||this.s.gold<b)return{ok:false,reason:'Sem dano ou recursos para reparar.'};this.s.resources-=a;this.s.gold-=b;r.damaged=false;if(r.captured){r.captured=false;this.spawnEnemies(r,r.type==='void'?110:20+Math.max(0,r.y)*5,r.type==='void'?'guardian':'raider');this.beginCombat()}return{ok:true}}
   if(action==='drain'){
@@ -346,7 +369,7 @@ export class Game {
    if(!hazards.length||this.s.gold<cost)return {ok:false,reason:'Riquezas insuficientes ou nenhum perigo.'};
    this.s.gold-=cost;r.drainedSources=this.rooms.filter(n=>ROOMS[n.type]?.hazard).map(n=>key(n.x,n.y));
    if(ROOMS[r.type].hazard)r.type='cave';r.fluid=null;r.gas=null;r.contaminant=null;
-   if(magma)r.damaged=true;
+   if(magma&&this.damageable(r))r.damaged=true;
    this.note(magma?'Magma drenado. A sala permanece danificada e precisa de reparo.':'Sala drenada. A construção original foi preservada.','good');return {ok:true};
   }
   if(action==='release'&&r.type==='ancientprison'){r.type='cave';if(this.roll(4)===4){this.addUnit('beast',x,y,true);this.note('A criatura libertada jurou lealdade.','good')}else{this.spawnEnemies(r,60+Math.max(0,y)*5,'beast');this.beginCombat()}return{ok:true}}
@@ -359,12 +382,12 @@ export class Game {
    if(!Number.isInteger(arg)||!PLANES[arg]||this.s.artifacts.includes(PLANES[arg].effect))return{ok:false,reason:'Expedição inválida ou concluída.'};if(this.s.gold<20)return{ok:false,reason:'A expedição custa 20♦.'};this.s.gold-=20;this.s.expedition=arg;this.spawnEnemies(r,40+arg*5,'guardian');this.note(`Expedição: ${PLANES[arg].name}. Uma força do plano cruza o portal!`,'danger');this.beginCombat();return{ok:true};
   }
   if(action==='defense'){
-   const kind=arg;const trap=kind==='damage'||kind==='delay';if(!['damage','delay','defensive','offensive','secret'].includes(kind))return{ok:false,reason:'Defesa inválida.'};if(!this.has(trap?'forge':'masonry'))return{ok:false,reason:trap?'Exige Forja.':'Exige Pedraria.'};
+   const kind=arg;if(['defensive','offensive'].includes(kind))return{ok:false,reason:'Escolha o corredor onde instalar a porta reforçada.'};const trap=kind==='damage'||kind==='delay';if(!['damage','delay','defensive','offensive','secret'].includes(kind))return{ok:false,reason:'Defesa inválida.'};if(!this.has(trap?'forge':'masonry'))return{ok:false,reason:trap?'Exige Forja.':'Exige Pedraria.'};
    const resources=kind==='damage'?20:kind==='delay'?15:0,gold=kind==='defensive'?10:kind==='offensive'?20:kind==='secret'?50:0;
-   if(r.trap||r.barricade||r.secret)return{ok:false,reason:'A sala já tem uma defesa.'};if(this.s.resources<resources||this.s.gold<gold)return{ok:false,reason:'Recursos insuficientes.'};this.s.resources-=resources;this.s.gold-=gold;if(trap)r.trap={kind,level:1,armed:true};else if(kind==='secret')r.secret=true;else r.barricade={kind,level:1,hp:kind==='defensive'?400:160};this.note('Defesa instalada.','good');return{ok:true};
+   if(r.trap||r.secret)return{ok:false,reason:'A sala já tem uma defesa.'};if(this.s.resources<resources||this.s.gold<gold)return{ok:false,reason:'Recursos insuficientes.'};this.s.resources-=resources;this.s.gold-=gold;if(trap)r.trap={kind,level:1,armed:true};else if(kind==='secret')r.secret=true;this.note('Defesa instalada.','good');return{ok:true};
   }
   if(action==='upgrade'){
-   const d=r.trap||r.barricade;if(!d||d.level>=3)return{ok:false,reason:'Sem defesa aprimorável.'};const cost=r.trap?20:10;if(this.s.resources<cost)return{ok:false,reason:'Recursos insuficientes.'};this.s.resources-=cost;d.level++;if(r.barricade)d.hp+=d.kind==='defensive'?400:160;this.note('Defesa aprimorada. Nível '+d.level+'.','good');return{ok:true};
+   const d=r.trap;if(!d||d.level>=3)return{ok:false,reason:'Sem defesa aprimorável.'};const cost=20;if(this.s.resources<cost)return{ok:false,reason:'Recursos insuficientes.'};this.s.resources-=cost;d.level++;this.note('Defesa aprimorada. Nível '+d.level+'.','good');return{ok:true};
   }
   return{ok:false,reason:'Ação indisponível.'};
  }
@@ -382,19 +405,19 @@ export class Game {
    const gas=gasTypes.includes(source.type),sourceKey=key(source.x,source.y),queue=[{r:source,lateral:0}],seen=new Map();
    for(let i=0;i<queue.length;i++){
     const {r,lateral}=queue[i],rk=key(r.x,r.y);if((seen.get(rk)??Infinity)<=lateral)continue;seen.set(rk,lateral);
-    if(r!==source&&(r.closed||!gas&&['pump','bridge','drawbridge'].includes(r.type)||r.barricade?.kind==='defensive'&&r.barricade.hp>0||r.drainedSources?.includes(sourceKey)))continue;
+    if(r!==source&&(r.closed||!gas&&['pump','bridge','drawbridge'].includes(r.type)||r.drainedSources?.includes(sourceKey)))continue;
     if(gas)r.gas=source.type;else r.fluid=source.type;
-    if(!gas&&['lava','crater'].includes(source.type)&&!['pump','bridge','lava','crater'].includes(r.type))r.damaged=true;
+    if(!gas&&['lava','crater'].includes(source.type)&&this.damageable(r)&&!['pump','bridge','drawbridge'].includes(r.type))r.damaged=true;
     if(!gas&&source.flowActive===false)continue;
-    for(const[dx,dy]of DIRS){if(gas&&dy===1||!gas&&dy===-1||dx&&lateral>=2)continue;const n=this.room(r.x+dx,r.y+dy);if(n&&this.linked(r,n))queue.push({r:n,lateral:lateral+(dx?1:0)})}
+    for(const[dx,dy]of DIRS){if(gas&&dy===1||!gas&&dy===-1||dx&&lateral>=2)continue;const n=this.room(r.x+dx,r.y+dy);if(n&&this.linked(r,n)&&!this.barricade(r,n))queue.push({r:n,lateral:lateral+(dx?1:0)})}
    }
   }
   const burning=this.rooms.filter(r=>r.gas==='flammable'&&['forge','tavern','barracks'].includes(r.type)),ignited=new Set();
   for(let i=0;i<burning.length;i++){const r=burning[i],rk=key(r.x,r.y);if(ignited.has(rk))continue;ignited.add(rk);
-   for(const [dx,dy]of DIRS){const n=this.room(r.x+dx,r.y+dy);if(n&&this.linked(r,n)&&!r.closed&&!n.closed&&(n.gas==='flammable'||n.type==='flammable')&&!ignited.has(key(n.x,n.y)))burning.push(n)}
+   for(const [dx,dy]of DIRS){const n=this.room(r.x+dx,r.y+dy);if(n&&this.linked(r,n)&&!this.barricade(r,n)&&!r.closed&&!n.closed&&(n.gas==='flammable'||n.type==='flammable')&&!ignited.has(key(n.x,n.y)))burning.push(n)}
   }
   if(ignited.size){
-   for(const rk of ignited){const r=this.s.rooms[rk];if(ROOMS[r.type].r!==undefined)r.damaged=true;
+   for(const rk of ignited){const r=this.s.rooms[rk];if(this.damageable(r))r.damaged=true;
     for(const u of this.s.units)if(u.hp>0&&Math.round(u.x)===r.x&&Math.round(u.y)===r.y)this.killInstant(u);
     r.gas=null;r.contaminant=null;if(r.type==='flammable')r.type='cave';
    }this.note('Gás inflamável alcançou uma forja, taverna ou quartel: explosão! Todas as salas atingidas foram danificadas.','danger');
@@ -412,7 +435,7 @@ export class Game {
   for(const n of ['turn','resources','gold','baseMorale','nextId','seconds','blessings','inventions','trophies','maxDepth','kills','battles'])if(!finite(s[n])||Math.abs(s[n])>1e9)throw Error('Valores inválidos no salvamento.');
   for(const[k,r]of Object.entries(s.rooms)){if(!r||!coordinate(r.x)||!coordinate(r.y)||key(r.x,r.y)!==k||!Object.hasOwn(ROOMS,r.type)||!Number.isInteger(r.variant)||r.variant<0||r.variant>2)throw Error('Mapa inválido.');if(r.trap&&(!['damage','delay'].includes(r.trap.kind)||![1,2,3].includes(r.trap.level)))throw Error('Armadilha inválida.');if(r.barricade&&(!['defensive','offensive'].includes(r.barricade.kind)||!finite(r.barricade.hp)))throw Error('Barricada inválida.')}
   const knownType=t=>Object.hasOwn(UNITS,t)||Object.hasOwn(ENEMIES,t);
-  const validUnit=u=>u&&(u.size===undefined||finite(u.size)&&u.size>0&&u.size<=5)&&(u.order===undefined||['guard','defend'].includes(u.order))&&(u.facing===undefined||[-1,1].includes(u.facing))&&knownType(u.type)&&(['ally','enemy'].includes(u.team)&&u.type!=='immortal'||u.team==='neutral'&&u.type==='immortal')&&['id','x','y','hp','maxHp','power','cooldown','shield','attack','walk','stun'].every(n=>finite(u[n]))&&u.maxHp>0&&u.power>0&&Math.abs(u.x)<=100&&Math.abs(u.y)<=100&&s.rooms[u.home];
+  const validUnit=u=>u&&(u.frontTarget===undefined||u.frontTarget===null||Number.isInteger(u.frontTarget)&&u.frontTarget>0)&&(u.size===undefined||finite(u.size)&&u.size>0&&u.size<=5)&&(u.order===undefined||['guard','defend'].includes(u.order))&&(u.facing===undefined||[-1,1].includes(u.facing))&&knownType(u.type)&&(['ally','enemy'].includes(u.team)&&u.type!=='immortal'||u.team==='neutral'&&u.type==='immortal')&&['id','x','y','hp','maxHp','power','cooldown','shield','attack','walk','stun'].every(n=>finite(u[n]))&&u.maxHp>0&&u.power>0&&Math.abs(u.x)<=100&&Math.abs(u.y)<=100&&s.rooms[u.home];
   const ids=new Set();for(const u of s.units){if(!validUnit(u)||!['ally','enemy','neutral'].includes(u.team)||!finite(u.id)||ids.has(u.id)||!finite(u.x)||!finite(u.y)||Math.abs(u.x)>100||Math.abs(u.y)>100||!finite(u.hp)||!finite(u.maxHp)||!finite(u.power)||!finite(u.cooldown)||!finite(u.shield)||typeof u.type!=='string'||!s.rooms[u.home]||u.power<=0||u.maxHp<=0)throw Error('Unidade inválida.');ids.add(u.id)}
   for(const c of s.deck)if(!c||!SUITS.concat('★').includes(c.suit)||!Number.isInteger(c.rank)||c.rank<0||c.rank>13)throw Error('Baralho inválido.');
   for(const e of s.log)if(!e||typeof e.text!=='string'||e.text.length>2000||!finite(e.turn))throw Error('Crônica inválida.');
@@ -425,6 +448,12 @@ export class Game {
    if(s.passageVersion!==1||!s.passages||typeof s.passages!=='object'||Array.isArray(s.passages)||Object.keys(s.passages).length>4000)throw Error('Passagens inválidas.');
    for(const [id,value]of Object.entries(s.passages)){const ends=id.split('|'),a=s.rooms[ends[0]],b=s.rooms[ends[1]];if(value!==true||ends.length!==2||!a||!b||distance(a,b)!==1||ends.slice().sort().join('|')!==id)throw Error('Ligação inválida no mapa.');}
   }else{s.passages={};for(const r of Object.values(s.rooms))for(const [dx,dy]of [[1,0],[0,1]]){const n=s.rooms[key(r.x+dx,r.y+dy)];if(n)s.passages[[key(r.x,r.y),key(n.x,n.y)].sort().join('|')]=true}s.passageVersion=1;}
+  if(s.barricadeVersion===undefined){
+   s.barricades={};const oldRoomPath=(from,to)=>{const queue=[from],previous=new Map([[key(from.x,from.y),null]]);for(let i=0;i<queue.length;i++){const r=queue[i];if(r===to){let k=key(to.x,to.y);while(previous.get(k)&&previous.get(k)!==key(from.x,from.y))k=previous.get(k);return s.rooms[k]===from?null:s.rooms[k]}
+    for(const [dx,dy]of DIRS){const n=s.rooms[key(r.x+dx,r.y+dy)];if(n&&s.passages[[key(r.x,r.y),key(n.x,n.y)].sort().join('|')]&&!previous.has(key(n.x,n.y))){previous.set(key(n.x,n.y),key(r.x,r.y));queue.push(n)}}}return null};
+   for(const r of Object.values(s.rooms))if(r.barricade){const n=oldRoomPath(r,s.rooms['0,0'])||DIRS.map(([dx,dy])=>s.rooms[key(r.x+dx,r.y+dy)]).find(n=>n&&s.passages[[key(r.x,r.y),key(n.x,n.y)].sort().join('|')]);if(n)s.barricades[[key(r.x,r.y),key(n.x,n.y)].sort().join('|')]={...r.barricade,hp:Math.max(0,r.barricade.hp)};r.barricade=null;}s.barricadeVersion=1;
+  }else if(s.barricadeVersion!==1||!s.barricades||typeof s.barricades!=='object'||Array.isArray(s.barricades))throw Error('Portas inválidas.');
+  for(const [edge,d]of Object.entries(s.barricades)){if(!s.passages[edge]||!d||!['defensive','offensive'].includes(d.kind)||![1,2,3].includes(d.level)||!finite(d.hp)||d.hp<0||d.hp>1e7)throw Error('Porta reforçada inválida.');}
   const legacy=!s.rulesVersion;if(legacy){
    const typeByRoom={largelair:'troll',hungry:'troll',burrow:'worm',elemental:'elemental',golemforge:'golem',vault:'golem',void:'guardian',dragon:'dragon',crypt:'skeleton',nest:'insect',hive:'insect'};
    const groups=new Map(),remap=new Map(),merged=[];
@@ -438,7 +467,8 @@ export class Game {
     merged.push(u);
    }s.units=merged;for(const projectile of data.projectiles)projectile.target=remap.get(projectile.target)||projectile.target;s.rulesVersion=2;
   }
-  const g=new Game();g.s=s;g.s.name=s.name.slice(0,40);g.s.paused=s.combat;for(const u of s.units){u.order??=(u.team==='ally'&&u.home==='0,0'&&u.loyal&&u.type==='soldier'&&u.id<=2)?'guard':'defend';u.size??=(u.team!=='ally'?ENEMIES[u.type]?.size:1)||1;u.facing??=1;if(u.moveTarget&&!s.rooms[u.moveTarget])u.moveTarget=null;}g.projectiles=data.projectiles;g.dead=data.dead;
+  for(const r of Object.values(s.rooms))if(!DAMAGEABLE_ROOMS.includes(r.type))r.damaged=false;
+  const g=new Game();g.s=s;g.s.name=s.name.slice(0,40);g.s.paused=s.combat;for(const u of s.units){u.order='defend';if(u.frontTarget&&!s.units.some(e=>e.id===u.frontTarget&&e.team==='enemy'&&e.hp>0))u.frontTarget=null;u.size??=(u.team!=='ally'?ENEMIES[u.type]?.size:1)||1;u.facing??=1;if(u.moveTarget&&!s.rooms[u.moveTarget])u.moveTarget=null;}g.projectiles=data.projectiles;g.dead=data.dead;
   if(s.immortalVersion!==undefined&&s.immortalVersion!==1)throw Error('Versão de criatura imortal inválida.');
   for(const r of g.rooms){if(r.type==='invincible'){
    if(s.immortalVersion===undefined){r.closed=false;g.placeImmortal(r)}

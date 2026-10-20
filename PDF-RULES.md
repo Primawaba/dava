@@ -31,3 +31,7 @@ No DELVE, páginas impressas 33–36, o coringa preto desperta uma Monstruosidad
 ## Criatura invencível — CONQUER.odt, tabela natural, entrada 12
 
 Regra do documento: “Criatura Invencível bloqueando a sala. Pode ser morta apenas por efeitos de morte instantânea (Líquidos, explosões, etc)”. A revisão 1.5.0 implementa uma criatura neutra imóvel, bloqueio de passagem e morte instantânea explícita. Foi retirada a adaptação anterior de aprisionamento por 20♦, que não tinha base nessa regra.
+
+## Revisão solicitada pelo jogador — 1.6.0
+
+Cavernas naturais não recebem dano estrutural; apenas construções são danificadas por magma e explosões. Barricadas, tanto defensivas quanto ofensivas, pertencem a uma passagem e bloqueiam líquidos e gases naquela aresta enquanto intactas. Essas instruções do jogador prevalecem sobre as adaptações digitais anteriores.

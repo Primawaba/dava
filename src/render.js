@@ -1,17 +1,22 @@
+import {RoomAppearance} from './room-appearance.js';
 import {ProceduralPassages} from './passages.js';
-import {ROOMS,DIRS,SPRITE_FRAMES,PASSAGES} from './data.js';
+import {ROOMS,DIRS,SPRITE_FRAMES,PASSAGES,DAMAGEABLE_ROOMS} from './data.js';
 import {key} from './engine.js';
 export const CW=180,CH=144;
 export class Renderer{
- constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
+ constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.appearance=new RoomAppearance();this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
  async load(){
   const assets=Object.keys(ROOMS).flatMap(type=>[0,1,2].map(v=>({id:`${type}-${v}`,src:`./assets/rooms/${type}-${v}.png`})));
   assets.push(...Object.keys(SPRITE_FRAMES).map(type=>({id:`unit-${type}`,src:`./assets/sprites/${type}.png`})));
+  assets.push(...DAMAGEABLE_ROOMS.flatMap(type=>[0,1,2].map(v=>({id:`damaged-${type}-${v}`,src:`./assets/damaged-rooms/${type}-${v}.png`}))));
   assets.push(...PASSAGES.map(name=>({id:`passage-${name}`,src:`./assets/passages/${name}.png`})));
   await Promise.all(assets.map(({id,src})=>new Promise(resolve=>{const i=new Image();i.onload=()=>{this.images[id]=i;resolve()};i.onerror=()=>resolve();i.src=src})));
-  this.passages.cache.clear();
+  this.passages.cache.clear();this.appearance.cache.clear();
   if(this.images['unit-immortal']){const outline=document.createElement('canvas');outline.width=outline.height=64;const c=outline.getContext('2d');c.drawImage(this.images['unit-immortal'],0,0,64,64);c.globalCompositeOperation='source-in';c.fillStyle='#b5a56f';c.fillRect(0,0,64,64);this.immortalOutline=outline}
  }
+ rawRoomImage(r){return this.images[`${r.damaged&&DAMAGEABLE_ROOMS.includes(r.type)?'damaged-':''}${r.type}-${r.variant}`]||this.images[`${r.type}-${r.variant}`]}
+ roomImage(r,time=0){return this.appearance.get(this.rawRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
+ roomURL(r,time=0){return this.appearance.url(this.rawRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
  resize(){const r=this.canvas.getBoundingClientRect();this.width=r.width;this.height=r.height;const dpr=Math.min(devicePixelRatio||1,2);this.canvas.width=Math.round(r.width*dpr);this.canvas.height=Math.round(r.height*dpr);this.dpr=dpr}
  screenToWorld(x,y){return{x:(x-this.width/2)/this.zoom+this.camera.x,y:(y-this.height/2)/this.zoom+this.camera.y}}
  point(event){const r=this.canvas.getBoundingClientRect();return{x:event.clientX-r.left,y:event.clientY-r.top}}
@@ -40,9 +45,22 @@ export class Renderer{
   if(!vertical&&r.y!==n.y)return;
   if((vertical&&r.y>n.y)||(!vertical&&r.x>n.x))[r,n]=[n,r];
   const x=r.x*CW,y=r.y*CH,nx=n.x*CW,ny=n.y*CH;
-  this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced);
+  const door=this.game.s.barricades[this.game.passageKey(r,n)];
+  this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced,door);
+  if(door)this.passageDoor((x+nx)/2,(y+ny)/2,vertical,door);
   const image=name=>this.images['passage-'+name];
   if((r.closed||n.closed)&&image('grate'))c.drawImage(image('grate'),(x+nx)/2-16,(y+ny)/2-16,32,32);
+ }
+ passageDoor(x,y,vertical,door){
+  const c=this.ctx;c.save();c.translate(x,y);if(vertical)c.rotate(Math.PI/2);c.imageSmoothingEnabled=false;
+  if(door.hp<=0){c.fillStyle='#5b4830';for(let i=0;i<5;i++)c.fillRect(-8+i*3,8-i%2*3,4,3);c.restore();return}
+  c.fillStyle='#24271f';c.fillRect(-9,-20,18,40);c.fillStyle='#c0b18c';c.fillRect(-9,-20,3,40);c.fillRect(6,-20,3,40);
+  c.fillStyle='#76603e';c.fillRect(-6,-18,12,36);c.fillStyle='#9b8155';for(let i=-4;i<=4;i+=4)c.fillRect(i,-17,2,34);
+  c.fillStyle='#393c33';for(const py of [-13,-2,11])c.fillRect(-7,py,14,4);c.fillStyle='#b4b49a';for(const py of [-12,-1,12]){c.fillRect(-5,py,2,1);c.fillRect(3,py,2,1)}
+  for(let i=1;i<door.level;i++){c.fillStyle='#a2a490';c.fillRect(-8,-18+i*13,16,2)}
+  if(door.kind==='offensive'){c.fillStyle='#b99b72';for(const py of [-14,-6,2,10]){c.fillRect(-13,py,4,2);c.fillRect(9,py,4,2)}}
+  if(this.game.s.combat){const maximum=(door.kind==='defensive'?400:160)*door.level;c.fillStyle='#252920';c.fillRect(-13,23,26,4);c.fillStyle='#c0a667';c.fillRect(-12,24,24*Math.min(1,door.hp/maximum),2)}
+  c.restore();
  }
  draw(time=0){this.passageTime=time;const c=this.ctx,w=this.width,h=this.height;if(!w||!h)return;c.setTransform(this.dpr,0,0,this.dpr,0,0);c.imageSmoothingEnabled=false;c.fillStyle='#e5ddc6';c.fillRect(0,0,w,h);if(!this.game){this.directionMarkers=[];return;}
   c.save();c.translate(w/2,h/2);c.scale(this.zoom,this.zoom);c.translate(-this.camera.x,-this.camera.y);
@@ -52,16 +70,13 @@ export class Renderer{
   // Ground boundary remains readable when the map scrolls underground.
   c.strokeStyle='#777b5e55';c.setLineDash([4,4]);c.beginPath();c.moveTo(bounds.left,-CH*.5);c.lineTo(bounds.right,-CH*.5);c.stroke();c.setLineDash([]);
   const visible=this.game.rooms.filter(r=>r.x*CW>bounds.left&&r.x*CW<bounds.right&&r.y*CH>bounds.top&&r.y*CH<bounds.bottom);
-  for(const r of visible){const x=r.x*CW,y=r.y*CH;if(r.y<0&&(r.y===-1||this.game.room(r.x,r.y+1))){c.fillStyle='#57594a';const bottom=r.y===-1?CH*.5:CH-54;for(const ox of [-53,47])c.fillRect(x+ox,y+40,6,bottom-40);c.fillStyle='#b1a889';for(const ox of [-51,49])c.fillRect(x+ox,y+40,2,bottom-40);}const image=this.images[`${r.type}-${r.variant}`];if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
+  for(const r of visible){const x=r.x*CW,y=r.y*CH;if(r.y<0&&(r.y===-1||this.game.room(r.x,r.y+1))){c.fillStyle='#57594a';const bottom=r.y===-1?CH*.5:CH-54;for(const ox of [-53,47])c.fillRect(x+ox,y+40,6,bottom-40);c.fillStyle='#b1a889';for(const ox of [-51,49])c.fillRect(x+ox,y+40,2,bottom-40);}const image=this.roomImage(r,time);if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
   }
   // Composite every room first, then its doorway aprons; no room PNG can cover a neighbor's connection.
   for(const r of visible)for(const[dx,dy]of [[1,0],[0,1]]){const n=this.game.room(r.x+dx,r.y+dy);if(n&&this.game.linked(r,n))this.corridor(r,n)}
   const directions=this.game.directions();
   for(const r of visible){const x=r.x*CW,y=r.y*CH;
-   if(this.game.roomHazards(r).length){c.fillStyle=['lava','crater'].includes(r.type)||['lava','crater'].includes(r.contaminant)?'#b66d3f33':'#79927344';c.fillRect(x-65,y-35,130,65)}
-   if(r.damaged){c.strokeStyle='#9e634b';c.lineWidth=2;c.beginPath();c.moveTo(x-35,y-26);c.lineTo(x-16,y-5);c.lineTo(x-23,y+5);c.lineTo(x+8,y+30);c.moveTo(x+32,y-30);c.lineTo(x+16,y-3);c.stroke()}
    if(r.trap){c.strokeStyle='#9c6149';c.lineWidth=1.5;c.beginPath();for(let i=0;i<6;i++){const px=x-17+i*7;c.moveTo(px,y+34);c.lineTo(px+4,y+25);c.lineTo(px+7,y+34)}c.stroke()}
-   if(r.barricade?.hp>0){c.fillStyle='#897b5d';c.strokeStyle='#4c5040';c.lineWidth=1;c.fillRect(x-32,y+27,64,10);c.strokeRect(x-32,y+27,64,10)}
    const selected=this.selected.x===r.x&&this.selected.y===r.y;if(selected){c.strokeStyle='#8a7447';c.lineWidth=1.2;this.corners(x-83,y-64,166,121)}
    c.textAlign='center';c.font='10px Georgia';c.fillStyle=r.damaged?'#925a40':'#505541';const label=ROOMS[r.type].name;const tw=c.measureText(label).width,labelX=(this.game.linked(r,this.game.room(r.x,r.y+1))||directions.some(d=>d.from.x===r.x&&d.from.y===r.y&&d.dy===1))?x-30-tw/2:x;c.fillStyle='#e5ddc6ee';c.fillRect(labelX-tw/2-4,y+54,tw+8,14);c.fillStyle=r.damaged?'#925a40':'#505541';c.fillText(label,labelX,y+64);
   }
@@ -104,7 +119,6 @@ export class Renderer{
   else{c.fillStyle=ally?'#436d4b':'#9a563b';c.fillRect(-5,-10,10,22)}
   if(u.facing<0)c.scale(-1,1);
   const marker=u.team==='neutral'?'#b5a56f':ally?'#356a4e':'#a44732';c.fillStyle=marker;c.fillRect(-3,17,6,3);
-  if(u.order==='guard'&&ally){c.fillStyle='#a28748';c.fillRect(-2,21,4,2)}
   if(u.type==='immortal'){c.fillStyle='#d8c692';c.font='bold 17px Georgia';c.textAlign='center';c.fillText('∞',0,9-size);}
   if(this.game.s.combat&&u.type!=='immortal'){const width=Math.max(22,size*.55),top=12-size;
    c.fillStyle='#302f26';c.fillRect(-width/2-1,top-1,width+2,5);c.fillStyle=marker;c.fillRect(-width/2,top,width*Math.max(0,u.hp/u.maxHp),3);

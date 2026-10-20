@@ -103,3 +103,15 @@ Reprodução do problema: um chefe de alcance 0,5 podia parar fora dos 0,42 do s
 6 verificações específicas no navegador cobrem descoberta e sprite neutro sem cobrança; persistência de uma única criatura; dano comum versus líquido; retaliação repetida no portão; layout mobile de 390px; ausência de exceções. Capturas: `immortal-passive-blocker.png`, `boss-melee-retaliation.png` e `immortal-mobile.png`. A captura da criatura foi revisada visualmente.
 
 Nesta revisão também passaram as 21 verificações gerais de navegador, 10 verificações das animações de recursos e 7 verificações do HTML autônomo offline.
+
+## Revisão 1.6.0 — distribuição tática, portas de corredor e sprites de estado
+
+115 testes do motor e de integridade dos assets aprovados: os testes antigos de guarnição fixa foram substituídos por saída de todos os defensores, remoção de ordens antigas e distribuição por núcleos. Os novos cenários cobrem proporção de forças (2/6 soldados contra 10/30 STR), exército inferior, urgência, proximidade por caminhos abertos, lentidão, paredes, agrupamento de inimigos, redistribuição após baixas, estabilidade sem sorteios, saúde/escudos/melhorias, cerco imóvel, tiros, perigos e tempo de ruptura das portas.
+
+As portas têm testes de instalação em uma única passagem, coexistência com armadilhas, bloqueio dos sete líquidos/gases com ambos os tipos, rotas alternativas, ruptura com propagação imediata, linha de tiro, parada antes do meio do túnel, contra-ataque ofensivo, aprimoramento, explosão, save/migração e rejeição de portas inválidas. Dano natural é testado em magma, drenagem, explosão e migração. As 126 artes danificadas são PNGs distintos das versões intactas e oferecem três variantes para cada construção.
+
+O navegador verifica por interação real a instalação das duas orientações de porta, aprimoramento, supressão da tocha, persistência, líquidos e uma divisão em movimento de dois/seis soldados. A suíte visual mede pixels do primeiro plano e garante que todos os pixels de papel permaneçam inalterados; verifica tons ambientais, cache, azul do cristal, pulso de oito segundos, movimento reduzido, troca de sprite após reparo e layout mobile.
+
+Capturas revisadas: `reinforced-passage-doors.png`, `army-splits-between-fronts.png`, `room-states-crystal-and-damage.png`; variantes mobile também são geradas. Relatórios: `tactics-doors-results.json` e `room-appearance-results.json` em `artifacts/`. A IA é uma heurística determinística, não uma garantia de vitória contra forças superiores.
+
+A compilação final 1.6.0 aprovou 8 verificações táticas/portas, 5 de aparência das salas, 21 gerais do navegador, 7 do HTML autônomo, 10 das animações de recursos e 8 da revisão de superfície/recrutamento. Nenhuma dessas suítes registrou exceções não tratadas.

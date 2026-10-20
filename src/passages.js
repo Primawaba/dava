@@ -1,4 +1,4 @@
-import {ROOMS} from './data.js';
+import {ROOMS,CRYSTAL_PALETTE} from './data.js';
 // Software pixel shader: evaluate a mask, material transition and lighting once
 // per connection. Canvas 2D keeps the same result offline and on mobile GPUs.
 const PASSAGE_MATERIALS={
@@ -10,7 +10,7 @@ const PASSAGE_MATERIALS={
  organic:{wall:[105,97,51],light:[177,159,90],floor:[38,35,21]},
  forest:{wall:[69,86,53],light:[138,157,98],floor:[25,35,23]},
  crypt:{wall:[91,89,77],light:[175,169,140],floor:[28,28,25]},
- crystal:{wall:[80,87,88],light:[148,163,157],floor:[26,33,35]},
+ crystal:CRYSTAL_PALETTE,
  gas:{wall:[82,96,61],light:[147,165,104],floor:[29,40,25]}
 };
 export function passageArchitecture(room){return ROOMS[room.type]?.r!==undefined||['gate','crypt','ancienttemple','ancientlibrary','ancientprison','rivalhold','city','tomb','sealed','vault'].includes(room.type)?'built':'cavern'}
@@ -98,7 +98,7 @@ export class ProceduralPassages{
   if(this.cache.size>this.limit)this.cache.delete(this.cache.keys().next().value);
   return entry;
  }
- draw(ctx,a,b,vertical,images,time,reduced){
+ draw(ctx,a,b,vertical,images,time,reduced,fortification=null){
   const entry=this.get(a,b,vertical,images),{canvas,length,ma,mb,seed}=entry;
   ctx.save();ctx.imageSmoothingEnabled=false;
   // Local X always follows the connection, so the same mask joins all 4 ports.
@@ -115,7 +115,7 @@ export class ProceduralPassages{
    }
   }
   ctx.restore();
-  if(entry.aa==='built'&&entry.ab==='built'){
+  if(!fortification&&entry.aa==='built'&&entry.ab==='built'){
    const x=Math.round((a.x+b.x)*90+(vertical?15:0)),y=Math.round((a.y+b.y)*72+(vertical?-2:-13));
    const flicker=reduced?0:Math.floor(time/160)%3;
    ctx.save();ctx.translate(x,y);ctx.fillStyle='#d6a44918';ctx.fillRect(-12,-14,26,28);ctx.fillStyle='#c6954528';ctx.fillRect(-7,-9,16,17);

@@ -17,3 +17,5 @@
 .direction-action b{font-size:20px;line-height:1;width:24px;text-align:center;flex:none}.direction-action:focus-visible{outline:2px solid #b49a61;outline-offset:3px}
 
 .resource-flight-layer{position:fixed;inset:0;width:100vw;height:100dvh;z-index:45;pointer-events:none}.resource-arrival .resource-symbol{animation:resource-arrival .22s ease-out}@keyframes resource-arrival{50%{transform:scale(1.32);filter:brightness(1.35)}}.reduce-motion .resource-arrival .resource-symbol{animation:none}
+
+.passage-defense{padding:12px 0;border-top:1px solid var(--line)}.passage-defense strong{font-size:11px;color:var(--text)}.passage-defense .panel-action{margin-top:7px}

@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.5.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
+O resultado fica em `releases/conquer-web-1.6.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
 
 ## Conteúdo e controles
 
@@ -167,6 +167,18 @@ O Túnel de escavador não é gerado na linha do portão nem na primeira camada 
 
 A descoberta coloca uma criatura neutra imóvel sobre a sala, com sprite próprio e símbolo ∞. Ela bloqueia a passagem e não ataca a base nem inicia combate. Dano comum não a fere; líquidos letais, gás venenoso e explosões a eliminam por morte instantânea. A ação de pagar 20♦ para aprisioná-la foi removida. Saves antigos com essa câmara são migrados ao carregar.
 
-Foi corrigido o contato corpo a corpo: chefes de alcance 0,5 já não podem golpear soldados de alcance 0,42 sem que estes consigam revidar. Isso mantém os guardas no portão e preserva as restrições de paredes e corredores. Chefes com projéteis continuam tendo vantagem de alcance sobre espadas.
+Foi corrigido o contato corpo a corpo: chefes de alcance 0,5 já não podem golpear soldados de alcance 0,42 sem que estes consigam revidar. A revisão preserva as restrições de paredes e corredores; a partir da versão 1.6.0 todos os defensores participam da distribuição por frentes. Chefes com projéteis continuam tendo vantagem de alcance sobre espadas.
 
 `npm run test:immortal` valida o bloqueio passivo, persistência, morte por líquido e retaliação no navegador. `npm run build:immortal-art` reproduz o sprite pixelado a partir da ilustração de origem gerada, mantida fora do pacote web final.
+
+### Frentes de combate, portas e estados visuais — versão 1.6.0
+
+Não há guardas presos ao portão. A IA agrupa inimigos próximos que se comunicam por passagens, estima força com saúde/escudos e melhorias, avalia o tempo de deslocamento real e divide os defensores entre frentes alcançáveis. Prioriza ameaças próximas do objetivo quando não há tropas suficientes, destina mais força aos grupos maiores e redistribui após baixas. Unidades em contato corpo a corpo mantêm o confronto, e mudanças de rota respeitam a aresta em andamento. Arqueiros buscam linha de tiro direta; armas de cerco estacionárias só contam onde alcançam. Ordens antigas de guarda são convertidas ao carregar.
+
+As barricadas agora são portas reforçadas em **uma passagem escolhida**, no centro do túnel e no lugar da tocha. No painel da sala, use **Portas nos corredores** para instalar ou aprimorar cada lado. Ambas bloqueiam invasores, tiros, líquidos e gases; aliados atravessam. Invasores param diante da porta e a atacam. A porta ofensiva revida. Ao ser destruída, o bloqueio cessa e os perigos ambientais se propagam imediatamente. Custos e resistências anteriores foram preservados. Barricadas antigas de sala são migradas para um corredor em direção ao portão, quando disponível.
+
+Contaminação altera os pixels da própria sala, sem retângulos transparentes: água, magma e cada gás têm acabamento próprio. O fundo de papel permanece intacto. A caverna de cristal compartilha a paleta azul do corredor e um brilho lento de oito segundos, congelado por movimento reduzido. O painel lateral mostra os mesmos estados.
+
+Somente construções podem sofrer dano estrutural; cavernas naturais continuam sujeitas a contaminação e perigos, mas não a dano. Foram geradas **126 artes danificadas para os 42 tipos de construção**, três variantes por tipo. Reparar restaura a arte intacta. Saves antigos removem marcas de dano indevidas em cavernas naturais.
+
+Comandos adicionais: `npm run test:tactics-doors`, `npm run test:room-appearance` e `npm run build:damaged-art`. O atlas danificado de origem é mantido no repositório, mas excluído do pacote web. Tint e brilho são calculados em baixa resolução e reutilizados em cache.

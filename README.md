@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.3.1.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
+O resultado fica em `releases/conquer-web-1.4.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
 
 ## Conteúdo e controles
 
@@ -150,3 +150,11 @@ O gerador usa dez famílias de materiais. Construção, variante visual, dano e 
 ### Proteção inicial — versão 1.3.1
 
 Novas descobertas de magma e crateras vulcânicas na faixa inicial (linha do portão e primeira camada subterrânea, até dois espaços para cada lado) resultam em uma caverna segura. A substituição acontece antes de fluidos ou danos serem aplicados. Além dessa faixa, e a partir da segunda camada subterrânea, os encontros de magma continuam normais.
+
+### Recompensas animadas — versão 1.4.0
+
+Cada unidade efetivamente recebida gera um símbolo: ♥ para recursos e ♦ para riquezas. Na exploração, eles saem do naipe da carta revelada, percorrem trajetórias curvas até o símbolo do placar e incrementam o contador individualmente ao chegar. Produção, magias, espólios e trocas também emitem símbolos; quando não há carta, a origem visual é a sala selecionada ou o mapa.
+
+Os ganhos continuam disponíveis imediatamente para construir, recrutar e salvar. Somente a apresentação do contador é escalonada. O limite do estoque é respeitado: se couberem apenas três recursos, voam três símbolos. Ganhos simultâneos e gastos durante o voo são conciliados com o saldo real. Carregar outra partida, voltar ao menu ou ocultar a janela encerra os efeitos pendentes. Movimento reduzido aplica os números sem animação de voo.
+
+A camada de efeitos usa Canvas 2D, com um item por unidade e glifos reutilizados. Não captura mouse/toque, não é gravada no save e está incluída no HTML autônomo. Execute `npm run test:resource-flights` para validar a interação e a contagem.

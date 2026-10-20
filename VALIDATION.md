@@ -79,3 +79,13 @@ Na compilação final 1.3.0 também passaram as **21 verificações gerais do na
 ## Revisão 1.3.1 — magma perto do portão
 
 66 testes do motor aprovados. Os novos casos forçam as duas origens de magma (4♣ com resultado lava e 8♣/cratera), em ambos os lados e no centro da faixa inicial, verificando sala segura, ausência de contaminação/dano ao portão e sobrevivência dos guardas. Casos de fronteira confirmam que magma/cratera continuam possíveis fora de dois espaços laterais e na segunda camada. O cenário de drenagem/reparo de magma foi deslocado para a segunda camada para continuar verificando o perigo real.
+
+## Revisão 1.4.0 — símbolos de ganho e contador progressivo
+
+**69 testes do motor aprovados.** Novos testes verificam os valores de ganho emitidos após limite de estoque, ausência de ganho para perdas, persistência imediata do saldo e as duas direções de troca.
+
+**10 verificações de navegador para as recompensas:** exatamente 14 copas partem da carta enquanto o contador permanece em 20; o valor passa por números intermediários; termina em 34 sem partículas restantes; 14 ouros chegam ao placar de riquezas; limite do estoque gera somente três partículas quando só há três vagas; recompensas sobrepostas e gasto durante o voo terminam no saldo correto; carregar cancela efeitos antigos sem duplicar ganhos; movimento reduzido elimina o voo; toque em 390px funciona sem interceptação ou overflow; ausência de exceções. Relatório em `artifacts/resource-flights-results.json`.
+
+Capturas `resource-hearts-in-flight.png` e `resource-flights-mobile.png`. A captura desktop foi revisada visualmente. O teste controla o relógio do navegador para conferir a quantidade antes da primeira chegada e o valor durante a animação.
+
+A compilação final 1.4.0 também aprovou as 21 verificações gerais do navegador e as 7 verificações do HTML autônomo offline.

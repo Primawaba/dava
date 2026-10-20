@@ -63,3 +63,7 @@ Monstros grandes têm uma única entidade e sprite maior: o poder total não é 
 Há autosave e três espaços locais, além de exportação/importação em JSON versionado. O carregador verifica tamanho pelo importador, estrutura, tipos, valores finitos, conteúdo conhecido e estado de combate antes de substituir o jogo. Batalhas carregam pausadas. O arquivo não executa scripts. Não há conta, nuvem de saves, rede multijogador ou coleta de dados.
 
 O jogo exporta uma PWA estática. Publicação em lojas, instaladores nativos e homologação física não foram realizados. A validação de toque é emulada em Chromium; não constitui certificação de compatibilidade com todos os aparelhos.
+
+## Coringas: diferença ainda pendente
+
+No DELVE, páginas impressas 33–36, o coringa preto desperta uma Monstruosidade Antiga; o vermelho gera um artefato lendário e pode revelar o Cristal do Vazio. Depois de usados, os coringas ficam fora do baralho por cinco turnos. Nesta versão digital, entram duas cartas iguais na profundidade 5 e ambas concedem recompensa genérica; não há distinção de cores, eventos próprios ou espera de cinco turnos. A vitória atual continua vinculada ao guardião na profundidade 12.

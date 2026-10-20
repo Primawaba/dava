@@ -157,3 +157,5 @@ export const ENEMIES={
  undead:{name:'Morto-vivo',speed:.55,range:.42,size:1},
  raider:{name:'Invasor',speed:.65,range:.42,size:1}
 };
+
+export const PASSAGES=['h-0','h-1','v-0','v-1','door-e','door-w','door-n','door-s','grate'];

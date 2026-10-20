@@ -4,7 +4,7 @@
 
 `releases/CONQUER-Jogar.html` reúne código, estilos, fontes e todas as imagens em um HTML autônomo, sem módulos externos e sem service worker. `npm run build:standalone` reproduz o arquivo e seu SHA-256.
 
-`npm run test:standalone` aprovou 7 verificações: recursos embutidos, 273 imagens de salas e 33 sprites, nova campanha com exploração/construção/recrutamento, persistência após recarga, exportação/importação, combate automático real, viewport com toque de 390px e ausência de exceções ou requisições de rede externas. Relatório em `artifacts/standalone-results.json`.
+`npm run test:standalone` aprovou 7 verificações: recursos embutidos, 273 imagens de salas, 33 sprites e 9 módulos de passagens, nova campanha com exploração/construção/recrutamento, persistência após recarga, exportação/importação, combate automático real, viewport com toque de 390px e ausência de exceções ou requisições de rede externas. Relatório em `artifacts/standalone-results.json`.
 
 A política administrativa deste Chromium bloqueia navegações `file://`. A suíte registra esse limite e testa o mesmo HTML em uma navegação de loopback interceptada pelo Playwright, sem servidor ou recursos externos, com a rede desativada. Portanto, a execução do HTML foi validada, mas a navegação direta por `file://` não pôde ser homologada neste navegador gerenciado. O arquivo foi inspecionado para confirmar que não contém imports, scripts ou assets locais dependentes de servidor.
 
@@ -54,3 +54,7 @@ Foram observados e corrigidos durante a validação: navegação offline da raiz
 Não testado em aparelhos físicos, Safari, Firefox, lojas ou leitores de tela com usuários. Não há certificação de desempenho em dispositivos de baixo custo nem estudo de balanceamento com jogadores. Não foram gerados instaladores nativos. Consulte `ADAPTATION.md` para as regras condensadas e diferentes das referências.
 
 O pacote web e seu checksum são gerados por `scripts/release.mjs`. O servidor de desenvolvimento e o build foram executados localmente; nenhum serviço externo recebeu publicação.
+
+## Revisão 1.1.1 — passagens em pixel art
+
+`npm run test:passages` aprovou 6.144 amostras de faixa interna opaca nas 16 combinações de conexão, em zoom 0,5 / 1 / 1,5 / 2, sem exceções. As amostras cobrem entradas, repetições horizontais e poços verticais; os nomes ficam fora dos poços. Captura geral das combinações: `artifacts/passages-16-masks.png`. A captura de fortaleza foi revisada visualmente. Os 50 testes do motor, 21 verificações gerais de navegador e 7 verificações do HTML autônomo também passaram nesta revisão.

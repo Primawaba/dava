@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 const mime={svg:'image/svg+xml',png:'image/png',ttf:'font/ttf'};
 async function dataUrl(path){const ext=path.split('.').at(-1);return `data:${mime[ext]};base64,${(await readFile('public/assets/'+path)).toString('base64')}`}
 const embeddedAssets={};
-for(const dir of ['rooms','sprites'])for(const name of (await readdir('public/assets/'+dir)).filter(n=>n.endsWith('.png')))embeddedAssets[dir+'/'+name]=await dataUrl(dir+'/'+name);
+for(const dir of ['rooms','sprites','passages'])for(const name of (await readdir('public/assets/'+dir)).filter(n=>n.endsWith('.png')))embeddedAssets[dir+'/'+name]=await dataUrl(dir+'/'+name);
 let css=await readFile('style.css','utf8');
 for(const name of ['serif.ttf','fortress.png'])css=css.replaceAll(`./assets/${name}`,await dataUrl(name));
 let bundle=`(()=>{'use strict';\nconst embeddedAssets=${JSON.stringify(embeddedAssets)};\n`;

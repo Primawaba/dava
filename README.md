@@ -58,7 +58,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.1.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
+O resultado fica em `releases/conquer-web-1.1.1.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote. Este trabalho não publica nem envia conteúdo a serviços externos.
 
 ## Conteúdo e controles
 
@@ -118,3 +118,9 @@ Validação executada em Chromium Linux e emulação de viewport/toque. **Não h
 O parâmetro `?test=1` habilita uma API local de inspeção para os testes automatizados. Não habilita rede, contas nem serviços remotos.
 
 A fonte DejaVu Serif é redistribuída sob os termos em `public/assets/FONT-LICENSE.txt`.
+
+### Passagens — revisão 1.1.1
+
+Conexões horizontais, verticais, entradas e grades usam nove módulos PNG de pixel art, com faixa interna contínua e desenho sem suavização. Os nomes das salas se afastam dos poços verticais.
+
+**Coringas:** ambos ainda concedem a mesma recompensa genérica. Não estão implementados os eventos distintos do coringa preto (Monstruosidade Antiga) e vermelho (artefato lendário, com possibilidade de Cristal do Vazio), nem a retirada por cinco turnos descrita no DELVE.

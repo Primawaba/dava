@@ -23,3 +23,7 @@ Referência: `DELVE November 8th Checked Version Pages.pdf`, de Anna Blackwell, 
 | Pedido do usuário | Monstros grandes não devem virar grupos pequenos | Uma entidade para dragão, golem guardião, troll, rainha, verme e elemental |
 
 O combate continua sendo uma adaptação em tempo real com IA. A campanha, os planos condensados e as demais escolhas digitais permanecem descritos em `ADAPTATION.md`. Esta revisão não afirma reproduzir integralmente todas as tabelas de DELVE.
+
+## Coringas: diferença ainda pendente
+
+No DELVE, páginas impressas 33–36, o coringa preto desperta uma Monstruosidade Antiga; o vermelho gera um artefato lendário e pode revelar o Cristal do Vazio. Depois de usados, os coringas ficam fora do baralho por cinco turnos. Nesta versão digital, entram duas cartas iguais na profundidade 5 e ambas concedem recompensa genérica; não há distinção de cores, eventos próprios ou espera de cinco turnos. A vitória atual continua vinculada ao guardião na profundidade 12.

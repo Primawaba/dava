@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.7.1.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
+O resultado fica em `releases/conquer-web-1.8.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
 
 ## Conteúdo e controles
 
@@ -226,3 +226,11 @@ Novos comandos: `npm run test:discoveries`, `npm run build:unique-art` e `npm ru
 ### Encaixe das salas e túneis — versão 1.7.1
 
 As novas artes de descobertas e os dois estados do dragão recebem enquadramento uniforme em execução: margens de papel são removidas, o conteúdo é centralizado e a escala preserva as proporções. O espaço visual volta a aproximar o dos sprites antigos, sem alterar posições do tabuleiro. As bocas dos corredores examinam a silhueta da sala em cada direção e avançam até ela para cobrir recuos, mantendo a paleta e a arquitetura de cada extremidade. Somente passagens abertas recebem essas entradas. O enquadramento vale também para os retratos do painel e é reutilizado em cache. `npm run test:room-framing` verifica a área ocupada e as junções nas quatro direções.
+
+### Cartas de efeitos e decisões — versão 1.8.0
+
+Magias boas/ruins, proteção do templo, artefatos, colheitas, conversões, motins, invasões, explosões, recuperações e outros efeitos de evento agora têm cartas com nome e descrição. Elas formam uma fila: **carta de baralho → animações de recursos → cartas de efeito → combate**. A simulação aguarda a apresentação, sem alterar a pausa manual anterior. Desativar as cartas de exploração nas opções não desativa os eventos.
+
+Efeitos informativos podem avançar por **Continuar** ou após o tempo de leitura; passar o mouse sobre a carta interrompe esse avanço automático. Decisões obrigatórias não fecham por tempo nem por Esc. A prisão antiga permite escolher entre manter ou libertar a criatura. O guerreiro leal recebido por magia permite escolher seu destino por botões ou pelo mapa, com salas válidas destacadas. Um alvo inválido não encerra a carta. Se o alvo deixou de existir, a carta informa isso e oferece uma saída explícita.
+
+Fila e decisões pendentes ficam no save. Carregar reapresenta o que falta, sem conceder os recursos ou tropas novamente. O combate só começa depois da última carta e respeita a pausa que já estava ativa. `npm run test:event-cards` verifica a ordem, as decisões e o fluxo em PC/mobile.

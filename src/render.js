@@ -132,6 +132,7 @@ export class Renderer{
    const x=seal.x+dx,y=seal.y+dy;if(this.game.room(x,y)||y<0)continue;
    c.strokeStyle='#965b4d66';c.fillStyle='#965b4d0c';c.setLineDash([3,4]);c.fillRect(x*CW-62,y*CH-40,124,80);c.strokeRect(x*CW-62,y*CH-40,124,80);c.setLineDash([]);c.fillStyle='#965b4d';c.font='9px Georgia';c.textAlign='center';c.fillText('SELADO',x*CW,y*CH+3);
   }
+  if(this.eventTargets?.length)for(const target of this.eventTargets){c.strokeStyle='#b4934b';c.lineWidth=2;this.corners(target.x*CW-82,target.y*CH-63,164,118)}
   const formation=this.unitFormation();
   for(const {u,x,y} of formation)this.unit(u,x,y,time);
   for(const p of this.game.projectiles){const x=(p.x+(p.tx-p.x)*p.t)*CW,y=(p.y+(p.ty-p.y)*p.t)*CH+this.floorOffset(p.x,p.y)*(1-p.t)+this.floorOffset(p.tx,p.ty)*p.t;c.save();c.translate(x,y);c.rotate(Math.atan2((p.ty-p.y)*CH,(p.tx-p.x)*CW));c.strokeStyle=p.team==='enemy'?'#a4563e':'#2f6853';c.fillStyle=c.strokeStyle;c.lineWidth=2;if(p.kind==='arrow'||p.kind==='bolt'){c.beginPath();c.moveTo(-13,0);c.lineTo(9,0);c.moveTo(4,-4);c.lineTo(10,0);c.lineTo(4,4);c.stroke();c.lineWidth=1;c.moveTo(-8,0);c.lineTo(-12,-3);c.stroke()}else{c.shadowColor=c.fillStyle;c.shadowBlur=10;c.beginPath();c.arc(0,0,p.kind==='flask'?4:5,0,Math.PI*2);c.fill();c.shadowBlur=0;c.strokeStyle='#b9c9a4';c.lineWidth=1;c.beginPath();c.moveTo(-5,0);c.lineTo(-17,0);c.stroke()}c.restore()}

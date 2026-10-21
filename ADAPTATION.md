@@ -105,3 +105,9 @@ As 46 descobertas do manifesto têm dois desenhos próprios, mais a variante esp
 Portais comuns e estabilizados fazem a rolagem de invasão a cada turno, mesmo isolados ou sem produção. Estabilização permite expedições e não sela a entrada. Cada resultado é registrado; o save impede repetir uma rolagem no mesmo turno. Invasões em áreas sem caminho podem continuar sem alcançar a base até que exista uma ligação; o surgimento das unidades não depende dessa ligação.
 
 Na revisão 1.7.1, as artes novas são enquadradas por seus pixels de primeiro plano e ajustadas com escala uniforme à área ocupada anteriormente. O desenho preserva proporções e mantém os centros das células. Entradas de corredor avançam até a silhueta encontrada em cada porta, em vez de depender apenas de um ponto fixo. O grafo de passagens continua sendo a única fonte de conexões.
+
+## Cartas de efeitos — 1.8.0
+
+Os efeitos são aplicados ao estado do jogo e registrados numa fila persistente de apresentação. A simulação do combate é bloqueada até terminar a carta de exploração, os créditos visuais de recursos e as cartas de evento. Assim o save continua refletindo os valores reais; a reapresentação não reaplica recompensas. Fatos imediatos, como dano ambiental, continuam imediatos, mas são comunicados antes de a batalha avançar.
+
+A magia do guerreiro leal cria o soldado e aguarda a escolha de seu acolhimento no portão ou em um quartel ativo com vaga. O jogador pode usar a lista da carta ou selecionar uma sala destacada no mapa. A prisão antiga oferece a decisão de libertar ou manter a criatura presa; se a libertação produzir hostilidade, uma nova carta informa o resultado antes de liberar o combate. Escolhas pendentes permanecem no save e não são concluídas automaticamente.

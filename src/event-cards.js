@@ -1,0 +1,30 @@
+const eventEscape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export class EventCards{
+ constructor(flights,{onChange=()=>{},onResolved=()=>{},onTargets=()=>{}}={}){this.flights=flights;this.onChange=onChange;this.onResolved=onResolved;this.onTargets=onTargets;this.game=null;this.active=null;this.layer=null;this.selecting=false;this.started=0;this.hover=false;this.wasBlocking=false;document.addEventListener('keydown',e=>this.key(e),true)}
+ get blocking(){return !!this.game&&(!!this.game.s.effectCards?.length||!!document.querySelector('.discovery-card')||this.flights.items.length>0)}
+ reset(game=null){this.layer?.remove();this.layer=null;this.active=null;this.selecting=false;this.hover=false;this.game=game;if(game)game.presentationEnabled=true;this.onTargets([]);this.wasBlocking=false;document.querySelector('.discovery-card')?.remove()}
+ tick(game,now){
+  if(this.game!==game)this.reset(game);
+  const modalOpen=!!document.querySelector('#modal-root')?.firstChild;
+  if(this.layer){const returning=this.layer.hidden&&!modalOpen;this.layer.hidden=modalOpen;if(returning)requestAnimationFrame(()=>this.layer?.querySelector('button')?.focus());}
+  const front=game.s.effectCards?.[0];
+  if(this.active&&front?.id!==this.active.id){this.layer?.remove();this.layer=null;this.active=null;this.selecting=false;this.onTargets([])}
+  if(!this.active&&front&&!document.querySelector('.discovery-card')&&!this.flights.items.length&&!document.querySelector('#modal-root')?.firstChild){this.active=front;this.started=now;this.elapsed=0;this.lastTick=now;this.render()}
+  if(this.active&&!this.active.input){if(!this.hover&&!document.hidden&&!modalOpen)this.elapsed+=Math.min(100,Math.max(0,now-this.lastTick));this.lastTick=now;if(this.elapsed>=4200)this.resolve();}
+  const blocked=this.blocking;if(blocked!==this.wasBlocking){this.wasBlocking=blocked;this.onChange()}
+ }
+ render(){
+  this.layer?.remove();const card=this.active;if(!card)return;
+  const layer=document.createElement('div');layer.className='event-card-layer'+(this.selecting?' targeting':'');
+  const targets=this.game.effectTargets(card),input=card.input;let actions='';
+  if(input?.kind==='unit-home'&&targets.length){actions=`<p class="event-prompt">${this.selecting?'Toque em uma sala destacada no mapa ou escolha abaixo.':'Escolha onde receber o guerreiro.'}</p><div class="event-targets">${targets.map(r=>`<button data-event-target="${r.x},${r.y}">${eventEscape(r.label)} <small>${r.x}, ${r.y}</small></button>`).join('')}</div><button class="panel-action" data-event-map>${this.selecting?'Voltar à carta':'Selecionar sala no mapa'}</button>`}
+  else if(input?.kind==='prison')actions='<button class="primary" data-event-choice="leave">Manter aprisionada</button><button class="panel-action" data-event-choice="release">Libertar criatura</button>';
+  else actions=`${input?'<p class="inline-note">O alvo deste efeito não está mais disponível.</p>':''}<button class="primary" data-event-continue>Continuar</button>`;
+  layer.innerHTML=`<section class="event-card ${card.tone}" role="dialog" aria-modal="${!this.selecting}" aria-labelledby="event-card-title" aria-describedby="event-card-description"><div class="event-card-kind">${card.tone==='good'?'EFEITO BENÉFICO':card.tone==='bad'?'EFEITO ADVERSO':'EVENTO'}<span>${this.game.s.effectCards.length>1?this.game.s.effectCards.length+' na fila':''}</span></div><div class="event-card-symbol" aria-hidden="true">${card.tone==='good'?'✦':card.tone==='bad'?'♠':'◇'}</div><h2 id="event-card-title">${eventEscape(card.title)}</h2><p id="event-card-description">${eventEscape(card.description)}</p><div class="event-card-actions">${actions}</div><p class="event-error" role="alert"></p></section>`;
+  layer.addEventListener('click',e=>{const target=e.target.closest('[data-event-target]'),choice=e.target.closest('[data-event-choice]');if(target){const [x,y]=target.dataset.eventTarget.split(',').map(Number);this.resolve({x,y})}else if(choice)this.resolve(choice.dataset.eventChoice);else if(e.target.closest('[data-event-continue]'))this.resolve();else if(e.target.closest('[data-event-map]')){this.selecting=!this.selecting;this.onTargets(this.selecting?targets:[]);this.render()}});
+  layer.querySelector('.event-card').addEventListener('pointerenter',()=>this.hover=true);layer.querySelector('.event-card').addEventListener('pointerleave',()=>{this.hover=false;this.elapsed=0;this.lastTick=performance.now()});document.body.append(layer);this.layer=layer;requestAnimationFrame(()=>layer.querySelector('button')?.focus());
+ }
+ selectRoom(room){if(!this.selecting)return false;this.resolve({x:room.x,y:room.y});return true}
+ resolve(selection=null){if(!this.active)return;const result=this.game.resolveEffect(this.active.id,selection);if(!result.ok){const error=this.layer?.querySelector('.event-error');if(error)error.textContent=result.reason;return}this.layer?.remove();this.layer=null;this.active=null;this.selecting=false;this.hover=false;this.onTargets([]);this.onResolved();this.onChange()}
+ key(e){if(!this.active||this.layer?.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(!this.active.input)this.resolve();return}if(e.key==='Tab'){const items=[...this.layer.querySelectorAll('button:not(:disabled)')],first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}return}if(e.target.closest?.('.event-card'))return;e.preventDefault();e.stopImmediatePropagation()}
+}

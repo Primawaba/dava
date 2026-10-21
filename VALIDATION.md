@@ -165,3 +165,13 @@ Capturas revisadas em `artifacts/`: `unique-discovery-rooms.png`, `unique-discov
 170 testes do motor aprovados. A suíte `test:room-framing` conferiu 144 variantes (46 descobertas e os dois estados do dragão), centralização, dimensões máximas, preservação de proporções e cache. Seus 576 pares sala/direção não apresentaram pixels de papel na linha de entrada dos túneis em 32.830 amostras. A galeria conectada foi revisada em PC e mobile, sem overflow ou exceções.
 
 A suíte de corredores também passou nas 3.264 amostras centrais, 16 máscaras, quatro níveis de zoom, 200 pares de material/orientação e comportamento de tochas. O HTML autônomo passou nas sete verificações de execução offline, salvamento, combate e mobile. A arte dos fossos continua nas dimensões anteriores; o módulo de enquadramento exclui os fossos e construções antigas. Capturas: `artifacts/room-footprints-connected.png` e `artifacts/room-footprints-mobile.png`; relatório `artifacts/room-framing-results.json`.
+
+## Revisão 1.8.0 — fila de efeitos antes do combate
+
+178 testes do motor aprovados. Oito casos novos cobrem todas as magias e proteção do templo, ordem FIFO e rejeição de descarte fora de ordem, seleção de sala e alvos inválidos, alvo desaparecido, escolha da prisão e evento hostil antes do combate, manutenção do prisioneiro, persistência sem duplicar recompensas e importação de saves antigos ou inválidos.
+
+A suíte `test:event-cards` aprovou 11 verificações no navegador: baralho e partículas terminam antes da carta; combate fica com tempo zero até a confirmação; partículas sem baralho também bloqueiam; efeitos seguem a ordem; escolhas resistem a Esc e alvo inválido; o clique real no mapa resolve o destino; save/carregamento preserva a escolha sem novo soldado; libertar uma criatura encadeia a carta hostil antes de lutar; os botões funcionam em viewport de toque mesmo com cartas de exploração desativadas; a pausa manual permanece. Não houve exceções de navegador.
+
+Também passaram 21 verificações gerais, 7 do HTML autônomo offline e 10 das animações de recursos, incluindo limites, gastos durante o voo, carregamento e movimento reduzido. Capturas: `event-card-after-rewards.png`, `event-card-target-selection.png` e `event-card-mobile.png` em `artifacts/`.
+
+O salvamento pelo menu durante a seleção no mapa também foi verificado: a carta se oculta sob o diálogo, preserva sua escolha pendente e retorna ao fechar o menu. A suíte de descobertas passou novamente nas 9 verificações com a nova fila ativa.

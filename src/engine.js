@@ -5,7 +5,7 @@ export const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export class Game {
  constructor({seed=Date.now(),name='A Última Fortaleza',difficulty='normal'}={}){
-  this.s={version:1,rulesVersion:2,immortalVersion:1,barricadeVersion:1,barricades:{},rivalDungeons:[],passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
+  this.s={version:1,rulesVersion:2,immortalVersion:1,barricadeVersion:1,barricades:{},rivalDungeons:[],effectCards:[],nextEffectId:1,passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
   this.projectiles=[];this.effects=[];this.dead=[];this.events=[];this.tickBudget=0;
   this.addRoom(0,0,'gate');for(let i=0;i<5;i++)this.addUnit('soldier',0,0,true);
   this.shuffleDeck();
@@ -18,6 +18,26 @@ export class Game {
  random(){let t=this.s.seed+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);this.s.seed>>>=0;return((t^t>>>14)>>>0)/4294967296}
  roll(n){return 1+Math.floor(this.random()*n)}
  note(text,kind='info'){this.s.log.unshift({text,kind,turn:this.s.turn});this.s.log=this.s.log.slice(0,100);this.events.push({type:'log',text,kind})}
+ effect(title,description,tone='neutral',input=null){
+  this.s.effectCards??=[];this.s.nextEffectId??=1;
+  const card={id:this.s.nextEffectId++,title,description,tone,input};this.s.effectCards.push(card);this.events.push({type:'effect-card',id:card.id});return card;
+ }
+ effectTargets(card){
+  if(card?.input?.kind!=='unit-home')return[];const unit=this.s.units.find(u=>u.id===card.input.unitId&&u.team==='ally'&&u.hp>0);if(!unit)return[];
+  return this.rooms.filter(r=>this.active(r)&&(r.type==='gate'||UNITS[unit.type]?.homes.includes(r.type)&&this.allies.filter(u=>u.id!==unit.id&&u.home===key(r.x,r.y)).length<this.capacity(r))).map(r=>({x:r.x,y:r.y,label:ROOMS[r.type].name}));
+ }
+ resolveEffect(id,selection=null){
+  const card=this.s.effectCards?.[0];if(!card||card.id!==id)return{ok:false,reason:'Aguarde a carta anterior.'};
+  if(card.input?.kind==='unit-home'){
+   const unit=this.s.units.find(u=>u.id===card.input.unitId&&u.team==='ally'&&u.hp>0),targets=this.effectTargets(card);
+   if(unit&&targets.length){const target=targets.find(r=>r.x===selection?.x&&r.y===selection?.y);if(!target)return{ok:false,reason:'Escolha uma sala válida para receber o guerreiro.'};unit.home=key(target.x,target.y);unit.x=target.x;unit.y=target.y;unit.moveTarget=null;this._tacticsDirty=true;}
+  }else if(card.input?.kind==='prison'){
+   if(!['release','leave'].includes(selection))return{ok:false,reason:'Escolha libertar a criatura ou mantê-la presa.'};
+   if(selection==='release'){const r=this.room(card.input.x,card.input.y);if(r?.type==='ancientprison')this.releasePrison(r);}
+  }
+  this.s.effectCards.shift();return{ok:true};
+ }
+ releasePrison(r){r.type='cave';if(this.roll(4)===4){this.addUnit('beast',r.x,r.y,true);this.note('Uma criatura libertada jurou proteger a fortaleza.','good');this.effect('Criatura libertada','A criatura tornou-se uma fera leal à fortaleza.','good')}else{this.spawnEnemies(r,60+Math.max(0,r.y)*5,'beast');this.effect('Prisioneiro hostil','A criatura libertada se revoltou e iniciou um combate.','bad');this.beginCombat()}}
  room(x,y){return this.s.rooms[key(x,y)]}
  addRoom(x,y,type){const r={x,y,type,variant:this.roll(3)-1,damaged:false,closed:false,prisoners:0,usedTurn:0,trap:null,barricade:null,secret:false,contaminant:null};this.s.rooms[key(x,y)]=r;if(type==='invincible')this.placeImmortal(r);if(type==='golemforge')this.placeGolem(r);return r}
  passageKey(a,b){return [key(a.x,a.y),key(b.x,b.y)].sort().join('|')}
@@ -42,7 +62,7 @@ export class Game {
  }
  damageBarricade(a,b,amount){
   const d=this.barricade(a,b);if(!d)return;d.hp=Math.max(0,d.hp-amount);
-  if(d.hp===0){this._routeCache=null;this._tacticsDirty=true;this.note('Uma porta reforçada foi destruída. O corredor ficou desprotegido.','danger');this.spreadHazards();this.events.push({type:'door-destroyed'})}
+  if(d.hp===0){this._routeCache=null;this._tacticsDirty=true;this.note('Uma porta reforçada foi destruída. O corredor ficou desprotegido.','danger');this.effect('Porta destruída','A passagem perdeu sua proteção. Invasores, líquidos e gases agora podem atravessá-la.','bad');this.spreadHazards();this.events.push({type:'door-destroyed'})}
  }
  sealedBlock(x,y){return !this.room(x,y)&&this.rooms.find(r=>r.type==='sealed'&&!r.sealOpened&&Math.abs(r.x-x)<=1&&Math.abs(r.y-y)<=1)}
  openSealedRoom(r,byDamage=false){
@@ -186,7 +206,7 @@ export class Game {
    if(n===10){enemy=40+Math.max(0,y)*5;enemyType='troll'}
    if(n===11){enemy=20+Math.max(0,y)*5;enemyType='worm'}
    if(n===12)msg='Uma criatura imortal bloqueia a câmara. Apenas morte instantânea pode derrotá-la.';
-   if(n===13){this.s.baseMorale+=1;msg='Uma criatura perdida atravessa a caverna e desaparece. +1 moral.'}
+   if(n===13){this.s.baseMorale+=1;this.effect('Criatura perdida','O encontro com a criatura perdida aumentou a moral em 1.','good');msg='Uma criatura perdida atravessa a caverna e desaparece. +1 moral.'}
    if(n===16)this.magic(this.roll(2)===1);
    if(n===18){enemy=10*this.roll(8)+Math.max(0,y)*5;enemyType='elemental'}
    if(n===19){const count=this.roll(4);enemy=10*count+Math.max(0,y)*5;enemyType=count===4?'insectqueen':'insect'}
@@ -194,13 +214,16 @@ export class Game {
    msg=msg||`♣ ${c.rank} · ${ROOMS[type].name}.`;
   }else if(c.suit==='♠'){
    ({type,enemy,enemyType}=this.resolveRemnant(c,x,y));msg=`♠ ${c.rank} · ${ROOMS[type].name}.`;
-  }else{type='vault';this.magic(true);this.gain(15,15);msg='★ Descoberta lendária: um artefato fortalece suas tropas.';this.s.blessings++}
+  }else{type='vault';this.magic(true);this.gain(15,15);msg='★ Descoberta lendária: um artefato fortalece suas tropas.';this.s.blessings++;this.effect('Descoberta lendária','O artefato encontrado concede +6% de dano permanente e até 15♥ e 15♦, além da magia revelada.','good')}
   if(y<=1&&type==='burrow'){type='cave';enemy=0;msg=`${c.suit} ${c.rank} · Caverna vazia.`;}
   // Protect the gate's starting strip before hazards can spread or kill units.
   if(y<=1&&Math.abs(x)<=2&&['lava','crater'].includes(type)){type='cave';msg=`${c.suit} ${c.rank} · Uma caverna de rocha vulcânica fria.`;}
   const r=this.addRoom(x,y,type);this.connectRooms(approach,r);r.rewardPending=enemy>0;r.flowActive=!(['water','lava','crater'].includes(type)&&approach?.x===x&&approach?.y===y-1);if(c.suit==='♠'&&c.rank===7)r.damaged=true;
   this.note(msg,enemy?'danger':'good');
-  if(type==='mushrooms'){if(this.roll(2)===1)this.s.baseMorale+=5;else this.gain(10,0)}
+  if(type==='mushrooms'){if(this.roll(2)===1){this.s.baseMorale+=5;this.effect('Banquete de cogumelos','A colheita elevou a moral da fortaleza em 5.','good')}else{this.gain(10,0);this.effect('Colheita de cogumelos','A colheita concedeu até 10♥, respeitando a capacidade do armazém.','good')}}
+  if(type==='ancientprison')this.effect('Prisão antiga','Uma criatura está presa nesta sala. Deseja libertá-la ou mantê-la aprisionada?','neutral',{kind:'prison',x,y});
+  if(type==='springs')this.effect('Fonte termal','As águas termais aumentam a moral em 2 enquanto esta sala estiver ativa.','good');
+  if(ROOMS[type]?.hazard)this.effect(ROOMS[type].name,ROOMS[type].desc,'bad');
   if(enemy>0)this.spawnEnemies(r,enemy,enemyType);
   if(type==='rivalhold')this.expandRivalDungeon(r);
   this.spreadHazards();
@@ -215,7 +238,7 @@ export class Game {
    if(n===5)this.gain(0,20+2*y);
    if(n===7){type=['barracks','library','warehouse','kitchen'][this.roll(4)-1]}
    if(n===8)this.magic(true);
-   if(n===11){this.s.blessings++;this.note('Um artefato encantado concede +6% de dano permanente.','good')}
+   if(n===11){this.s.blessings++;this.note('Um artefato encantado concede +6% de dano permanente.','good');this.effect('Artefato encantado','O artefato concede +6% de dano permanente às suas tropas.','good')}
    if(n===13||n===14||n===15||n===17||n===18||n===21||n===23){enemy=({13:50,14:30,15:30,17:40,18:50,21:40,23:60}[n])+Math.max(0,y)*5;enemyType=n===21?'golem':n===15?'miner':n===23?'champion':n===18?'lich':'goblin'}
    if(n===16)this.magic(false);
   return{type,enemy,enemyType};
@@ -224,6 +247,7 @@ export class Game {
   let card=this.draw(room.y);while(card.rank===0)card=this.draw(room.y);
   const result=this.resolveRemnant({...card,suit:'♠'},room.x,room.y);room.type=result.type;
   if(result.type==='golemforge'){const guard=this.placeGolem(room);if(guard)group.enemyIds.push(guard.id)}
+  if(result.type==='ancientprison')this.effect('Prisão antiga','Uma criatura está presa nesta sala. Deseja libertá-la ou mantê-la aprisionada?','neutral',{kind:'prison',x:room.x,y:room.y});
   room.rewardPending=result.enemy>0;room.rivalCard={suit:card.suit,rank:card.rank};if(card.rank===7)room.damaged=true;
   if(result.enemy>0){if(this.s.combat)group.fought=true;const start=this.s.units.length;this.spawnEnemies(room,result.enemy,result.enemyType);group.enemyIds.push(...this.s.units.slice(start).map(u=>u.id))}
   if(result.type==='rivalhold')pending.push(room);this.s.maxDepth=Math.max(this.s.maxDepth,room.y);
@@ -265,7 +289,7 @@ export class Game {
    r.portalCheckedTurn=this.s.turn;r.portalRoll=this.roll(4);
    if(r.portalRoll===1){
     const before=this.s.units.length;this.spawnEnemies(r,20+Math.max(0,r.y)*5,'raider');
-    this.note(`Invasão pelo portal em ${r.x},${r.y}! Rolagem 1/4: ${this.s.units.length-before} invasores atravessaram.`,'danger');this.events.push({type:'portal-invasion',room:{x:r.x,y:r.y}});
+    this.note(`Invasão pelo portal em ${r.x},${r.y}! Rolagem 1/4: ${this.s.units.length-before} invasores atravessaram.`,'danger');this.events.push({type:'portal-invasion',room:{x:r.x,y:r.y}});this.effect('Invasão planar',`Invasores atravessaram o portal em ${r.x}, ${r.y}. Prepare-se para o combate.`,'bad');
    }else this.note(`Portal em ${r.x},${r.y}: rolagem ${r.portalRoll}/4. Nenhuma invasão neste turno.`);
   }
  }
@@ -273,11 +297,11 @@ export class Game {
   let res=0,gold=0;
   for(const r of this.rooms){if(!this.active(r))continue;
    res+=r.type==='forest'?2:0;gold+=({mine:2,parlor:2,elemental:4,city:3}[r.type]||0);if(r.type==='hive')res+=2;
-   if(r.type==='crystal'){const card=this.draw(Math.max(0,r.y));if(card.suit==='♦'&&card.rank===1){r.type='cave';r.exhausted=true;this.note('Uma caverna de cristal se esgotou. O espaço continua transitável.','warn')}else gold+=card.rank+Math.max(0,r.y)}
+   if(r.type==='crystal'){const card=this.draw(Math.max(0,r.y));if(card.suit==='♦'&&card.rank===1){r.type='cave';r.exhausted=true;this.effect('Caverna esgotada','O cristal se esgotou. A sala continua transitável, mas não produz mais riquezas e não pode receber construções.','neutral');this.note('Uma caverna de cristal se esgotou. O espaço continua transitável.','warn')}else gold+=card.rank+Math.max(0,r.y)}
    if(r.type==='prison'){r.prisoners=Math.min(20,r.prisoners+1);if(r.prisoners===20)gold+=20}
    if(r.type==='games')gold+=5*this.rooms.filter(n=>this.isHousing(n)&&Math.abs(n.x-r.x)<=2&&Math.abs(n.y-r.y)<=2).length;
    if(r.type==='persuasion'&&this.roll(4)===4)res+=10;
-   if(r.type==='hiring'&&this.roll(4)===4){const cell=this.rooms.find(n=>n.type==='solitary'&&n.prisoners);if(cell){cell.prisoners=0;this.addUnit('thug',r.x,r.y,false);this.note('Um prisioneiro se juntou à sua causa.','good')}}
+   if(r.type==='hiring'&&this.roll(4)===4){const cell=this.rooms.find(n=>n.type==='solitary'&&n.prisoners);if(cell){cell.prisoners=0;this.addUnit('thug',r.x,r.y,false);this.note('Um prisioneiro se juntou à sua causa.','good');this.effect('Prisioneiro convertido','Um prisioneiro aceitou servir à fortaleza como capanga.','good')}}
 
   }
   if(this.s.artifacts.includes('forest'))res+=4;if(this.s.artifacts.includes('honey'))res+=10;if(this.s.artifacts.includes('museum'))gold+=5;
@@ -320,7 +344,7 @@ export class Game {
   this.s.gold-=d.cost;this.addUnit(type,r.x,r.y,this.s.artifacts.includes('loyal'));this.note(`${d.name} recrutado em ${ROOMS[r.type].name}.`,'good');this.checkMutiny();return{ok:true};
  }
  trade(direction,amount=1){if(this.s.status!=='playing'||this.s.combat||this.s.traded)return{ok:false,reason:'Uma troca por turno, fora de combate.'};if(!Number.isInteger(amount)||amount<1)return{ok:false,reason:'Quantidade inválida.'};const c=this.capacities();if(direction==='gold'){amount=Math.min(amount,this.s.gold,Math.floor((c.resources-this.s.resources)/2));if(amount<1)return{ok:false,reason:'Sem riquezas ou espaço no armazém.'};this.s.gold-=amount;this.s.resources+=amount*2;this.events.push({type:'resource-gain',resources:amount*2,gold:0});}else{amount=Math.min(amount,Math.floor(this.s.resources/2),c.gold-this.s.gold);if(amount<1)return{ok:false,reason:'Sem recursos ou espaço na tesouraria.'};this.s.resources-=amount*2;this.s.gold+=amount;this.events.push({type:'resource-gain',resources:0,gold:amount})}this.s.traded=true;this.note(`Troca concluída: ${amount}${direction==='gold'?'♦ → '+amount*2+'♥':'♦ recebidas por '+amount*2+'♥'}.`);return{ok:true}}
- checkMutiny(){const morale=this.morale();for(const u of this.allies){const threshold=UNITS[u.type]?.mutiny||0;if(!u.loyal&&morale<threshold){u.team='enemy';this.note(`${UNITS[u.type].name} se amotinou! Moral ${morale} < ${threshold}.`,'danger')}}if(this.enemies.length&&!this.s.combat)this.beginCombat()}
+ checkMutiny(){const morale=this.morale();for(const u of this.allies){const threshold=UNITS[u.type]?.mutiny||0;if(!u.loyal&&morale<threshold){u.team='enemy';this.effect('Motim',`${UNITS[u.type].name} se amotinou porque a moral ficou abaixo de ${threshold}. A unidade agora é inimiga.`,'bad');this.note(`${UNITS[u.type].name} se amotinou! Moral ${morale} < ${threshold}.`,'danger')}}if(this.enemies.length&&!this.s.combat)this.beginCombat()}
  spawnEnemies(r,total,type='raider'){
   total=Math.max(1,Math.round(total*DIFFICULTIES[this.s.difficulty].enemy));const d=ENEMIES[type]||ENEMIES.raider;
   const n=d.single?1:Math.min(8,Math.max(1,Math.ceil(total/8)));
@@ -413,12 +437,13 @@ export class Game {
  damage(u,amount,{instant=false}={}){if(u.hp<=0||u.type==='immortal'&&!instant)return;if(instant)amount=u.hp+u.shield;const absorb=Math.min(u.shield,amount);u.shield-=absorb;u.hp-=amount-absorb;this.effects.push({x:u.x,y:u.y,kind:'hit',life:0.35});if(u.hp<=0){this._tacticsDirty=true;u.hp=0;if(u.type==='golem'&&u.team!=='ally'){const forge=this.s.rooms[u.home];if(forge?.type==='golemforge'&&forge.golemId===u.id){forge.golemDefeated=true;forge.golemId=null;}}this.effects.push({x:u.x,y:u.y,kind:'death',life:0.8});if(u.team==='enemy'){this.s.kills++;if(u.type==='guardian'&&this.s.rooms[u.home]?.type==='void')this.s.voidDefeated=true}else if(u.team==='ally')this.dead.push({...u});if(u.type==='immortal'){this.s.units=this.s.units.filter(v=>v.id!==u.id);const r=this.s.rooms[u.home];if(r){r.immortalId=null;if(r.type==='invincible')r.type='cave';r.closed=false;}this._routeCache=null;this.note('A criatura imortal foi eliminada por morte instantânea. A passagem está livre.','good')}this.events.push({type:'death',team:u.team})}}
  killInstant(u){this.damage(u,u.hp+u.shield,{instant:true})}
  update(dt){
-  if(!this.s.combat||this.s.paused||this.s.status!=='playing')return;
+  if(!this.s.combat||this.s.paused||this.s.status!=='playing'||this.presentationEnabled&&this.s.effectCards?.length)return;
   dt=Math.min(dt,0.1)*this.s.speed;this.s.seconds+=dt;
   for(const e of this.effects)e.life-=dt;this.effects=this.effects.filter(e=>e.life>0);
   for(const p of this.projectiles){p.t+=dt/p.duration;if(p.t>=1){const t=this.s.units.find(u=>u.id===p.target);if(t&&t.hp>0&&this.lineOfSight({x:p.x,y:p.y},t)&&Math.hypot(t.x-p.tx,t.y-p.ty)<.6)this.damage(t,p.damage)}}this.projectiles=this.projectiles.filter(p=>p.t<1);
   this._routeCache=new Map();this.refreshDefensePlan();const actors=[...this.s.units].filter(u=>u.hp>0&&u.team!=='neutral');const hits=[];
   for(const u of actors){
+   if(this.presentationEnabled&&this.s.effectCards?.length)break;
    u.attack=Math.max(0,u.attack-dt);u.cooldown-=dt;u.stun=Math.max(0,u.stun-dt);if(u.stun>0)continue;
    const d=this.unitData(u),at=this.room(Math.round(u.x),Math.round(u.y));if(!at)continue;
    if(this.lethalHazard(at,u)){this.killInstant(u);continue}
@@ -454,15 +479,15 @@ export class Game {
   this._routeCache=null;
  }
  endCombat(){this.s.combat=false;this.s.paused=false;this.s.battles++;this.projectiles=[];this.effects=[];
-  const revived=new Set();for(const h of this.rooms.filter(r=>r.type==='hospital'&&this.active(r))){const u=this.dead.find(u=>!revived.has(u.id)&&Math.abs(u.x-h.x)<=2&&Math.abs(u.y-h.y)<=2);if(u){revived.add(u.id);u.hp=u.maxHp;this.s.units.push(u);this.note('O Hospital trouxe um defensor de volta.','good')}}
-  for(const u of this.dead){if(!revived.has(u.id)&&u.type==='undead'&&this.roll(2)===2){u.hp=u.maxHp;this.s.units.push(u)}}
+  const revived=new Set();for(const h of this.rooms.filter(r=>r.type==='hospital'&&this.active(r))){const u=this.dead.find(u=>!revived.has(u.id)&&Math.abs(u.x-h.x)<=2&&Math.abs(u.y-h.y)<=2);if(u){revived.add(u.id);u.hp=u.maxHp;this.s.units.push(u);this.note('O Hospital trouxe um defensor de volta.','good');this.effect('Resgate do hospital','Um defensor caído foi recuperado pelo hospital e voltou à fortaleza.','good')}}
+  for(const u of this.dead){if(!revived.has(u.id)&&u.type==='undead'&&this.roll(2)===2){u.hp=u.maxHp;this.s.units.push(u);this.effect('Retorno dos mortos','Um morto-vivo derrotado se ergueu novamente e voltou às suas tropas.','good')}}
   for(const u of this.allies){u.hp=u.maxHp;u.shield=0;u.moveTarget=null;const r=this.s.rooms[u.home];if(r){u.x=r.x;u.y=r.y}}
   this.applyHazards();
   for(const r of this.rooms){if(r.trap)r.trap.armed=true;if(r.type==='solitary'&&!r.prisoners)r.prisoners=1;if(r.rewardPending&&!r.captured){r.rewardPending=false;if(r.type==='vault')this.gain(0,25);if(r.type==='rivalmine')this.gain(20,0);if(r.type==='tomb')this.magic(true);if(r.type==='challenge')this.addUnit('soldier',this.target.x,this.target.y,true);if(r.type==='rivalhold'&&!(this.s.rivalDungeons||[]).some(d=>d.members.includes(key(r.x,r.y))))this.gain(0,30)}}
   this.settleRivalDungeons();
   this.dead=[];this.gain(0,3+Math.floor(this.s.maxDepth/2));this.s.baseMorale+=1;if(this.has('museum'))this.s.trophies=Math.min(4,this.s.trophies+1);
   this.note('Vitória! Os sobreviventes se recuperam. +1 moral e espólios de guerra.','good');this.events.push({type:'victory'});
-  if(this.s.expedition!==null){const p=PLANES[this.s.expedition];this.s.artifacts.push(p.effect);this.note(`Expedição vitoriosa: ${p.artifact}!`,'good');if(p.effect==='berserker'){const free=this.rooms.find(r=>r.type==='cave');if(free)free.type='meadhall'}this.s.expedition=null}
+  if(this.s.expedition!==null){const p=PLANES[this.s.expedition];this.s.artifacts.push(p.effect);this.note(`Expedição vitoriosa: ${p.artifact}!`,'good');this.effect(p.artifact,p.desc,'good');if(p.effect==='berserker'){const free=this.rooms.find(r=>r.type==='cave');if(free)free.type='meadhall'}this.s.expedition=null}
   if(this.s.voidDefeated&&this.rooms.some(r=>r.type==='void'&&!r.captured)){this.s.artifacts.push('void');this.s.status='won';this.note('O Cristal do Vazio é seu. A fortaleza conquistou o abismo.','good');this.events.push({type:'won'})}
  }
  lose(){this.s.status='lost';this.s.combat=false;this.note('Um invasor atravessou o último reduto. Sua fortaleza caiu.','danger');this.events.push({type:'lost'})}
@@ -480,13 +505,13 @@ export class Game {
    this.note(magma?'Magma drenado. A sala permanece danificada e precisa de reparo.':'Sala drenada. A construção original foi preservada.','good');return {ok:true};
   }
   if(action==='attackGolem'&&r.type==='golemforge'){const guard=this.s.units.find(u=>u.id===r.golemId&&u.team==='neutral'&&u.hp>0);if(!guard)return{ok:false,reason:'Não há golem passivo nesta forja.'};guard.team='enemy';r.rewardPending=true;this._tacticsDirty=true;this.note('O guardião da forja foi desafiado e entrou em combate.','danger');this.beginCombat();return{ok:true}}
-  if(action==='release'&&r.type==='ancientprison'){r.type='cave';if(this.roll(4)===4){this.addUnit('beast',x,y,true);this.note('A criatura libertada jurou lealdade.','good')}else{this.spawnEnemies(r,60+Math.max(0,y)*5,'beast');this.beginCombat()}return{ok:true}}
-  if(action==='festival'){if(this.s.gold<10)return{ok:false,reason:'O festival custa 10♦.'};this.s.gold-=10;this.s.baseMorale+=5;this.note('Um festival aquece os corações. +5 moral.','good');return{ok:true}}
+  if(action==='release'&&r.type==='ancientprison'){this.releasePrison(r);return{ok:true}}
+  if(action==='festival'){if(this.s.gold<10)return{ok:false,reason:'O festival custa 10♦.'};this.s.gold-=10;this.s.baseMorale+=5;this.note('Um festival aquece os corações. +5 moral.','good');this.effect('Festival','A celebração aumenta a moral da fortaleza em 5.','good');return{ok:true}}
   if(action==='magic'&&r.type==='sealed'){this.openSealedRoom(r);this.spreadHazards();this.checkMutiny();return{ok:true}}
   if(action==='magic'&&['well','ancienttemple','sealed','ritual','chaos'].includes(r.type)){if(r.usedTurn===this.s.turn)return{ok:false,reason:'Já utilizado neste turno.'};if(r.type==='well'&&this.s.gold<10)return{ok:false,reason:'O desejo custa 10♦.'};if(r.type==='well')this.s.gold-=10;if(r.type==='chaos'){this.magic(false);this.gain(20,20)}this.magic(r.type==='ritual'||r.type==='chaos'?true:r.type==='sealed'?false:this.roll(2)===1);r.usedTurn=this.s.turn;if(r.type!=='well')r.type='cave';return{ok:true}}
-  if(action==='steal'&&r.type==='dragon'&&!r.dragonAwake){if(r.usedTurn===this.s.turn)return{ok:false,reason:'Um roubo por turno.'};r.usedTurn=this.s.turn;this.gain(0,20);if(this.roll(4)===1){this.spawnEnemies(r,100+Math.max(0,y)*5,'dragon');r.dragonAwake=true;this.beginCombat()}else this.note('20♦ roubadas. O dragão continua dormindo.','good');return{ok:true}}
+  if(action==='steal'&&r.type==='dragon'&&!r.dragonAwake){if(r.usedTurn===this.s.turn)return{ok:false,reason:'Um roubo por turno.'};r.usedTurn=this.s.turn;this.gain(0,20);if(this.roll(4)===1){this.spawnEnemies(r,100+Math.max(0,y)*5,'dragon');r.dragonAwake=true;this.effect('Dragão desperto','O dragão acordou e abandonou a pilha de tesouros. Restam as ruínas do palácio, e a criatura agora avança para o combate.','bad');this.beginCombat()}else this.note('20♦ roubadas. O dragão continua dormindo.','good');return{ok:true}}
   if(action==='closePortal'&&['portal','stabilizer'].includes(r.type)){if(this.s.gold<20)return{ok:false,reason:'Selar custa 20♦ nesta adaptação.'};this.s.gold-=20;r.type='cave';this.note('Portal selado. Não haverá novas invasões nesta sala.','good');return{ok:true}}
-  if(action==='invention'&&r.type==='artificer'){if(this.s.gold<50)return{ok:false,reason:'Uma invenção custa 50♦.'};this.s.gold-=50;this.s.inventions++;this.note('Engenharia extraordinária: +15% de dano permanente.','good');return{ok:true}}
+  if(action==='invention'&&r.type==='artificer'){if(this.s.gold<50)return{ok:false,reason:'Uma invenção custa 50♦.'};this.s.gold-=50;this.s.inventions++;this.note('Engenharia extraordinária: +15% de dano permanente.','good');this.effect('Engenharia extraordinária','A nova invenção concede +15% de dano permanente às suas tropas.','good');return{ok:true}}
   if(action==='expedition'&&r.type==='stabilizer'){
    if(!Number.isInteger(arg)||!PLANES[arg]||this.s.artifacts.includes(PLANES[arg].effect))return{ok:false,reason:'Expedição inválida ou concluída.'};if(this.s.gold<20)return{ok:false,reason:'A expedição custa 20♦.'};this.s.gold-=20;this.s.expedition=arg;this.spawnEnemies(r,40+arg*5,'guardian');this.note(`Expedição: ${PLANES[arg].name}. Uma força do plano cruza o portal!`,'danger');this.beginCombat();return{ok:true};
   }
@@ -501,10 +526,24 @@ export class Game {
   return{ok:false,reason:'Ação indisponível.'};
  }
  reconnectCaptured(){for(const r of this.rooms){if(!r.captured||this.path(r,this.target)===null)continue;r.captured=false;const guards=r.garrison||[];if(guards.length){for(const u of guards)this.spawnEnemies(r,u.power/DIFFICULTIES[this.s.difficulty].enemy,u.type);r.garrison=[]}else this.spawnEnemies(r,20+Math.max(0,r.y)*5,r.type==='void'?'guardian':'raider');this.note('A reconexão despertou os ocupantes de '+ROOMS[r.type].name+'.','danger')}if(this.enemies.length)this.beginCombat()}
- magic(good){if(good){const n=this.roll(4);if(n===1){this.s.blessings++;this.note('Magia boa · Metal vivo: +6% de dano permanente.','good')}if(n===2){this.s.baseMorale+=5;this.note('Magia boa · Euforia: +5 moral.','good')}if(n===3){this.gain(15,10);this.note('Magia boa · Fortuna: +15♥ e +10♦.','good')}if(n===4){this.addUnit('soldier',this.target.x,this.target.y,true);this.note('Magia boa · Um guerreiro leal jura proteger a fortaleza.','good')}}else{if(this.has('temple')){this.note('O Templo dissipou uma maldição.','good');return}const n=this.roll(3);if(n===1){this.s.baseMorale-=3;this.note('Magia ruim · Sussurros: −3 moral.','danger')}if(n===2){this.s.gold=Math.max(0,this.s.gold-10);this.note('Magia ruim · Ferrugem: −10♦.','danger')}if(n===3){this.s.resources=Math.max(0,this.s.resources-10);this.note('Magia ruim · Praga: −10♥.','danger')}}}
+ magic(good){
+  const announce=(title,description,tone,input=null)=>{this.note(`${good?'Magia boa':'Magia ruim'} · ${title}: ${description}`,tone==='bad'?'danger':'good');this.effect(title,description,tone,input)};
+  if(good){const n=this.roll(4);
+   if(n===1){this.s.blessings++;announce('Metal vivo','Suas tropas recebem +6% de dano permanente.','good')}
+   if(n===2){this.s.baseMorale+=5;announce('Euforia','A moral da fortaleza aumenta em 5.','good')}
+   if(n===3){const r=this.s.resources,g=this.s.gold;this.gain(15,10);announce('Fortuna',`Você recebeu ${this.s.resources-r}♥ e ${this.s.gold-g}♦, respeitando a capacidade dos depósitos.`,'good')}
+   if(n===4){const u=this.addUnit('soldier',this.target.x,this.target.y,true);announce('Guerreiro leal','Um soldado leal se juntou à fortaleza. Escolha a sala onde ele será acolhido.','good',{kind:'unit-home',unitId:u.id})}
+  }else{
+   if(this.has('temple')){this.note('O Templo dissipou uma maldição.','good');this.effect('Proteção do templo','O templo dissipou a magia ruim. A fortaleza não sofreu seus efeitos.','good');return}
+   const n=this.roll(3);
+   if(n===1){this.s.baseMorale-=3;announce('Sussurros','Vozes nas profundezas reduzem a moral da fortaleza em 3.','bad')}
+   if(n===2){const before=this.s.gold;this.s.gold=Math.max(0,before-10);announce('Ferrugem',`A maldição destruiu ${before-this.s.gold}♦ das suas riquezas.`,'bad')}
+   if(n===3){const before=this.s.resources;this.s.resources=Math.max(0,before-10);announce('Praga',`A praga consumiu ${before-this.s.resources}♥ dos seus recursos.`,'bad')}
+  }
+ }
  applyHazards(){
   let casualties=0;for(const u of this.s.units){if(u.hp<=0)continue;const r=this.room(Math.round(u.x),Math.round(u.y));if(r&&this.lethalHazard(r,u)){this.killInstant(u);casualties++}}
-  if(casualties)this.note(`${casualties} unidade(s) foram derrotadas imediatamente por fluidos ou gás venenoso.`,'danger');
+  if(casualties){this.effect('Perigo ambiental',`${casualties} unidade(s) foram derrotadas imediatamente por líquidos ou gás venenoso.`,'bad');this.note(`${casualties} unidade(s) foram derrotadas imediatamente por fluidos ou gás venenoso.`,'danger');}
  }
  spreadHazards(){
   const gasTypes=['gas','flammable','miasma','blindgas'];
@@ -529,7 +568,7 @@ export class Game {
    for(const rk of ignited){const r=this.s.rooms[rk];this.damageRoom(r);
     for(const u of this.s.units)if(u.hp>0&&Math.round(u.x)===r.x&&Math.round(u.y)===r.y)this.killInstant(u);
     r.gas=null;r.contaminant=null;if(r.type==='flammable')r.type='cave';
-   }this.note('Gás inflamável alcançou uma forja, taverna ou quartel: explosão! Todas as salas atingidas foram danificadas.','danger');
+   }this.note('Gás inflamável alcançou uma forja, taverna ou quartel: explosão! Todas as salas atingidas foram danificadas.','danger');this.effect('Explosão de gás','O gás inflamável alcançou uma fonte de ignição. A explosão atingiu todas as salas conectadas da nuvem.','bad');
   }
   for(const r of this.rooms)r.contaminant=r.gas||r.fluid||null;
   this.applyHazards();
@@ -543,6 +582,9 @@ export class Game {
   if(typeof s.combat!=='boolean'||typeof s.paused!=='boolean'||![.5,1,2].includes(s.speed)||!Number.isInteger(s.nextId)||s.nextId<1||!(s.expedition===null||Number.isInteger(s.expedition)&&s.expedition>=0&&s.expedition<PLANES.length))throw Error('Estado de combate inválido.');
   for(const n of ['turn','resources','gold','baseMorale','nextId','seconds','blessings','inventions','trophies','maxDepth','kills','battles'])if(!finite(s[n])||Math.abs(s[n])>1e9)throw Error('Valores inválidos no salvamento.');
   for(const[k,r]of Object.entries(s.rooms)){if(!r||!coordinate(r.x)||!coordinate(r.y)||key(r.x,r.y)!==k||!Object.hasOwn(ROOMS,r.type)||!Number.isInteger(r.variant)||r.variant<0||r.variant>2)throw Error('Mapa inválido.');if(r.trap&&(!['damage','delay'].includes(r.trap.kind)||![1,2,3].includes(r.trap.level)))throw Error('Armadilha inválida.');if(r.barricade&&(!['defensive','offensive'].includes(r.barricade.kind)||!finite(r.barricade.hp)))throw Error('Barricada inválida.')}
+  s.effectCards??=[];s.nextEffectId??=1;
+  if(!Array.isArray(s.effectCards)||s.effectCards.length>2000||!Number.isInteger(s.nextEffectId)||s.nextEffectId<1)throw Error('Fila de eventos inválida.');
+  const effectIds=new Set();for(const c of s.effectCards){if(!c||!Number.isInteger(c.id)||c.id<1||c.id>=s.nextEffectId||effectIds.has(c.id)||typeof c.title!=='string'||c.title.length>200||typeof c.description!=='string'||c.description.length>2000||!['good','bad','neutral'].includes(c.tone))throw Error('Carta de evento inválida.');effectIds.add(c.id);if(c.input&&!(c.input.kind==='unit-home'&&Number.isInteger(c.input.unitId)&&c.input.unitId>0||c.input.kind==='prison'&&Number.isInteger(c.input.x)&&Number.isInteger(c.input.y)&&s.rooms[key(c.input.x,c.input.y)]))throw Error('Escolha de evento inválida.');}
   s.rivalDungeons??=[];
   if(!Array.isArray(s.rivalDungeons)||s.rivalDungeons.length>2000)throw Error('Masmorras rivais inválidas.');
   const dungeonRoots=new Set();for(const d of s.rivalDungeons){

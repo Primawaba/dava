@@ -115,3 +115,9 @@ A magia do guerreiro leal cria o soldado e aguarda a escolha de seu acolhimento 
 ### Versão 1.9 — extensões solicitadas pelo jogador
 
 A distribuição 50/30/15/5 de cavernas de 1–4 células e o tamanho dos covis por força são regras de adaptação digital solicitadas pelo usuário, não extraídas do PDF. A expansão não compra cartas e não concede recursos adicionais; liga apenas o novo grupo, respeitando paredes de salas preexistentes. Chefes continuam sendo criaturas únicas. Fundo preto, tijolos por material, bordas de tinta, retratos quadrados de eventos, exportação PNG e força nominal no cabeçalho são recursos de apresentação. A prévia de HTML do iOS não executa necessariamente JavaScript; para o iPhone é necessário servir o jogo como página no Safari.
+
+### Revisão visual 1.10.0
+
+Por solicitação do jogador, o fundo preto, tijolos e shader de tinta foram removidos. As cavernas modulares preservam os sprites anteriores; apenas as aberturas compartilhadas usam novas peças de rocha em pixel art, com recorte e escala uniforme, sem deformação. A expansão e suas probabilidades não foram alteradas.
+
+As três gemas são uma regra adicional solicitada pelo jogador: cada invasão que alcança o último reduto sem defesa consome uma vida, expulsa os invasores e restaura cinco soldados leais no portão. Só a terceira encerra a campanha. Isso substitui o game over imediato anterior; os outros perigos continuam seguindo as regras existentes.

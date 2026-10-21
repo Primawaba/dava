@@ -239,9 +239,9 @@ Fila e decisões pendentes ficam no save. Carregar reapresenta o que falta, sem 
 
 - Cada descoberta de caverna vazia sorteia 1/2/3/4 espaços com probabilidades de **50%/30%/15%/5%**. Os módulos são revelados juntos, sem novas cartas, recompensas ou turnos. A expansão respeita os limites, as câmaras seladas e as salas existentes; pode ser menor quando faltar espaço. Somente módulos do mesmo grupo compartilham o interior aberto. Construir em um módulo restabelece suas paredes e corredores.
 - Covis de chefes usam a força total do encontro, com profundidade e dificuldade: abaixo de 30 STR, 1 espaço; 30–59, 2; 60–99, 3; 100+, 4. A ilustração especial e o chefe único permanecem na sala principal. Dragão adormecido e golem passivo usam a força que terão em combate. Escavações do verme não geram expansões recursivas.
-- Construções recebem fundo de tijolos na paleta do ambiente; cavernas recebem preto, e espaços desconhecidos mantêm o papel. Um shader de software com ruído em coordenadas do mundo produz a borda de tinta. Texturas e módulos ficam em cache, sem exigir WebGL. O miasma usa roxo tanto na sala quanto na passagem e no fundo de construções contaminadas.
+- Na versão 1.10.0, todos os espaços voltam ao fundo de papel: os preenchimentos de tijolos/preto e o shader de tinta da versão 1.9.0 foram removidos. O miasma continua roxo nas salas e passagens.
 - **Exportar imagem**, no menu de pausa ou no botão de download do mapa, gera PNG da fortaleza inteira sem interface. A prévia permite baixar ou compartilhar a imagem; no iPhone também pode ser salva com toque prolongado. A exportação limita dimensão e área para evitar exceder a memória de canvas de aparelhos móveis.
-- As cartas têm **52 ilustrações quadradas** em pixel art, associadas ao evento, incluindo cada resultado de magia e cada artefato planar. A fila, animações de recursos e escolhas obrigatórias continuam funcionando.
+- As cartas têm **53 ilustrações quadradas** em pixel art, associadas ao evento, incluindo cada resultado de magia e cada artefato planar. A fila, animações de recursos e escolhas obrigatórias continuam funcionando.
 - Ao lado dos defensores aparece a soma da força nominal das tropas aliadas vivas, igual à força do painel Tropas; criaturas neutras, inimigos e unidades derrotadas não entram na soma.
 
 ### iPhone / Safari
@@ -255,3 +255,13 @@ Esse endereço usa o serviço externo RawGitHack para servir o HTML público des
 Há fallback para altura `vh`, redimensionamento sem `ResizeObserver`, navegação sem `Array.at` e armazenamento indisponível. Testes Chromium com toque e recursos removidos passaram. **Safari/WebKit real não foi validado**: o download do WebKit foi bloqueado com HTTP 403; um teste em iPhone continua necessário.
 
 Validação desta versão: `npm test`, `npm run test:terrain`, `npm run test:event-cards`, `npm run test:directions`, `npm run test:browser` e `npm run test:standalone`. Para regenerar as ilustrações a partir das folhas de arte: `npm run build:event-art`.
+
+## Revisão visual — versão 1.10.0
+
+As cavernas voltaram a usar os mesmos três sprites detalhados anteriores, incluindo rochas, estalactites e piso. Cada módulo é desenhado como uma sala normal. Dentro de uma mesma caverna de vários espaços, peças ilustradas exclusivas unem os módulos na horizontal ou na vertical: duas alternativas por orientação, recorte central e escala uniforme, sem esticar nem deformar imagens. As uniões são desenhadas depois das salas para manter os encaixes visíveis; paredes entre grupos diferentes continuam fechadas. Construir em um módulo volta a usar o corredor normal. Os quatro recortes e sua folha de origem podem ser regenerados com `npm run build:cavern-art`.
+
+Foram retirados os fundos adicionais de tijolos e preto, a borda de tinta e a remoção de papel dos sprites. O mapa e as ilustrações voltaram ao papel anterior. As probabilidades de tamanho, chefes únicos, exportação PNG, cartas e indicador de força permanecem.
+
+### Três gemas do portão
+
+A campanha começa com três vidas, desenhadas como gemas sobre o portão. Uma derrota de combate destrói uma gema com partículas e mostra uma carta ilustrada. Todos os inimigos ativos e guarnições hostis desaparecem; os guardiões soldados alojados no portão voltam a ser exatamente cinco, leais e com vida completa. Outros aliados sobreviventes e criaturas neutras permanecem. A campanha continua nas duas primeiras derrotas; só a terceira causa game over. A derrota não gera vitória, espólios, cura do hospital ou artefato de expedição. Salvar e carregar preserva as gemas. Salvamentos antigos em andamento recebem três; campanhas antigas já encerradas continuam encerradas. Movimento reduzido usa menos partículas e duração curta. Se o guardião do Vazio desapareceu numa derrota, sua sala permite desafiá-lo novamente, sem conceder o cristal automaticamente. Testes: `npm run test:lives`.

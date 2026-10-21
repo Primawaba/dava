@@ -1,4 +1,4 @@
-import {Terrain} from './terrain.js';
+import {CavernModules} from './cavern-modules.js';
 import {RoomFraming} from './room-framing.js';
 import {RoomAppearance} from './room-appearance.js';
 import {ProceduralPassages} from './passages.js';
@@ -6,20 +6,21 @@ import {ROOMS,DIRS,SPRITE_FRAMES,PASSAGES,DAMAGEABLE_ROOMS} from './data.js';
 import {key} from './engine.js';
 export const CW=180,CH=144;
 export class Renderer{
- constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.appearance=new RoomAppearance();this.framing=new RoomFraming();this.terrain=new Terrain();this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();if(typeof ResizeObserver!=='undefined'){this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas)}else window.addEventListener('resize',()=>this.resize());this.resize()}
+ constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.cavernImages={};this.appearance=new RoomAppearance();this.framing=new RoomFraming();this.caverns=new CavernModules();this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();if(typeof ResizeObserver!=='undefined'){this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas)}else window.addEventListener('resize',()=>this.resize());this.resize()}
  async load(){
   const assets=Object.keys(ROOMS).flatMap(type=>[0,1,2].map(v=>({id:`${type}-${v}`,src:`./assets/rooms/${type}-${v}.png`})));
   assets.push(...[0,1,2].map(v=>({id:`awake-dragon-${v}`,src:`./assets/rooms/awake-dragon-${v}.png`})));
   assets.push(...Object.keys(SPRITE_FRAMES).map(type=>({id:`unit-${type}`,src:`./assets/sprites/${type}.png`})));
   assets.push(...DAMAGEABLE_ROOMS.flatMap(type=>[0,1,2].map(v=>({id:`damaged-${type}-${v}`,src:`./assets/damaged-rooms/${type}-${v}.png`}))));
+  assets.push(...['horizontal-0','horizontal-1','vertical-0','vertical-1'].map(name=>({id:'cavern-'+name,src:`./assets/caverns/${name}.png`})));
   assets.push(...PASSAGES.map(name=>({id:`passage-${name}`,src:`./assets/passages/${name}.png`})));
-  await Promise.all(assets.map(({id,src})=>new Promise(resolve=>{const i=new Image();i.onload=()=>{this.images[id]=i;resolve()};i.onerror=()=>resolve();i.src=src})));
+  await Promise.all(assets.map(({id,src})=>new Promise(resolve=>{const i=new Image();i.onload=()=>{(id.startsWith('cavern-')?this.cavernImages:this.images)[id]=i;resolve()};i.onerror=()=>resolve();i.src=src})));
   this.passages.cache.clear();this.appearance.cache.clear();
   if(this.images['unit-immortal']){const outline=document.createElement('canvas');outline.width=outline.height=64;const c=outline.getContext('2d');c.drawImage(this.images['unit-immortal'],0,0,64,64);c.globalCompositeOperation='source-in';c.fillStyle='#b5a56f';c.fillRect(0,0,64,64);this.immortalOutline=outline}
  }
  rawRoomImage(r){if(r.type==='dragon'&&r.dragonAwake)return this.images[`awake-dragon-${r.variant}`]||this.images[`dragon-${r.variant}`];return this.images[`${r.damaged&&DAMAGEABLE_ROOMS.includes(r.type)?'damaged-':''}${r.type}-${r.variant}`]||this.images[`${r.type}-${r.variant}`]}
  framedRoomImage(r){const raw=this.rawRoomImage(r);return ROOMS[r.type]?.r===undefined&&!['gate','surface','shaft'].includes(r.type)?this.framing.frame(raw):raw}
- roomImage(r,time=0){return this.terrain.foreground(this.appearance.get(this.framedRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced))}
+ roomImage(r,time=0){return this.appearance.get(this.framedRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
  roomURL(r,time=0){return this.appearance.url(this.framedRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
  resize(){const r=this.canvas.getBoundingClientRect();this.width=r.width;this.height=r.height;const dpr=Math.min(devicePixelRatio||1,2);this.canvas.width=Math.round(r.width*dpr);this.canvas.height=Math.round(r.height*dpr);this.dpr=dpr}
  screenToWorld(x,y){return{x:(x-this.width/2)/this.zoom+this.camera.x,y:(y-this.height/2)/this.zoom+this.camera.y}}
@@ -50,7 +51,9 @@ export class Renderer{
   if((vertical&&r.y>n.y)||(!vertical&&r.x>n.x))[r,n]=[n,r];
   const x=r.x*CW,y=r.y*CH,nx=n.x*CW,ny=n.y*CH;
   const door=this.game.s.barricades[this.game.passageKey(r,n)];
-  if(!(r.type==='cave'&&n.type==='cave'&&r.cavernGroup&&r.cavernGroup===n.cavernGroup)&&!(vertical&&this.shaftLinked(r,n)))this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced,door,{start:this.framing.ports(this.framedRoomImage(r))[vertical?'south':'east'],end:this.framing.ports(this.framedRoomImage(n))[vertical?'north':'west']});
+  const chamber=r.type==='cave'&&n.type==='cave'&&r.cavernGroup&&r.cavernGroup===n.cavernGroup;
+  if(chamber)this.caverns.draw(c,r,n,this.roomImage(r,this.passageTime||0),this.roomImage(n,this.passageTime||0),this.cavernImages);
+  if(!chamber&&!(vertical&&this.shaftLinked(r,n)))this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced,door,{start:this.framing.ports(this.framedRoomImage(r))[vertical?'south':'east'],end:this.framing.ports(this.framedRoomImage(n))[vertical?'north':'west']});
   if(door)this.passageDoor((x+nx)/2,(y+ny)/2,vertical,door);
   const image=name=>this.images['passage-'+name];
   if((r.closed||n.closed)&&image('grate'))c.drawImage(image('grate'),(x+nx)/2-16,(y+ny)/2-16,32,32);
@@ -96,8 +99,7 @@ export class Renderer{
   c.strokeStyle='#777b5e55';c.setLineDash([4,4]);c.beginPath();c.moveTo(bounds.left,-CH*.5);c.lineTo(bounds.right,-CH*.5);c.stroke();c.setLineDash([]);
   }
   const visible=this.game.rooms.filter(r=>r.x*CW>bounds.left&&r.x*CW<bounds.right&&r.y*CH>bounds.top&&r.y*CH<bounds.bottom);
-  for(const r of visible)this.terrain.draw(c,r,this.game);
-  for(const r of visible){const x=r.x*CW,y=r.y*CH;if(r.y<0&&(r.y===-1||this.game.room(r.x,r.y+1))){c.fillStyle='#57594a';const bottom=r.y===-1?CH*.5:CH-54;for(const ox of [-53,47])c.fillRect(x+ox,y+40,6,bottom-40);c.fillStyle='#b1a889';for(const ox of [-51,49])c.fillRect(x+ox,y+40,2,bottom-40);}const image=this.roomImage(r,time);if(r.type==='cave'&&r.cavernGroup)this.terrain.cavern(c,r,this.game,image);else if(this.continuousShaft(r))this.shaftTile(r,image);else if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
+  for(const r of visible){const x=r.x*CW,y=r.y*CH;if(r.y<0&&(r.y===-1||this.game.room(r.x,r.y+1))){c.fillStyle='#57594a';const bottom=r.y===-1?CH*.5:CH-54;for(const ox of [-53,47])c.fillRect(x+ox,y+40,6,bottom-40);c.fillStyle='#b1a889';for(const ox of [-51,49])c.fillRect(x+ox,y+40,2,bottom-40);}const image=this.roomImage(r,time);if(this.continuousShaft(r))this.shaftTile(r,image);else if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
   }
   for(const r of visible){const below=this.game.room(r.x,r.y+1);if(this.shaftLinked(r,below))this.shaftSeam(r,below)}
   // Composite every room first, then its doorway aprons; no room PNG can cover a neighbor's connection.
@@ -138,10 +140,22 @@ export class Renderer{
   }
   if(this.eventTargets?.length)for(const target of this.eventTargets){c.strokeStyle='#b4934b';c.lineWidth=2;this.corners(target.x*CW-82,target.y*CH-63,164,118)}
   }
+  if(!this.exporting)this.gateGems(time);
   const formation=this.unitFormation();
   for(const {u,x,y} of formation)this.unit(u,x,y,time);
   for(const p of this.game.projectiles){const x=(p.x+(p.tx-p.x)*p.t)*CW,y=(p.y+(p.ty-p.y)*p.t)*CH+this.floorOffset(p.x,p.y)*(1-p.t)+this.floorOffset(p.tx,p.ty)*p.t;c.save();c.translate(x,y);c.rotate(Math.atan2((p.ty-p.y)*CH,(p.tx-p.x)*CW));c.strokeStyle=p.team==='enemy'?'#a4563e':'#2f6853';c.fillStyle=c.strokeStyle;c.lineWidth=2;if(p.kind==='arrow'||p.kind==='bolt'){c.beginPath();c.moveTo(-13,0);c.lineTo(9,0);c.moveTo(4,-4);c.lineTo(10,0);c.lineTo(4,4);c.stroke();c.lineWidth=1;c.moveTo(-8,0);c.lineTo(-12,-3);c.stroke()}else{c.shadowColor=c.fillStyle;c.shadowBlur=10;c.beginPath();c.arc(0,0,p.kind==='flask'?4:5,0,Math.PI*2);c.fill();c.shadowBlur=0;c.strokeStyle='#b9c9a4';c.lineWidth=1;c.beginPath();c.moveTo(-5,0);c.lineTo(-17,0);c.stroke()}c.restore()}
   if(!this.reduced)for(const e of this.game.effects){c.globalAlpha=Math.min(1,e.life*2);c.strokeStyle=e.kind==='death'?'#a16e51':'#a16e51';c.lineWidth=1.5;c.beginPath();c.arc(e.x*CW,e.y*CH+this.floorOffset(e.x,e.y),(1-e.life)*20+5,0,Math.PI*2);c.stroke();c.globalAlpha=1}
+  c.restore();
+ }
+ gemBurst(index,time){this.gemGame=this.game;this.gemFragments??=[];for(let i=0;i<(this.reduced?6:26);i++){const angle=i*2.399963+index,speed=18+(i*17%53);this.gemFragments.push({x:(index-1)*22,y:-80,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-24,start:time,life:this.reduced?300:1100,color:['#77d4db','#d6f3e9','#448ca4','#b6ded4'][i%4],size:i%3+1})}}
+ gateGems(time){
+  if(this.gemGame!==this.game){this.gemGame=this.game;this.gemFragments=[]}
+  const c=this.ctx,remaining=this.game.s.lives??3;c.save();
+  for(let i=0;i<3;i++){const x=(i-1)*22,y=-80,alive=i<remaining;
+   c.fillStyle=alive?'#233e45':'#777866';c.fillRect(x-4,y-10,8,2);c.fillRect(x-7,y-8,14,10);c.fillRect(x-5,y+2,10,4);c.fillRect(x-2,y+6,4,3);
+   if(alive){c.fillStyle='#448da1';c.fillRect(x-5,y-7,10,8);c.fillRect(x-3,y+1,6,4);c.fillStyle='#83ced1';c.fillRect(x-4,y-7,5,7);c.fillStyle='#daf0db';c.fillRect(x-3,y-7,3,2);c.fillStyle='#326a81';c.fillRect(x+1,y-6,4,7)}else{c.fillStyle='#e5ddc6';c.fillRect(x-3,y-7,6,8);c.fillRect(x-1,y+1,2,4);c.fillRect(x,y-10,2,6);c.fillRect(x-4,y+2,3,3)}
+  }
+  if(!this.exporting){this.gemFragments=(this.gemFragments||[]).filter(p=>time-p.start<p.life);for(const p of this.gemFragments){const t=(time-p.start)/1000;c.globalAlpha=Math.max(0,1-(time-p.start)/p.life);c.fillStyle=p.color;c.fillRect(Math.round(p.x+p.vx*t),Math.round(p.y+p.vy*t+(this.reduced?0:70*t*t)),p.size,p.size)}}
   c.restore();
  }
  // Export the entire fortress through the same renderer, excluding every overlay.

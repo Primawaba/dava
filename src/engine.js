@@ -5,7 +5,7 @@ export const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export class Game {
  constructor({seed=Date.now(),name='A Última Fortaleza',difficulty='normal'}={}){
-  this.s={version:1,rulesVersion:2,immortalVersion:1,barricadeVersion:1,barricades:{},rivalDungeons:[],effectCards:[],nextEffectId:1,passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
+  this.s={version:1,lives:3,rulesVersion:2,immortalVersion:1,barricadeVersion:1,barricades:{},rivalDungeons:[],effectCards:[],nextEffectId:1,passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
   this.projectiles=[];this.effects=[];this.dead=[];this.events=[];this.tickBudget=0;
   this.addRoom(0,0,'gate');for(let i=0;i<5;i++)this.addUnit('soldier',0,0,true);
   this.shuffleDeck();
@@ -494,7 +494,7 @@ export class Game {
     if(u.cooldown<=0){if(!at.captured){at.captured=true;this.damageRoom(at);this.note(`${ROOMS[at.type].name} tomada pelos invasores.`, 'warn')}const next=this.neighbors(at,'enemy').find(r=>!r.captured);if(next)goal=next;else{at.garrison??=[];at.garrison.push({type:u.type,power:u.power});u.hp=0;this.note('Invasores se instalaram na área desconectada. Reconecte para retomá-la.','warn');continue}route=this.path(u,goal,'enemy');u.cooldown=1}
    }
    let next=route?.[0];
-   if(!next){if(u.team==='enemy'&&distance(u,this.target)<.25&&!this.allies.some(a=>distance(a,this.target)<.55)){this.lose();break}continue}
+   if(!next){if(u.team==='enemy'&&distance(u,this.target)<.25&&!this.allies.some(a=>distance(a,this.target)<.55)){this.lose();return}continue}
    this.moveUnit(u,next,dt);
 
   }
@@ -515,11 +515,32 @@ export class Game {
   if(this.s.expedition!==null){const p=PLANES[this.s.expedition];this.s.artifacts.push(p.effect);this.note(`Expedição vitoriosa: ${p.artifact}!`,'good');this.effect(p.artifact,p.desc,'good');if(p.effect==='berserker'){const free=this.rooms.find(r=>r.type==='cave');if(free)free.type='meadhall'}this.s.expedition=null}
   if(this.s.voidDefeated&&this.rooms.some(r=>r.type==='void'&&!r.captured)){this.s.artifacts.push('void');this.s.status='won';this.note('O Cristal do Vazio é seu. A fortaleza conquistou o abismo.','good');this.events.push({type:'won'})}
  }
- lose(){this.s.status='lost';this.s.combat=false;this.note('Um invasor atravessou o último reduto. Sua fortaleza caiu.','danger');this.events.push({type:'lost'})}
+ lose(){
+  if(this.s.status!=='playing'||!this.s.combat)return false;
+  this.s.lives=Math.max(0,(this.s.lives??3)-1);this.s.combat=false;this.s.paused=false;
+  // A repelled invasion is a defeat, never a victory or a source of loot.
+  const invaders=new Set(this.enemies.map(u=>u.id));
+  this.s.units=this.s.units.filter(u=>u.hp>0&&u.team!=='enemy'&&!(u.team==='ally'&&u.type==='soldier'&&u.home==='0,0'));
+  for(const r of this.rooms){r.rewardPending=false;r.captured=false;if(r.garrison?.length)r.garrison=[];if(r.trap)r.trap.armed=true;}
+  for(const group of this.s.rivalDungeons||[])if(!group.claimed&&group.enemyIds.some(id=>invaders.has(id))){group.forfeited=true;group.claimed=true;}
+  this.projectiles=[];this.effects=[];this.dead=[];this.s.expedition=null;
+  for(const r of this.rooms)if(r.type==='void'&&!this.s.artifacts.includes('void')){r.guardianRetry=true;r.captured=false;this.s.voidDefeated=false;}
+  for(const u of this.allies){u.moveTarget=null;u.targetId=null;u.frontTarget=null;u.attack=0;const home=this.s.rooms[u.home];if(home){u.x=home.x;u.y=home.y}}
+  const gate=this.room(0,0);gate.damaged=false;gate.closed=false;
+  for(let i=0;i<5;i++)this.addUnit('soldier',0,0,true);
+  this._routeCache=null;this._tactics=null;this._tacticsDirty=true;
+  const final=this.s.lives===0;this.note(final?'A terceira gema do portão se partiu. Sua fortaleza caiu.':`Uma gema do portão se partiu. Restam ${this.s.lives} vidas. Os invasores desapareceram e cinco guardiões leais retomaram o portão.`,'danger');
+  this.effect('Gema do portão destruída',final?'A última gema se partiu. A fortaleza não pode resistir a outra invasão. Fim de jogo.':`A fortaleza perdeu uma vida. Restam ${this.s.lives} gemas. Todos os invasores desapareceram e os guardiões do portão voltaram a cinco.`,'bad');
+  this.events.push({type:'life-lost',remaining:this.s.lives,index:this.s.lives});
+  if(final){this.s.status='lost';this.events.push({type:'lost'})}
+  return true;
+ }
+
  action(action,x,y,arg){
   const r=this.room(x,y);if(!r||this.s.status!=='playing')return{ok:false,reason:'Sala indisponível.'};
   if(action==='toggle'&&r.type==='drawbridge'){this._tacticsDirty=true;r.closed=!r.closed;if(r.closed){for(const u of this.enemies)if(Math.round(u.x)===x&&Math.round(u.y)===y)this.damage(u,400)}this.note(`Ponte levadiça ${r.closed?'fechada':'aberta'}.`);if(!r.closed)this.reconnectCaptured();this.spreadHazards();return{ok:true}}
   if(this.s.combat)return{ok:false,reason:'Indisponível em combate.'};
+  if(action==='challengeVoid'&&r.type==='void'&&r.guardianRetry&&!this.s.combat){r.guardianRetry=false;this.spawnEnemies(r,110,'guardian');this.beginCombat();return{ok:true}}
   if(action==='repair'){if(this.roomHazards(r).length)return{ok:false,reason:'Drene o fluido ou gás antes de reparar.'};const c=this.cost(r.type,r)||{resources:10,gold:0};const a=Math.floor(c.resources/2),b=Math.floor(c.gold/2);if(!r.damaged||this.s.resources<a||this.s.gold<b)return{ok:false,reason:'Sem dano ou recursos para reparar.'};this.s.resources-=a;this.s.gold-=b;r.damaged=false;if(r.captured){r.captured=false;this.spawnEnemies(r,r.type==='void'?110:20+Math.max(0,r.y)*5,r.type==='void'?'guardian':'raider');this.beginCombat()}return{ok:true}}
   if(action==='drain'){
    const hazards=this.roomHazards(r),magma=hazards.some(h=>['lava','crater'].includes(h)),cost=magma?20:5;
@@ -607,6 +628,8 @@ export class Game {
   if(typeof s.combat!=='boolean'||typeof s.paused!=='boolean'||![.5,1,2].includes(s.speed)||!Number.isInteger(s.nextId)||s.nextId<1||!(s.expedition===null||Number.isInteger(s.expedition)&&s.expedition>=0&&s.expedition<PLANES.length))throw Error('Estado de combate inválido.');
   for(const n of ['turn','resources','gold','baseMorale','nextId','seconds','blessings','inventions','trophies','maxDepth','kills','battles'])if(!finite(s[n])||Math.abs(s[n])>1e9)throw Error('Valores inválidos no salvamento.');
   for(const[k,r]of Object.entries(s.rooms)){if(!r||!coordinate(r.x)||!coordinate(r.y)||key(r.x,r.y)!==k||!Object.prototype.hasOwnProperty.call(ROOMS,r.type)||!Number.isInteger(r.variant)||r.variant<0||r.variant>2)throw Error('Mapa inválido.');if(r.trap&&(!['damage','delay'].includes(r.trap.kind)||![1,2,3].includes(r.trap.level)))throw Error('Armadilha inválida.');if(r.barricade&&(!['defensive','offensive'].includes(r.barricade.kind)||!finite(r.barricade.hp)))throw Error('Barricada inválida.')}
+  if(s.lives===undefined)s.lives=s.status==='lost'?0:3;
+  if(!Number.isInteger(s.lives)||s.lives<0||s.lives>3||s.status==='lost'&&s.lives!==0||s.status==='playing'&&s.lives===0)throw Error('Gemas do portão inválidas.');
   s.effectCards??=[];s.nextEffectId??=1;
   if(!Array.isArray(s.effectCards)||s.effectCards.length>2000||!Number.isInteger(s.nextEffectId)||s.nextEffectId<1)throw Error('Fila de eventos inválida.');
   const effectIds=new Set();for(const c of s.effectCards){if(!c||!Number.isInteger(c.id)||c.id<1||c.id>=s.nextEffectId||effectIds.has(c.id)||typeof c.title!=='string'||c.title.length>200||typeof c.description!=='string'||c.description.length>2000||!['good','bad','neutral'].includes(c.tone))throw Error('Carta de evento inválida.');effectIds.add(c.id);if(c.input&&!(c.input.kind==='unit-home'&&Number.isInteger(c.input.unitId)&&c.input.unitId>0||c.input.kind==='prison'&&Number.isInteger(c.input.x)&&Number.isInteger(c.input.y)&&s.rooms[key(c.input.x,c.input.y)]))throw Error('Escolha de evento inválida.');}

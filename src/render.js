@@ -1,10 +1,11 @@
+import {RoomFraming} from './room-framing.js';
 import {RoomAppearance} from './room-appearance.js';
 import {ProceduralPassages} from './passages.js';
 import {ROOMS,DIRS,SPRITE_FRAMES,PASSAGES,DAMAGEABLE_ROOMS} from './data.js';
 import {key} from './engine.js';
 export const CW=180,CH=144;
 export class Renderer{
- constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.appearance=new RoomAppearance();this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
+ constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.appearance=new RoomAppearance();this.framing=new RoomFraming();this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
  async load(){
   const assets=Object.keys(ROOMS).flatMap(type=>[0,1,2].map(v=>({id:`${type}-${v}`,src:`./assets/rooms/${type}-${v}.png`})));
   assets.push(...[0,1,2].map(v=>({id:`awake-dragon-${v}`,src:`./assets/rooms/awake-dragon-${v}.png`})));
@@ -16,8 +17,9 @@ export class Renderer{
   if(this.images['unit-immortal']){const outline=document.createElement('canvas');outline.width=outline.height=64;const c=outline.getContext('2d');c.drawImage(this.images['unit-immortal'],0,0,64,64);c.globalCompositeOperation='source-in';c.fillStyle='#b5a56f';c.fillRect(0,0,64,64);this.immortalOutline=outline}
  }
  rawRoomImage(r){if(r.type==='dragon'&&r.dragonAwake)return this.images[`awake-dragon-${r.variant}`]||this.images[`dragon-${r.variant}`];return this.images[`${r.damaged&&DAMAGEABLE_ROOMS.includes(r.type)?'damaged-':''}${r.type}-${r.variant}`]||this.images[`${r.type}-${r.variant}`]}
- roomImage(r,time=0){return this.appearance.get(this.rawRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
- roomURL(r,time=0){return this.appearance.url(this.rawRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
+ framedRoomImage(r){const raw=this.rawRoomImage(r);return ROOMS[r.type]?.r===undefined&&!['gate','surface','shaft'].includes(r.type)?this.framing.frame(raw):raw}
+ roomImage(r,time=0){return this.appearance.get(this.framedRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
+ roomURL(r,time=0){return this.appearance.url(this.framedRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
  resize(){const r=this.canvas.getBoundingClientRect();this.width=r.width;this.height=r.height;const dpr=Math.min(devicePixelRatio||1,2);this.canvas.width=Math.round(r.width*dpr);this.canvas.height=Math.round(r.height*dpr);this.dpr=dpr}
  screenToWorld(x,y){return{x:(x-this.width/2)/this.zoom+this.camera.x,y:(y-this.height/2)/this.zoom+this.camera.y}}
  point(event){const r=this.canvas.getBoundingClientRect();return{x:event.clientX-r.left,y:event.clientY-r.top}}
@@ -47,7 +49,7 @@ export class Renderer{
   if((vertical&&r.y>n.y)||(!vertical&&r.x>n.x))[r,n]=[n,r];
   const x=r.x*CW,y=r.y*CH,nx=n.x*CW,ny=n.y*CH;
   const door=this.game.s.barricades[this.game.passageKey(r,n)];
-  if(!(vertical&&this.shaftLinked(r,n)))this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced,door);
+  if(!(vertical&&this.shaftLinked(r,n)))this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced,door,{start:this.framing.ports(this.framedRoomImage(r))[vertical?'south':'east'],end:this.framing.ports(this.framedRoomImage(n))[vertical?'north':'west']});
   if(door)this.passageDoor((x+nx)/2,(y+ny)/2,vertical,door);
   const image=name=>this.images['passage-'+name];
   if((r.closed||n.closed)&&image('grate'))c.drawImage(image('grate'),(x+nx)/2-16,(y+ny)/2-16,32,32);

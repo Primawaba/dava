@@ -99,11 +99,13 @@ export class ProceduralPassages{
   if(this.cache.size>this.limit)this.cache.delete(this.cache.keys().next().value);
   return entry;
  }
- draw(ctx,a,b,vertical,images,time,reduced,fortification=null){
+ draw(ctx,a,b,vertical,images,time,reduced,fortification=null,mouths=null){
   const entry=this.get(a,b,vertical,images),{canvas,length,ma,mb,seed}=entry;
   ctx.save();ctx.imageSmoothingEnabled=false;
   // Local X always follows the connection, so the same mask joins all 4 ports.
   ctx.translate(a.x*180+(vertical?0:64),a.y*144+(vertical?42:0));if(vertical)ctx.rotate(Math.PI/2);
+  if(mouths?.start>0)ctx.drawImage(canvas,0,0,6,20,-mouths.start,-20,mouths.start+2,40);
+  if(mouths?.end>0)ctx.drawImage(canvas,length-6,0,6,20,length*2-2,-20,mouths.end+2,40);
   ctx.drawImage(canvas,0,-20,length*2,40);
   const phase=reduced?0:Math.floor(time/240)%8;
   for(let x=2;x<length-2;x+=4){

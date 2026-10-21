@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.7.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
+O resultado fica em `releases/conquer-web-1.7.1.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
 
 ## Conteúdo e controles
 
@@ -222,3 +222,7 @@ Unidades do mesmo lado seguem em fila nos corredores, com espaço entre os perso
 - A rolagem de invasão de **25% por turno** agora é independente de produção, conexão com a base e estabilização. Portais estabilizados continuam sujeitos a invasões; selar o portal encerra o risco. Cada portal é verificado uma vez por turno, com resultado no diário e no painel. Uma invasão interrompe a descoberta antes de gastar carta ou criar a sala solicitada.
 
 Novos comandos: `npm run test:discoveries`, `npm run build:unique-art` e `npm run build:dragon-art`. O HTML único inclui as novas artes, sem baixar imagens durante a partida.
+
+### Encaixe das salas e túneis — versão 1.7.1
+
+As novas artes de descobertas e os dois estados do dragão recebem enquadramento uniforme em execução: margens de papel são removidas, o conteúdo é centralizado e a escala preserva as proporções. O espaço visual volta a aproximar o dos sprites antigos, sem alterar posições do tabuleiro. As bocas dos corredores examinam a silhueta da sala em cada direção e avançam até ela para cobrir recuos, mantendo a paleta e a arquitetura de cada extremidade. Somente passagens abertas recebem essas entradas. O enquadramento vale também para os retratos do painel e é reutilizado em cache. `npm run test:room-framing` verifica a área ocupada e as junções nas quatro direções.

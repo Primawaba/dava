@@ -7,6 +7,25 @@ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:4182/?test=1');
  await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:52})});await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(442);
+ const materials=await page.evaluate(async()=>{
+  const {ROOMS}=await import('./src/data.js'),{passagePalette}=await import('./src/passages.js'),r=window.__CONQUER__.renderer;
+  let checked=0,foreground=0,preserved=0;const families=new Set();
+  const mix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));
+  for(const type of Object.keys(ROOMS))for(const prefix of ['','damaged-']){
+   const raw=r.images[`${prefix}${type}-0`];if(!raw)continue;
+   const palette=passagePalette({type});families.add(JSON.stringify(palette));
+   const tinted=r.appearance.get(raw,type,[],0),c=document.createElement('canvas');c.width=raw.width;c.height=raw.height;const ctx=c.getContext('2d');ctx.drawImage(raw,0,0);const source=ctx.getImageData(0,0,c.width,c.height).data;ctx.clearRect(0,0,c.width,c.height);ctx.drawImage(tinted,0,0);const pixels=ctx.getImageData(0,0,c.width,c.height).data;
+   for(let i=0;i<source.length;i+=4){
+    const rgb=Array.from(source.slice(i,i+3)),paper=rgb.reduce((n,v,k)=>n+Math.abs(v-[229,221,198][k]),0)<36;
+    let expected=rgb;
+    if(source[i+3]>=32&&!paper){const lum=rgb[0]*.299+rgb[1]*.587+rgb[2]*.114;expected=lum<95?mix(palette.floor,palette.wall,Math.max(0,(lum-20)/75)):mix(palette.wall,palette.light,Math.min(1,(lum-95)/100));foreground++}else preserved++;
+    if(expected.some((v,k)=>Math.abs(v-pixels[i+k])>1)||pixels[i+3]!==source[i+3])throw new Error(`Incorrect palette/background: ${prefix}${type}, pixel ${i/4}`);
+   }
+   if(type!=='crystal'&&r.appearance.get(raw,type,[],4000)!==tinted)throw new Error(`Unexpected pulse: ${type}`);
+   checked++;
+  }
+  return{checked,foreground,preserved,families:families.size};
+ });assert(materials.checked>=132);assert.equal(materials.families,10);assert(materials.foreground>10000&&materials.preserved>10000);pass('every room type and damaged variant uses its corridor palette, preserves background/alpha and only crystal pulses');
  const visuals=await page.evaluate(()=>{
   const r=window.__CONQUER__.renderer,raw=r.images['barracks-0'],effect=r.appearance;
   const frame=image=>{const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const c=canvas.getContext('2d');c.drawImage(image,0,0);return c.getImageData(0,0,canvas.width,canvas.height).data};
@@ -20,5 +39,5 @@ try{
  await mkdir('artifacts',{recursive:true});await page.screenshot({path:'artifacts/room-states-crystal-and-damage.png'});
  const repaired=await page.evaluate(()=>{const {game:g,renderer:r}=window.__CONQUER__,room=g.room(1,0);const before=r.rawRoomImage(room).src;g.s.combat=false;g.s.resources=100;const result=g.action('repair',1,0);return{ok:result.ok,before,after:r.rawRoomImage(room).src}});assert(repaired.ok);assert(repaired.before.includes('damaged-rooms'));assert(repaired.after.includes('/rooms/'));pass('damaged sprite is replaced by the intact sprite when repaired');
  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>{const r=window.__CONQUER__.renderer;r.resize();r.zoom=.55;r.camera={x:0,y:215};r.draw(0)});await page.screenshot({path:'artifacts/room-states-mobile.png'});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);pass('room states remain usable in the mobile viewport');
- assert.deepEqual(errors,[]);pass('no browser exceptions');await writeFile('artifacts/room-appearance-results.json',JSON.stringify({checks,visuals,errors},null,2));
+ assert.deepEqual(errors,[]);pass('no browser exceptions');await writeFile('artifacts/room-appearance-results.json',JSON.stringify({checks,materials,visuals,errors},null,2));
 }finally{await browser.close();server.kill()}

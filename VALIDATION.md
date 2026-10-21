@@ -115,3 +115,8 @@ O navegador verifica por interação real a instalação das duas orientações 
 Capturas revisadas: `reinforced-passage-doors.png`, `army-splits-between-fronts.png`, `room-states-crystal-and-damage.png`; variantes mobile também são geradas. Relatórios: `tactics-doors-results.json` e `room-appearance-results.json` em `artifacts/`. A IA é uma heurística determinística, não uma garantia de vitória contra forças superiores.
 
 A compilação final 1.6.0 aprovou 8 verificações táticas/portas, 5 de aparência das salas, 21 gerais do navegador, 7 do HTML autônomo, 10 das animações de recursos e 8 da revisão de superfície/recrutamento. Nenhuma dessas suítes registrou exceções não tratadas.
+
+## Revisão 1.6.1 — tint em todas as salas
+
+115 testes do motor aprovados. A suíte de aparência passou em 6 verificações, comparando os pixels de 133 combinações de tipo/estado com as 10 paletas compartilhadas dos corredores: 962.660 pixels de primeiro plano e 501.404 pixels preservados. Verifica também transparência, cache, contaminação, pulso exclusivo do cristal, movimento reduzido, reparo e viewport mobile. O HTML autônomo passou nas 7 verificações offline, incluindo salvamento e combate.
+A suíte geral do navegador também aprovou 21 verificações em PC e mobile, sem exceções não tratadas.

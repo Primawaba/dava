@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.6.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
+O resultado fica em `releases/conquer-web-1.6.1.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
 
 ## Conteúdo e controles
 
@@ -182,3 +182,7 @@ Contaminação altera os pixels da própria sala, sem retângulos transparentes:
 Somente construções podem sofrer dano estrutural; cavernas naturais continuam sujeitas a contaminação e perigos, mas não a dano. Foram geradas **126 artes danificadas para os 42 tipos de construção**, três variantes por tipo. Reparar restaura a arte intacta. Saves antigos removem marcas de dano indevidas em cavernas naturais.
 
 Comandos adicionais: `npm run test:tactics-doors`, `npm run test:room-appearance` e `npm run build:damaged-art`. O atlas danificado de origem é mantido no repositório, mas excluído do pacote web. Tint e brilho são calculados em baixa resolução e reutilizados em cache.
+
+### Paletas das salas — versão 1.6.1
+
+Todas as salas agora recebem tint nos próprios pixels usando a mesma paleta de material do corredor que chega até elas. O tratamento também vale para variantes danificadas e retratos no painel. Papel, transparência e detalhes da pixel art são preservados. Efeitos de contaminação continuam sobre essa base; o pulso lento permanece exclusivo da caverna de cristal.

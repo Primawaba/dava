@@ -27,6 +27,7 @@ export function passageMaterial(room){
  if(['cave','surface','ruins','chasm'].includes(type))return 'rock';
  return 'masonry';
 }
+export function passagePalette(room){return PASSAGE_MATERIALS[passageMaterial(room)]}
 function passageNoise(x,y,seed){let n=Math.imul(x+seed,374761393)^Math.imul(y+seed,668265263);n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967296}
 function passageHash(text){let n=2166136261;for(const char of text)n=Math.imul(n^char.charCodeAt(0),16777619);return n>>>0}
 function passageMix(a,b,t){return a.map((v,i)=>Math.round(v+(b[i]-v)*t))}

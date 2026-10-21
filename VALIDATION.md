@@ -129,3 +129,10 @@ A suíte geral aprovou 21 verificações de navegador em PC e mobile, incluindo 
 ## Revisão 1.6.3 — fossos de elevador contínuos
 
 Conferência visual de três colunas em PC e mobile, com quatro níveis, variantes diferentes, conexão entre fosso e elevador construído e uma passagem vertical ausente. Paredes usam a mesma textura de referência ao longo da coluna, com fase vertical global; trilhos e cabos atravessam os limites dos tiles. Apenas extremidades abertas recebem tampas. Capturas: `artifacts/continuous-elevator-shafts.png` e `artifacts/continuous-shafts-mobile.png`. A suíte de direções aprovou 8 verificações; o HTML autônomo aprovou 7, sem exceções no navegador.
+
+## Revisão 1.6.4 — escavação, arte dos fossos e fileiras
+
+128 testes do motor/renderização aprovados. Dez novos casos do escavador cobrem subida por etapas, prioridade sobre rota lateral, permanência após morte, término na primeira sala conhecida, ausência de ligações laterais, conservação de cartas/recursos/turnos, retomada do save, limite no chão, água imediata, pausa, portas e rejeição de trajetos forjados. O cenário antigo de retaliação usa o verme após encerrar a fase de escavação. Três casos de formação cobrem fileiras incompletas de 6 a 20 unidades, meia coluna entre fileiras vizinhas, centralização de fileiras únicas, profundidade e saída para corredores.
+
+A suíte `test:burrowing` aprovou 6 verificações no navegador: início para cima apesar de caminho lateral, save durante a escavação, chegada à sala preservada, túnel permanente, retomada do caminho ao portão e mobile sem erros. O HTML autônomo aprovou suas 7 verificações offline. Capturas do escavador, das formações e dos fossos foram revistas em PC e mobile. Os fossos preservam as ilustrações anteriores, com junções por dithering nos pixels de seus interiores, substituindo a coluna geométrica da 1.6.3.
+A compilação final também aprovou 21 verificações gerais no navegador em PC e mobile, sem exceções não tratadas.

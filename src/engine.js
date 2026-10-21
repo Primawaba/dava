@@ -254,7 +254,25 @@ export class Game {
  spawnEnemies(r,total,type='raider'){
   total=Math.max(1,Math.round(total*DIFFICULTIES[this.s.difficulty].enemy));const d=ENEMIES[type]||ENEMIES.raider;
   const n=d.single?1:Math.min(8,Math.max(1,Math.ceil(total/8)));
-  for(let i=0;i<n;i++){const u=this.addUnit(type,r.x,r.y,true,'enemy',total/n);u.range=d.range;u.size=d.size;u.enemyName=d.name;}
+  for(let i=0;i<n;i++){const u=this.addUnit(type,r.x,r.y,true,'enemy',total/n);u.range=d.range;u.size=d.size;u.enemyName=d.name;if(type==='worm'){u.burrowing=true;u.burrowStep=null;}}
+ }
+ advanceBurrow(u,dt){
+  if(!u.burrowing||u.type!=='worm'||u.team!=='enemy')return false;
+  if(!u.burrowStep){
+   const at=this.room(Math.round(u.x),Math.round(u.y));
+   // The ground line is the upper bound: never excavate floating surface rooms.
+   if(!at||at.y<=0){u.burrowing=false;return false}
+   const known=this.room(at.x,at.y-1),next=known||this.addRoom(at.x,at.y-1,'cave');
+   this.connectRooms(at,next);u.burrowStep={x:next.x,y:next.y,exit:!!known};
+   u.attack=.3;this.effects.push({x:at.x,y:at.y-.35,kind:'dig',life:.5});
+   this.note(known?'O escavador abriu uma passagem para uma sala descoberta.':'O escavador abriu uma caverna vazia acima do túnel.','warn');
+   this.spreadHazards();if(u.hp<=0)return true;
+  }
+  const step=u.burrowStep,next=this.room(step.x,step.y);
+  if(!next||!this.passable(next,'enemy',u)){u.burrowing=false;u.burrowStep=null;u.moveTarget=null;return false}
+  this.moveUnit(u,next,dt);
+  if(!u.moveTarget){u.burrowStep=null;if(step.exit||next.y===0){u.burrowing=false;this.note(step.exit?'O escavador alcançou a fortaleza e avança para o portão.':'O escavador alcançou a linha do chão e passa a buscar o portão.','danger')}}
+  return true;
  }
  beginCombat(){if(this.s.combat)return;this.s.combat=true;this.s.paused=false;this.dead=[];this._tactics=null;this._tacticsDirty=true;
   for(const u of this.s.units){u.shot=false;u.cooldown=this.random();u.shield=0;u.moveTarget=null;u.targetId=null;
@@ -317,6 +335,7 @@ export class Game {
    u.attack=Math.max(0,u.attack-dt);u.cooldown-=dt;u.stun=Math.max(0,u.stun-dt);if(u.stun>0)continue;
    const d=this.unitData(u),at=this.room(Math.round(u.x),Math.round(u.y));if(!at)continue;
    if(this.lethalHazard(at,u)){this.killInstant(u);continue}
+   if(this.advanceBurrow(u,dt))continue;
    const crossingFoe=d.range<=.5&&actors.some(v=>v.team!==u.team&&v.hp>0&&this.meleeContact(u,v));
    if(u.moveTarget&&!crossingFoe){const destination=this.s.rooms[u.moveTarget];if(destination&&this.passable(destination,u.team,u)&&((at.x===destination.x&&at.y===destination.y)||this.linked(at,destination))){this.moveUnit(u,destination,dt);continue}u.moveTarget=null;u.x=Math.round(u.x);u.y=Math.round(u.y);}
    if(u.team==='enemy'&&at.type==='arena'&&!u.loyal){this.damage(u,99999);this.s.baseMorale+=10;continue}
@@ -437,6 +456,12 @@ export class Game {
   const knownType=t=>Object.hasOwn(UNITS,t)||Object.hasOwn(ENEMIES,t);
   const validUnit=u=>u&&(u.frontTarget===undefined||u.frontTarget===null||Number.isInteger(u.frontTarget)&&u.frontTarget>0)&&(u.size===undefined||finite(u.size)&&u.size>0&&u.size<=5)&&(u.order===undefined||['guard','defend'].includes(u.order))&&(u.facing===undefined||[-1,1].includes(u.facing))&&knownType(u.type)&&(['ally','enemy'].includes(u.team)&&u.type!=='immortal'||u.team==='neutral'&&u.type==='immortal')&&['id','x','y','hp','maxHp','power','cooldown','shield','attack','walk','stun'].every(n=>finite(u[n]))&&u.maxHp>0&&u.power>0&&Math.abs(u.x)<=100&&Math.abs(u.y)<=100&&s.rooms[u.home];
   const ids=new Set();for(const u of s.units){if(!validUnit(u)||!['ally','enemy','neutral'].includes(u.team)||!finite(u.id)||ids.has(u.id)||!finite(u.x)||!finite(u.y)||Math.abs(u.x)>100||Math.abs(u.y)>100||!finite(u.hp)||!finite(u.maxHp)||!finite(u.power)||!finite(u.cooldown)||!finite(u.shield)||typeof u.type!=='string'||!s.rooms[u.home]||u.power<=0||u.maxHp<=0)throw Error('Unidade inválida.');ids.add(u.id)}
+  for(const u of s.units){
+   if(u.burrowing!==undefined&&(typeof u.burrowing!=='boolean'||u.type!=='worm'||u.team!=='enemy'))throw Error('Escavação inválida.');
+   if(u.burrowStep!==undefined&&u.burrowStep!==null){const step=u.burrowStep;
+    if(!u.burrowing||!Number.isInteger(step.x)||!Number.isInteger(step.y)||typeof step.exit!=='boolean'||step.x!==u.x||step.y<0||step.y>30||u.y<step.y||u.y>step.y+1||!s.rooms[key(step.x,step.y)]||!s.rooms[key(step.x,step.y+1)])throw Error('Trajeto de escavação inválido.');
+   }
+  }
   for(const c of s.deck)if(!c||!SUITS.concat('★').includes(c.suit)||!Number.isInteger(c.rank)||c.rank<0||c.rank>13)throw Error('Baralho inválido.');
   for(const e of s.log)if(!e||typeof e.text!=='string'||e.text.length>2000||!finite(e.turn))throw Error('Crônica inválida.');
   if(!Array.isArray(data.projectiles)||data.projectiles.length>1000||!Array.isArray(data.dead)||data.dead.length>3000)throw Error('Combate inválido.');
@@ -448,6 +473,7 @@ export class Game {
    if(s.passageVersion!==1||!s.passages||typeof s.passages!=='object'||Array.isArray(s.passages)||Object.keys(s.passages).length>4000)throw Error('Passagens inválidas.');
    for(const [id,value]of Object.entries(s.passages)){const ends=id.split('|'),a=s.rooms[ends[0]],b=s.rooms[ends[1]];if(value!==true||ends.length!==2||!a||!b||distance(a,b)!==1||ends.slice().sort().join('|')!==id)throw Error('Ligação inválida no mapa.');}
   }else{s.passages={};for(const r of Object.values(s.rooms))for(const [dx,dy]of [[1,0],[0,1]]){const n=s.rooms[key(r.x+dx,r.y+dy)];if(n)s.passages[[key(r.x,r.y),key(n.x,n.y)].sort().join('|')]=true}s.passageVersion=1;}
+  for(const u of s.units)if(u.burrowStep&&!s.passages[[key(u.burrowStep.x,u.burrowStep.y),key(u.burrowStep.x,u.burrowStep.y+1)].sort().join('|')])throw Error('Escavação sem passagem.');
   if(s.barricadeVersion===undefined){
    s.barricades={};const oldRoomPath=(from,to)=>{const queue=[from],previous=new Map([[key(from.x,from.y),null]]);for(let i=0;i<queue.length;i++){const r=queue[i];if(r===to){let k=key(to.x,to.y);while(previous.get(k)&&previous.get(k)!==key(from.x,from.y))k=previous.get(k);return s.rooms[k]===from?null:s.rooms[k]}
     for(const [dx,dy]of DIRS){const n=s.rooms[key(r.x+dx,r.y+dy)];if(n&&s.passages[[key(r.x,r.y),key(n.x,n.y)].sort().join('|')]&&!previous.has(key(n.x,n.y))){previous.set(key(n.x,n.y),key(r.x,r.y));queue.push(n)}}}return null};

@@ -93,7 +93,7 @@ export const ROOMS={
  crater:{name:'Cratera vulcânica',icon:'flame',hazard:true,desc:'Uma abertura vulcânica. Trate como magma: drene por 20♦ ou construa uma ponte.'},
  smalllair:{name:'Covil de criatura pequena',icon:'paw',desc:'Uma criatura territorial vivia aqui. Construível após o combate.'},
  largelair:{name:'Lar de criatura grande',icon:'skull',desc:'Um monstro de 40 STR, mais profundidade, protege este lar.'},
- burrow:{name:'Túnel de escavador',icon:'hammer',desc:'O escavador acordou com sua chegada. Construível após o combate.'},
+ burrow:{name:'Túnel de escavador',icon:'hammer',desc:'O escavador cava para cima, abrindo cavernas vazias até alcançar uma sala descoberta. O túnel permanece. Construível após o combate.'},
  invincible:{name:'Câmara do Imortal',icon:'skull',desc:'Uma criatura imóvel bloqueia a passagem. Não invade nem ataca a fortaleza. Só pode morrer por efeitos de morte instantânea, como líquidos ou explosões.'},
  wandering:{name:'Caverna da criatura perdida',icon:'paw',desc:'Uma criatura perdida encontra abrigo. Pode ser reconstruída.'},
  elemental:{name:'Santuário de gemas',icon:'gem',desc:'Um elemental protege estes cristais. Gera 4♦ por exploração após a vitória.'},

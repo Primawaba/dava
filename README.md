@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.6.3.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
+O resultado fica em `releases/conquer-web-1.6.4.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
 
 ## Conteúdo e controles
 
@@ -194,3 +194,11 @@ Personagens ficam na parte inferior da sala. Tropas numerosas formam fileiras pr
 ### Fossos contínuos — versão 1.6.3
 
 Fossos de elevador e elevadores conectados verticalmente formam uma coluna contínua em pixel art: paredes texturizadas, guias e cabos atravessam a fronteira dos tiles. A textura usa coordenadas do mundo para evitar reinícios nas emendas. Tampas aparecem apenas nas extremidades; não se criam ligações entre salas adjacentes sem passagem aberta. Portas de corredor permanecem visíveis e funcionais.
+
+### Escavador e revisão visual dos fossos — versão 1.6.4
+
+O verme escavador sobe cavando, um trecho por vez, antes de seguir a IA normal até o portão. Espaços desconhecidos se tornam cavernas vazias; a primeira sala já descoberta encerra a escavação ao ser alcançada. Todas as passagens abertas permanecem, inclusive se o monstro morrer. Não há cartas, turnos ou recompensas extras, nem ligações laterais automáticas. Portas, perigos ambientais e pausa continuam funcionando. Saves preservam o trecho em andamento. Se não houver sala acima na coluna, o limite é a linha do chão: não são criadas salas flutuantes. `npm run test:burrowing` verifica o comportamento no navegador.
+
+O visual dos fossos volta às ilustrações cavernosas anteriores, com suas três variantes. Nas ligações verticais, apenas as tampas internas são retiradas; uma emenda com dithering entre os pixels das duas salas mantém a textura nítida. A coluna geométrica de trilhos da versão 1.6.3 foi substituída.
+
+As fileiras de tropas agora compartilham uma grade fixa: fileiras alternadas deslocam meia coluna, inclusive quando estão incompletas. Isso corrige o realinhamento indevido da segunda fileira em grupos de 6 a 9 unidades.

@@ -54,30 +54,27 @@ export class Renderer{
  shaftLinked(a,b){return !!a&&!!b&&['shaft','elevator'].includes(a.type)&&['shaft','elevator'].includes(b.type)&&a.x===b.x&&Math.abs(a.y-b.y)===1&&this.game.linked(a,b)}
  continuousShaft(r){return ['shaft','elevator'].includes(r.type)&&(this.shaftLinked(r,this.game.room(r.x,r.y-1))||this.shaftLinked(r,this.game.room(r.x,r.y+1)))}
  shaftTile(r,image){
-  const c=this.ctx,x=r.x*CW,y=r.y*CH,up=this.shaftLinked(r,this.game.room(r.x,r.y-1)),down=this.shaftLinked(r,this.game.room(r.x,r.y+1));
-  const top=up?-CH/2:-58,bottom=down?CH/2:48;
-  let anchor=r;while(this.shaftLinked(anchor,this.game.room(anchor.x,anchor.y-1)))anchor=this.game.room(anchor.x,anchor.y-1);
-  if(!this.game.roomHazards(r).length&&!r.damaged)image=this.appearance.get(this.images[`shaft-${anchor.variant}`],r.type,[],this.passageTime||0,this.reduced);
-  c.save();c.beginPath();c.rect(x-74,y+top,148,bottom-top);c.clip();
-  // A world-space texture phase gives adjoining tiles identical edge pixels.
-  // Existing room pixels supply the rock grain and environmental tint.
-  c.fillStyle='#211f19';c.fillRect(x-60,y+top,120,bottom-top);
-  for(let wy=Math.floor((y+top)/16)*16;wy<y+bottom;wy+=16){
-   const phase=((Math.floor(wy/16)%3)+3)%3;
-   for(const side of [-1,1]){
-    const edge=60+phase*2;c.fillStyle='#343127';c.fillRect(x+(side<0?-edge:48),wy,edge-48,16);
-    if(image)c.drawImage(image,side<0?8:108,18+phase*8,12,16,x+(side<0?-edge:48),wy,18,16);
-   }
-   c.fillStyle='#393329';c.fillRect(x-43,wy,86,1);
-   c.fillStyle='#171914';c.fillRect(x-36,wy+1,72,14);
+  if(!image)return;
+  const up=this.shaftLinked(r,this.game.room(r.x,r.y-1)),down=this.shaftLinked(r,this.game.room(r.x,r.y+1));
+  // Retain the original cavern illustration, furnishings and irregular walls.
+  // Connected ends use the inside of the shaft instead of its rock cap.
+  const sy=up?18:0,ey=down?62:86,top=up?-CH/2:-62,bottom=down?CH/2:51.33;
+  this.ctx.drawImage(image,0,sy,image.width,ey-sy,r.x*CW-80,r.y*CH+top,160,bottom-top);
+ }
+ shaftSeam(a,b){
+  const first=this.roomImage(a,this.passageTime||0),second=this.roomImage(b,this.passageTime||0);if(!first||!second)return;
+  this.shaftStitches??=new WeakMap();let pairs=this.shaftStitches.get(first);if(!pairs){pairs=new WeakMap();this.shaftStitches.set(first,pairs)}let tile=pairs.get(second);
+  if(!tile){
+   const above=document.createElement('canvas'),below=document.createElement('canvas');above.width=below.width=160;above.height=below.height=24;
+   const ac=above.getContext('2d'),bc=below.getContext('2d');ac.imageSmoothingEnabled=bc.imageSmoothingEnabled=false;
+   ac.drawImage(first,0,54,first.width,8,0,0,160,24);bc.drawImage(second,0,18,second.width,8,0,0,160,24);
+   const frame=ac.getImageData(0,0,160,24),other=bc.getImageData(0,0,160,24),p=frame.data,q=other.data;
+   // Pixel dithering joins both actual illustrations without blurry blending.
+   const thresholds=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+   for(let y=0;y<24;y++)for(let x=0;x<160;x++){const t=y/23;if(t>(thresholds[(y%4)*4+x%4]+.5)/16){const i=(y*160+x)*4;for(let k=0;k<4;k++)p[i+k]=q[i+k]}}
+   ac.putImageData(frame,0,0);tile=above;pairs.set(second,tile);
   }
-  // Unbroken guide rails and cables, shared by every floor and variant.
-  for(const dx of [-31,27]){c.fillStyle='#302d24';c.fillRect(x+dx-2,y+top,8,bottom-top);c.fillStyle='#a18c62';c.fillRect(x+dx,y+top,3,bottom-top);c.fillStyle='#d1bb89';c.fillRect(x+dx,y+top,1,bottom-top)}
-  c.fillStyle='#77715c';c.fillRect(x-5,y+top,2,bottom-top);c.fillStyle='#454735';c.fillRect(x+4,y+top,1,bottom-top);
-  for(let wy=Math.ceil((y+top)/24)*24;wy<y+bottom;wy+=24){c.fillStyle='#504733';c.fillRect(x-35,wy,70,3);c.fillStyle='#b19d72';for(const dx of [-31,27])c.fillRect(x+dx-1,wy,5,2)}
-  // Only the ends of the entire open shaft receive a cap.
-  for(const cap of [!up?top:null,!down?bottom-8:null])if(cap!==null){c.fillStyle='#4b4432';c.fillRect(x-63,y+cap,126,8);c.fillStyle='#a18c62';c.fillRect(x-61,y+cap,122,2)}
-  c.restore();
+  this.ctx.drawImage(tile,a.x*CW-80,(a.y+.5)*CH-12);
  }
  passageDoor(x,y,vertical,door){
   const c=this.ctx;c.save();c.translate(x,y);if(vertical)c.rotate(Math.PI/2);c.imageSmoothingEnabled=false;
@@ -100,6 +97,7 @@ export class Renderer{
   const visible=this.game.rooms.filter(r=>r.x*CW>bounds.left&&r.x*CW<bounds.right&&r.y*CH>bounds.top&&r.y*CH<bounds.bottom);
   for(const r of visible){const x=r.x*CW,y=r.y*CH;if(r.y<0&&(r.y===-1||this.game.room(r.x,r.y+1))){c.fillStyle='#57594a';const bottom=r.y===-1?CH*.5:CH-54;for(const ox of [-53,47])c.fillRect(x+ox,y+40,6,bottom-40);c.fillStyle='#b1a889';for(const ox of [-51,49])c.fillRect(x+ox,y+40,2,bottom-40);}const image=this.roomImage(r,time);if(this.continuousShaft(r))this.shaftTile(r,image);else if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
   }
+  for(const r of visible){const below=this.game.room(r.x,r.y+1);if(this.shaftLinked(r,below))this.shaftSeam(r,below)}
   // Composite every room first, then its doorway aprons; no room PNG can cover a neighbor's connection.
   for(const r of visible)for(const[dx,dy]of [[1,0],[0,1]]){const n=this.game.room(r.x+dx,r.y+dy);if(n&&this.game.linked(r,n))this.corridor(r,n)}
   const directions=this.game.directions();
@@ -146,11 +144,11 @@ export class Renderer{
   }
   for(const group of groups.values()){
    group.sort((a,b)=>a.id-b.id);
-   const size=Math.max(...group.map(u=>36*(u.size||1))),columns=Math.min(5,Math.max(1,Math.floor(118/Math.max(22,size*.65)))),rows=Math.ceil(group.length/columns),step=Math.min(24,112/(columns-.5)),rise=rows>1?Math.min(10,30/(rows-1)):0;
+   const size=Math.max(...group.map(u=>36*(u.size||1))),columns=Math.min(group.length,5,Math.max(1,Math.floor(118/Math.max(22,size*.65)))),rows=Math.ceil(group.length/columns),step=Math.min(24,112/(columns-.5)),rise=rows>1?Math.min(10,30/(rows-1)):0;
    group.forEach((u,index)=>{
     const row=Math.floor(index/columns),count=Math.min(columns,group.length-row*columns),column=index%columns,weight=Math.max(0,1-Math.max(Math.abs(u.x-Math.round(u.x)),Math.abs(u.y-Math.round(u.y)))/.12);
-    // Centre each rank and alternate half a column to expose the rear rank.
-    const offset=(column-(count-1)/2)*step+(rows>1?(row%2?.25:-.25)*step:0);
+    // Keep one column grid even for incomplete ranks: alternate half a slot.
+    const slot=column+Math.floor((columns-count)/2),offset=(slot-(columns-1)/2)*step+(rows>1?(row%2?.25:-.25)*step:0);
     positions.push({u,x:u.x*CW+offset*weight,y:u.y*CH+this.floorOffset(u.x,u.y)-row*rise*weight});
    });
   }

@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.6.1.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
+O resultado fica em `releases/conquer-web-1.6.2.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
 
 ## Conteúdo e controles
 
@@ -186,3 +186,7 @@ Comandos adicionais: `npm run test:tactics-doors`, `npm run test:room-appearance
 ### Paletas das salas — versão 1.6.1
 
 Todas as salas agora recebem tint nos próprios pixels usando a mesma paleta de material do corredor que chega até elas. O tratamento também vale para variantes danificadas e retratos no painel. Papel, transparência e detalhes da pixel art são preservados. Efeitos de contaminação continuam sobre essa base; o pulso lento permanece exclusivo da caverna de cristal.
+
+### Formação no chão das salas — versão 1.6.2
+
+Personagens ficam na parte inferior da sala. Tropas numerosas formam fileiras progressivamente mais altas, alternadas lateralmente em zigue-zague, desenhadas do fundo para a frente. A formação considera o tamanho dos sprites e se desfaz gradualmente ao entrar nos corredores; posições lógicas, alcance e pathfinding permanecem iguais. Projéteis e impactos acompanham a altura visual das salas.

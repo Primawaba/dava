@@ -120,3 +120,8 @@ A compilação final 1.6.0 aprovou 8 verificações táticas/portas, 5 de aparê
 
 115 testes do motor aprovados. A suíte de aparência passou em 6 verificações, comparando os pixels de 133 combinações de tipo/estado com as 10 paletas compartilhadas dos corredores: 962.660 pixels de primeiro plano e 501.404 pixels preservados. Verifica também transparência, cache, contaminação, pulso exclusivo do cristal, movimento reduzido, reparo e viewport mobile. O HTML autônomo passou nas 7 verificações offline, incluindo salvamento e combate.
 A suíte geral do navegador também aprovou 21 verificações em PC e mobile, sem exceções não tratadas.
+
+## Revisão 1.6.2 — tropas no chão e fileiras alternadas
+
+Conferência visual em PC e mobile com grupos de 1, 5, 7, 12 e 20 personagens. A formação de 20 soldados apresentou quatro fileiras e 20 posições distintas, com ordenação de profundidade. O deslocamento vertical desaparece no centro dos corredores. Capturas: `artifacts/troop-floor-formation.png` e `artifacts/troop-floor-mobile.png`. O HTML autônomo aprovou as 7 verificações de carregamento offline, jogo, save, combate e mobile, sem exceções JavaScript.
+A suíte geral aprovou 21 verificações de navegador em PC e mobile, incluindo combate, projéteis, salvamento e layout, sem exceções não tratadas.

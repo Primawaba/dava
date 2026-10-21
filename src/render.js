@@ -102,10 +102,32 @@ export class Renderer{
    c.strokeStyle=reason?'#aa695566':selected?'#866c3e':'#7e8a6766';c.fillStyle=reason?'#ae6c5110':'#adc19918';c.setLineDash([4,4]);c.fillRect(x-65,y-43,130,86);c.strokeRect(x-65,y-43,130,86);c.setLineDash([]);
    c.fillStyle=reason?'#9b5c49':'#63734d';c.font='8px Arial';c.textAlign='center';c.fillText(reason?'SEM APOIO / CONEXÃO':'CONSTRUIR · SUPERFÍCIE',x,y+5);
   }
-  for(const u of this.game.s.units){if(u.hp<=0)continue;const same=this.game.s.units.filter(v=>v.hp>0&&Math.hypot(v.x-u.x,v.y-u.y)<.12),idx=same.findIndex(v=>v.id===u.id);const spread=Math.min(5,same.length);const ox=(idx%spread-(spread-1)/2)*12,oy=Math.floor(idx/spread)*9;this.unit(u,u.x*CW+ox,u.y*CH+oy,time)}
-  for(const p of this.game.projectiles){const x=(p.x+(p.tx-p.x)*p.t)*CW,y=(p.y+(p.ty-p.y)*p.t)*CH;c.save();c.translate(x,y);c.rotate(Math.atan2((p.ty-p.y)*CH,(p.tx-p.x)*CW));c.strokeStyle=p.team==='enemy'?'#a4563e':'#2f6853';c.fillStyle=c.strokeStyle;c.lineWidth=2;if(p.kind==='arrow'||p.kind==='bolt'){c.beginPath();c.moveTo(-13,0);c.lineTo(9,0);c.moveTo(4,-4);c.lineTo(10,0);c.lineTo(4,4);c.stroke();c.lineWidth=1;c.moveTo(-8,0);c.lineTo(-12,-3);c.stroke()}else{c.shadowColor=c.fillStyle;c.shadowBlur=10;c.beginPath();c.arc(0,0,p.kind==='flask'?4:5,0,Math.PI*2);c.fill();c.shadowBlur=0;c.strokeStyle='#b9c9a4';c.lineWidth=1;c.beginPath();c.moveTo(-5,0);c.lineTo(-17,0);c.stroke()}c.restore()}
-  if(!this.reduced)for(const e of this.game.effects){c.globalAlpha=Math.min(1,e.life*2);c.strokeStyle=e.kind==='death'?'#a16e51':'#a16e51';c.lineWidth=1.5;c.beginPath();c.arc(e.x*CW,e.y*CH,(1-e.life)*20+5,0,Math.PI*2);c.stroke();c.globalAlpha=1}
+  const formation=this.unitFormation();
+  for(const {u,x,y} of formation)this.unit(u,x,y,time);
+  for(const p of this.game.projectiles){const x=(p.x+(p.tx-p.x)*p.t)*CW,y=(p.y+(p.ty-p.y)*p.t)*CH+this.floorOffset(p.x,p.y)*(1-p.t)+this.floorOffset(p.tx,p.ty)*p.t;c.save();c.translate(x,y);c.rotate(Math.atan2((p.ty-p.y)*CH,(p.tx-p.x)*CW));c.strokeStyle=p.team==='enemy'?'#a4563e':'#2f6853';c.fillStyle=c.strokeStyle;c.lineWidth=2;if(p.kind==='arrow'||p.kind==='bolt'){c.beginPath();c.moveTo(-13,0);c.lineTo(9,0);c.moveTo(4,-4);c.lineTo(10,0);c.lineTo(4,4);c.stroke();c.lineWidth=1;c.moveTo(-8,0);c.lineTo(-12,-3);c.stroke()}else{c.shadowColor=c.fillStyle;c.shadowBlur=10;c.beginPath();c.arc(0,0,p.kind==='flask'?4:5,0,Math.PI*2);c.fill();c.shadowBlur=0;c.strokeStyle='#b9c9a4';c.lineWidth=1;c.beginPath();c.moveTo(-5,0);c.lineTo(-17,0);c.stroke()}c.restore()}
+  if(!this.reduced)for(const e of this.game.effects){c.globalAlpha=Math.min(1,e.life*2);c.strokeStyle=e.kind==='death'?'#a16e51':'#a16e51';c.lineWidth=1.5;c.beginPath();c.arc(e.x*CW,e.y*CH+this.floorOffset(e.x,e.y),(1-e.life)*20+5,0,Math.PI*2);c.stroke();c.globalAlpha=1}
   c.restore();
+ }
+ // Feet rest at y + 35 inside rooms; the offset fades to the corridor centre.
+ floorOffset(x,y){const distance=Math.max(Math.abs(x-Math.round(x)),Math.abs(y-Math.round(y)));return 20*Math.max(0,1-distance/.45)}
+ unitFormation(){
+  const living=this.game.s.units.filter(u=>u.hp>0),groups=new Map(),positions=[];
+  for(const u of living){const rx=Math.round(u.x),ry=Math.round(u.y),distance=Math.max(Math.abs(u.x-rx),Math.abs(u.y-ry));
+   if(distance>=.12){positions.push({u,x:u.x*CW,y:u.y*CH+this.floorOffset(u.x,u.y)});continue}
+   const id=`${rx},${ry}:${u.team}`;if(!groups.has(id))groups.set(id,[]);groups.get(id).push(u);
+  }
+  for(const group of groups.values()){
+   group.sort((a,b)=>a.id-b.id);
+   const size=Math.max(...group.map(u=>36*(u.size||1))),columns=Math.min(5,Math.max(1,Math.floor(118/Math.max(22,size*.65)))),rows=Math.ceil(group.length/columns),step=Math.min(24,112/(columns-.5)),rise=rows>1?Math.min(10,30/(rows-1)):0;
+   group.forEach((u,index)=>{
+    const row=Math.floor(index/columns),count=Math.min(columns,group.length-row*columns),column=index%columns,weight=Math.max(0,1-Math.max(Math.abs(u.x-Math.round(u.x)),Math.abs(u.y-Math.round(u.y)))/.12);
+    // Centre each rank and alternate half a column to expose the rear rank.
+    const offset=(column-(count-1)/2)*step+(rows>1?(row%2?.25:-.25)*step:0);
+    positions.push({u,x:u.x*CW+offset*weight,y:u.y*CH+this.floorOffset(u.x,u.y)-row*rise*weight});
+   });
+  }
+  // Rear ranks and northern rooms first, so foreground feet occlude naturally.
+  return positions.sort((a,b)=>a.y-b.y||a.u.id-b.u.id);
  }
  corners(x,y,w,h){const c=this.ctx,l=12;c.beginPath();c.moveTo(x,y+l);c.lineTo(x,y);c.lineTo(x+l,y);c.moveTo(x+w-l,y);c.lineTo(x+w,y);c.lineTo(x+w,y+l);c.moveTo(x+w,y+h-l);c.lineTo(x+w,y+h);c.lineTo(x+w-l,y+h);c.moveTo(x+l,y+h);c.lineTo(x,y+h);c.lineTo(x,y+h-l);c.stroke()}
  unit(u,x,y,time){

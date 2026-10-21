@@ -7,6 +7,7 @@ export class Renderer{
  constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.appearance=new RoomAppearance();this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
  async load(){
   const assets=Object.keys(ROOMS).flatMap(type=>[0,1,2].map(v=>({id:`${type}-${v}`,src:`./assets/rooms/${type}-${v}.png`})));
+  assets.push(...[0,1,2].map(v=>({id:`awake-dragon-${v}`,src:`./assets/rooms/awake-dragon-${v}.png`})));
   assets.push(...Object.keys(SPRITE_FRAMES).map(type=>({id:`unit-${type}`,src:`./assets/sprites/${type}.png`})));
   assets.push(...DAMAGEABLE_ROOMS.flatMap(type=>[0,1,2].map(v=>({id:`damaged-${type}-${v}`,src:`./assets/damaged-rooms/${type}-${v}.png`}))));
   assets.push(...PASSAGES.map(name=>({id:`passage-${name}`,src:`./assets/passages/${name}.png`})));
@@ -14,7 +15,7 @@ export class Renderer{
   this.passages.cache.clear();this.appearance.cache.clear();
   if(this.images['unit-immortal']){const outline=document.createElement('canvas');outline.width=outline.height=64;const c=outline.getContext('2d');c.drawImage(this.images['unit-immortal'],0,0,64,64);c.globalCompositeOperation='source-in';c.fillStyle='#b5a56f';c.fillRect(0,0,64,64);this.immortalOutline=outline}
  }
- rawRoomImage(r){return this.images[`${r.damaged&&DAMAGEABLE_ROOMS.includes(r.type)?'damaged-':''}${r.type}-${r.variant}`]||this.images[`${r.type}-${r.variant}`]}
+ rawRoomImage(r){if(r.type==='dragon'&&r.dragonAwake)return this.images[`awake-dragon-${r.variant}`]||this.images[`dragon-${r.variant}`];return this.images[`${r.damaged&&DAMAGEABLE_ROOMS.includes(r.type)?'damaged-':''}${r.type}-${r.variant}`]||this.images[`${r.type}-${r.variant}`]}
  roomImage(r,time=0){return this.appearance.get(this.rawRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
  roomURL(r,time=0){return this.appearance.url(this.rawRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
  resize(){const r=this.canvas.getBoundingClientRect();this.width=r.width;this.height=r.height;const dpr=Math.min(devicePixelRatio||1,2);this.canvas.width=Math.round(r.width*dpr);this.canvas.height=Math.round(r.height*dpr);this.dpr=dpr}
@@ -54,28 +55,23 @@ export class Renderer{
  roomLabel(r){if(this.shaftLinked(r,this.game.room(r.x,r.y+1)))return '';return this.continuousShaft(r)?'Elevador':ROOMS[r.type].name}
  shaftLinked(a,b){return !!a&&!!b&&['shaft','elevator'].includes(a.type)&&['shaft','elevator'].includes(b.type)&&a.x===b.x&&Math.abs(a.y-b.y)===1&&this.game.linked(a,b)}
  continuousShaft(r){return ['shaft','elevator'].includes(r.type)&&(this.shaftLinked(r,this.game.room(r.x,r.y-1))||this.shaftLinked(r,this.game.room(r.x,r.y+1)))}
- shaftTile(r,image){
-  if(!image)return;
-  const up=this.shaftLinked(r,this.game.room(r.x,r.y-1)),down=this.shaftLinked(r,this.game.room(r.x,r.y+1));
-  // Retain the original cavern illustration, furnishings and irregular walls.
-  // Connected ends use the inside of the shaft instead of its rock cap.
-  const sy=up?18:0,ey=down?62:86,top=up?-CH/2:-62,bottom=down?CH/2:51.33;
-  this.ctx.drawImage(image,0,sy,image.width,ey-sy,r.x*CW-80,r.y*CH+top,160,bottom-top);
- }
+ shaftTile(r,image){if(image)this.ctx.drawImage(image,r.x*CW-80,r.y*CH-62,160,113.33)}
  shaftSeam(a,b){
   const first=this.roomImage(a,this.passageTime||0),second=this.roomImage(b,this.passageTime||0);if(!first||!second)return;
   this.shaftStitches??=new WeakMap();let pairs=this.shaftStitches.get(first);if(!pairs){pairs=new WeakMap();this.shaftStitches.set(first,pairs)}let tile=pairs.get(second);
   if(!tile){
-   const above=document.createElement('canvas'),below=document.createElement('canvas');above.width=below.width=160;above.height=below.height=24;
-   const ac=above.getContext('2d'),bc=below.getContext('2d');ac.imageSmoothingEnabled=bc.imageSmoothingEnabled=false;
-   ac.drawImage(first,0,54,first.width,8,0,0,160,24);bc.drawImage(second,0,18,second.width,8,0,0,160,24);
-   const frame=ac.getImageData(0,0,160,24),other=bc.getImageData(0,0,160,24),p=frame.data,q=other.data;
-   // Pixel dithering joins both actual illustrations without blurry blending.
-   const thresholds=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
-   for(let y=0;y<24;y++)for(let x=0;x<160;x++){const t=y/23;if(t>(thresholds[(y%4)*4+x%4]+.5)/16){const i=(y*160+x)*4;for(let k=0;k<4;k++)p[i+k]=q[i+k]}}
-   ac.putImageData(frame,0,0);tile=above;pairs.set(second,tile);
+   // Build only the connecting neck. Room sprites keep their original proportions.
+   tile=document.createElement('canvas');tile.width=64;tile.height=86;const c=tile.getContext('2d');c.imageSmoothingEnabled=false;
+   c.fillStyle='#211f19';c.fillRect(10,0,44,86);
+   for(let y=0;y<86;y+=12){const image=y<43?first:second,phase=Math.floor(y/12)%3;
+    for(const side of [-1,1]){const x=side<0?6+phase:46-phase;c.drawImage(image,side<0?9:108,18+phase*6,12,12,x,y,12,12)}
+   }
+   // Discrete timber braces and ropes match the old cavern cutaway art.
+   c.fillStyle='#746446';c.fillRect(22,0,2,86);c.fillStyle='#b6a37a';c.fillRect(22,0,1,86);c.fillStyle='#857454';c.fillRect(40,0,1,86);
+   for(let y=10;y<86;y+=24){c.fillStyle='#4e4432';c.fillRect(18,y,28,3);c.fillStyle='#a38e64';c.fillRect(18,y,28,1)}
+   pairs.set(second,tile);
   }
-  this.ctx.drawImage(tile,a.x*CW-80,(a.y+.5)*CH-12);
+  this.ctx.drawImage(tile,a.x*CW-40,a.y*CH+28,80,107.5);
  }
  passageDoor(x,y,vertical,door){
   const c=this.ctx;c.save();c.translate(x,y);if(vertical)c.rotate(Math.PI/2);c.imageSmoothingEnabled=false;
@@ -129,6 +125,11 @@ export class Renderer{
    c.strokeStyle=reason?'#aa695566':selected?'#866c3e':'#7e8a6766';c.fillStyle=reason?'#ae6c5110':'#adc19918';c.setLineDash([4,4]);c.fillRect(x-65,y-43,130,86);c.strokeRect(x-65,y-43,130,86);c.setLineDash([]);
    c.fillStyle=reason?'#9b5c49':'#63734d';c.font='8px Arial';c.textAlign='center';c.fillText(reason?'SEM APOIO / CONEXÃO':'CONSTRUIR · SUPERFÍCIE',x,y+5);
   }
+  const seal=this.game.room(this.selected.x,this.selected.y);
+  if(seal?.type==='sealed')for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){
+   const x=seal.x+dx,y=seal.y+dy;if(this.game.room(x,y)||y<0)continue;
+   c.strokeStyle='#965b4d66';c.fillStyle='#965b4d0c';c.setLineDash([3,4]);c.fillRect(x*CW-62,y*CH-40,124,80);c.strokeRect(x*CW-62,y*CH-40,124,80);c.setLineDash([]);c.fillStyle='#965b4d';c.font='9px Georgia';c.textAlign='center';c.fillText('SELADO',x*CW,y*CH+3);
+  }
   const formation=this.unitFormation();
   for(const {u,x,y} of formation)this.unit(u,x,y,time);
   for(const p of this.game.projectiles){const x=(p.x+(p.tx-p.x)*p.t)*CW,y=(p.y+(p.ty-p.y)*p.t)*CH+this.floorOffset(p.x,p.y)*(1-p.t)+this.floorOffset(p.tx,p.ty)*p.t;c.save();c.translate(x,y);c.rotate(Math.atan2((p.ty-p.y)*CH,(p.tx-p.x)*CW));c.strokeStyle=p.team==='enemy'?'#a4563e':'#2f6853';c.fillStyle=c.strokeStyle;c.lineWidth=2;if(p.kind==='arrow'||p.kind==='bolt'){c.beginPath();c.moveTo(-13,0);c.lineTo(9,0);c.moveTo(4,-4);c.lineTo(10,0);c.lineTo(4,4);c.stroke();c.lineWidth=1;c.moveTo(-8,0);c.lineTo(-12,-3);c.stroke()}else{c.shadowColor=c.fillStyle;c.shadowBlur=10;c.beginPath();c.arc(0,0,p.kind==='flask'?4:5,0,Math.PI*2);c.fill();c.shadowBlur=0;c.strokeStyle='#b9c9a4';c.lineWidth=1;c.beginPath();c.moveTo(-5,0);c.lineTo(-17,0);c.stroke()}c.restore()}
@@ -145,7 +146,7 @@ export class Renderer{
   }
   for(const group of groups.values()){
    group.sort((a,b)=>a.id-b.id);
-   const size=Math.max(...group.map(u=>36*(u.size||1))),columns=Math.min(group.length,5,Math.max(1,Math.floor(118/Math.max(22,size*.65)))),rows=Math.ceil(group.length/columns),step=Math.min(24,112/(columns-.5)),rise=rows>1?Math.min(10,30/(rows-1)):0;
+   const size=Math.max(...group.map(u=>36*(u.size||1))),columns=Math.min(group.length,5,Math.max(1,Math.floor(140/Math.max(22,size*.65)))),rows=Math.ceil(group.length/columns),step=Math.min(Math.max(24,size*.62),112/(columns-.5)),rise=rows>1?Math.min(10,30/(rows-1)):0;
    group.forEach((u,index)=>{
     const row=Math.floor(index/columns),count=Math.min(columns,group.length-row*columns),column=index%columns,weight=Math.max(0,1-Math.max(Math.abs(u.x-Math.round(u.x)),Math.abs(u.y-Math.round(u.y)))/.12);
     // Keep one column grid even for incomplete ranks: alternate half a slot.

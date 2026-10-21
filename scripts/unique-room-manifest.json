@@ -1,0 +1,194 @@
+[
+  [
+    {
+      "type": "cave",
+      "description": "empty natural limestone cavern with stalactites, exposed stone floor and a small stone arch, no furniture"
+    },
+    {
+      "type": "forest",
+      "description": "dense underground forest of tall twisted trees, roots, ferns and leafy canopy"
+    },
+    {
+      "type": "gas",
+      "description": "poison gas vents from cracked rocks, skull-shaped toxic wisps and pools, clear curling fumes"
+    },
+    {
+      "type": "flammable",
+      "description": "flammable gas cavern with bubbling tar fissures, volatile billowing fumes and sulfur deposits, no flames"
+    },
+    {
+      "type": "miasma",
+      "description": "rotting swamp cavern with drooping dead roots, decayed bones and sickly curling miasma"
+    },
+    {
+      "type": "blindgas",
+      "description": "chalk dust and dense opaque swirling fog filling a cavern, white cloudy banks obscure rocky pillars"
+    },
+    {
+      "type": "water",
+      "description": "wide underground river flowing across a cavern, rippling water and shoreline rocks"
+    },
+    {
+      "type": "lava",
+      "description": "broad molten magma river through cracked dark volcanic rock, bubbling lava and steam"
+    },
+    {
+      "type": "crystal",
+      "description": "huge angular crystal clusters sprouting from cave floor and ceiling, spectacular faceted pillars"
+    },
+    {
+      "type": "nest",
+      "description": "animal nesting chamber, large woven nest of branches and straw containing several eggs"
+    },
+    {
+      "type": "ruins",
+      "description": "ancient ruined city masonry, broken classical arches, toppled pillars and cracked stone steps"
+    },
+    {
+      "type": "crypt",
+      "description": "forgotten crypt, multiple ornate sarcophagi, skull niches, tomb slabs and skeletal remains"
+    }
+  ],
+  [
+    {
+      "type": "well",
+      "description": "LARGE unmistakable circular stone wishing well in the foreground, water visible in its deep opening, wooden roof, bucket on rope and pulley, fallen coins nearby"
+    },
+    {
+      "type": "sealed",
+      "description": "ancient sealed chamber, imposing stone door bound with massive chains and occult locks, ominous cracks"
+    },
+    {
+      "type": "mine",
+      "description": "abandoned ore mine, wooden mine props, ore cart on rails, pickaxes and mineral veins"
+    },
+    {
+      "type": "ancienttemple",
+      "description": "abandoned ancient temple with a tall sacred altar, broken god statue, carved columns and stone offering bowls"
+    },
+    {
+      "type": "ancientlibrary",
+      "description": "vast old library, shelves packed with ancient books, scrolls and reading lectern, fallen books on floor"
+    },
+    {
+      "type": "portal",
+      "description": "large upright circular portal ring carved with arcane runes, swirling dark planar void inside, arcane pillars"
+    },
+    {
+      "type": "golemforge",
+      "description": "colossal ancient golem foundry, stone automaton limbs suspended from chains, huge anvil, furnace and machinery"
+    },
+    {
+      "type": "mud",
+      "description": "deep sticky mud bog with sinking cart wheel, boot prints, reeds and mire, no water river"
+    },
+    {
+      "type": "mushrooms",
+      "description": "forest of oversized fantastical mushrooms of different caps, small mushroom clusters and spores"
+    },
+    {
+      "type": "springs",
+      "description": "natural hot springs: several rounded stone thermal pools, gentle steam and mineral terraces"
+    },
+    {
+      "type": "fairy",
+      "description": "enchanted fairy grotto with miniature fairy houses in roots, sparkling firefly lights, delicate flowers and toadstool ring"
+    },
+    {
+      "type": "vault",
+      "description": "hidden ancient treasury vault, heavy circular reinforced vault door and stacked treasure chests"
+    }
+  ],
+  [
+    {
+      "type": "labyrinth",
+      "description": "recognizable underground MAZE with multiple interlocking masonry corridors and dead ends seen as an open cutaway, winding paths"
+    },
+    {
+      "type": "void",
+      "description": "enormous singular jagged black void crystal floating over a cracked ritual plinth, radiating dark energy, stark stone chamber"
+    },
+    {
+      "type": "meadhall",
+      "description": "Viking mead hall: long feast tables with horn mugs, casks, shields and carved rafters, burning central hearth"
+    },
+    {
+      "type": "crater",
+      "description": "volcanic crater, clearly shaped circular rim surrounding a deep lava pit, dark jagged rim and smoke"
+    },
+    {
+      "type": "smalllair",
+      "description": "small beast den with a low entrance, scattered little bones, chewed logs and small claw marks; no monster permanently painted"
+    },
+    {
+      "type": "largelair",
+      "description": "huge monster lair with giant bones, enormous claw marks, massive stone bedding, broken tree trunks; no painted monster"
+    },
+    {
+      "type": "burrow",
+      "description": "burrowing worm tunnel, concentric ringed round earth opening, heaps of excavated soil, severed roots and fresh digging scars; no painted worm"
+    },
+    {
+      "type": "invincible",
+      "description": "immortal chamber, huge ancient sealed monolith, unbreakable ringed chains anchored to stone, austere mysterious space; NO painted creature, real creature is separate sprite"
+    },
+    {
+      "type": "wandering",
+      "description": "lost creature refuge, tracks ending at a little abandoned blanket nest beneath a rock arch, scattered travel packs and strange footprints"
+    },
+    {
+      "type": "elemental",
+      "description": "gem elemental shrine, towering roughly humanoid-shaped arrangements of crystals around an altar, precious mineral strata, no actual creature"
+    },
+    {
+      "type": "hive",
+      "description": "giant insect hive, enormous hexagonal honeycomb chambers, hanging cocoons, eggs, resin and wax structures, distinct organic interior"
+    },
+    {
+      "type": "hungry",
+      "description": "ravenous beast lair, scraped empty feeding trough, rib cages, enormous teeth scattered in gnawed bones, hungry claw gouges; no painted beast"
+    }
+  ],
+  [
+    {
+      "type": "artifact",
+      "description": "enchanted artifact reliquary: ornate pedestal bearing a single magnificent floating sword under a carved shrine arch, little magical sparks"
+    },
+    {
+      "type": "desolate",
+      "description": "desolate invader outpost, shattered fortifications, crude enemy banners, broken cages, abandoned camp debris and giant skull trophies"
+    },
+    {
+      "type": "rivalmine",
+      "description": "rival miners camp: canvas tents, mining supplies, ore crates, pickaxe racks, lanterns and tiny campfire in cave"
+    },
+    {
+      "type": "ritual",
+      "description": "interrupted occult ritual, unfinished magic circle, candles knocked over, open grimoire and broken sacrificial stone"
+    },
+    {
+      "type": "city",
+      "description": "underground city with many tiny multi-storey stone houses, balconies, bridges, doors and little streets in a huge cavern"
+    },
+    {
+      "type": "tomb",
+      "description": "tomb of horrors, enormous ominous carved skull doorway, trapped stone floor, spikes, grim statues and central sarcophagus"
+    },
+    {
+      "type": "chaos",
+      "description": "chaotic altar: asymmetrical jagged altar crowned with many-pointed chaos symbol, ritual bowls and spiralling stone pillars"
+    },
+    {
+      "type": "ancientprison",
+      "description": "ancient dungeon prison, barred cells, rusty shackles, hanging iron cages, stone dungeon walls and a cell doorway"
+    },
+    {
+      "type": "challenge",
+      "description": "champion arena, circular gladiatorial fighting pit with ruined stepped spectator stands, weapon racks and fluttering victory banners"
+    },
+    {
+      "type": "rivalhold",
+      "description": "rival dungeon entrance, imposing enemy fortress gate embedded in cave rock, fortified ramparts and hostile heraldic banners"
+    }
+  ]
+]

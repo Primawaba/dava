@@ -35,3 +35,9 @@ Regra do documento: “Criatura Invencível bloqueando a sala. Pode ser morta ap
 ## Revisão solicitada pelo jogador — 1.6.0
 
 Cavernas naturais não recebem dano estrutural; apenas construções são danificadas por magma e explosões. Barricadas, tanto defensivas quanto ofensivas, pertencem a uma passagem e bloqueiam líquidos e gases naquela aresta enquanto intactas. Essas instruções do jogador prevalecem sobre as adaptações digitais anteriores.
+
+## CONQUER — Resquícios 24 e pedidos da revisão 1.7.0
+
+“Masmorra Rival, ocupando 1d10+2 espaços. Compre uma carta para definir o que há em cada espaço, tratando-as como se fossem ♠. [...] Ao fim do combate, obtenha 10♦ para cada espaço [...] (Caso não haja combate, tesouro nenhum é obtido)”. Implementado com revelação automática, uma origem por passagem e defensores do mesmo lado. No limite físico do mapa a geração preserva salas existentes.
+
+Resquícios 10: o golem da forja só inicia combate quando atacado, agora por ação explícita. Resquícios 9: a checagem por turno do portal não deve depender da produção ou ligação à base. Nesta adaptação a estabilização permite expedições; só selar interrompe as invasões. Os pedidos do jogador adicionam bloqueio 3×3 da câmara selada, abertura automática por dano, duas fases visuais do dragão e escala grande para golems aliados e cerco.

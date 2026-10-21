@@ -59,3 +59,7 @@ try{
  for(const f of await readdir('public/assets/rooms'))if(f.endsWith('.svg'))await unlink('public/assets/rooms/'+f);
  console.log(`${Object.keys(ROOMS).length*3} raster room variants and ${Object.keys(SPRITE_FRAMES).length} distinct sprite files ready.`);
 }finally{await browser.close()}
+
+// Preserve the dedicated discovery and dragon-state artwork on a full rebuild.
+await import('./unique-room-art.mjs');
+await import('./dragon-art.mjs');

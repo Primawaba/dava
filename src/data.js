@@ -11,8 +11,8 @@ export const UNITS={
  beast:{name:'Fera',icon:'paw',power:10,cost:15,mutiny:15,range:0.5,speed:1.1,homes:['kennel','breeder'],capacity:1,desc:'Criatura domesticada. Veloz e poderosa.'},
  alchemist:{name:'Alquimista',icon:'flask',power:2,cost:8,mutiny:10,range:1.8,speed:0.65,homes:['laboratory'],capacity:10,desc:'Arremessa frascos alquímicos de longo alcance.'},
  trapper:{name:'Armadilheiro',icon:'trap',power:1,cost:20,mutiny:0,range:0.4,speed:0.7,homes:['forge'],capacity:2,desc:'Rearma armadilhas próximas durante o combate. Sempre leal.'},
- golem:{name:'Golem',icon:'shield',power:7,cost:15,mutiny:0,range:0.5,speed:0.45,homes:['golemforge','forge'],capacity:2,requires:'golemforge',desc:'Imune a líquidos e gases. Sempre leal. Exige Forja de Golem.'},
- siege:{name:'Arma de cerco',icon:'target',power:30,cost:30,mutiny:0,range:2.1,speed:0,homes:['siegepost','forge'],capacity:2,requires:'forge',desc:'Um disparo devastador por combate. Não se move.'},
+ golem:{name:'Golem',icon:'shield',size:2,power:7,cost:15,mutiny:0,range:0.5,speed:0.45,homes:['golemforge','forge'],capacity:2,requires:'golemforge',desc:'Imune a líquidos e gases. Sempre leal. Exige Forja de Golem.'},
+ siege:{name:'Arma de cerco',icon:'target',size:2.6,power:30,cost:30,mutiny:0,range:2.1,speed:0,homes:['siegepost','forge'],capacity:2,requires:'forge',desc:'Um disparo devastador por combate. Não se move.'},
  undead:{name:'Morto-vivo',icon:'skull',power:1,cost:5,mutiny:10,range:0.4,speed:0.6,homes:['crypt'],capacity:20,desc:'50% de chance de voltar à vida após o combate.'},
  hero:{name:'Aventureiro',icon:'sword',power:15,cost:10,mutiny:0,range:0.5,speed:0.8,homes:['tavern'],capacity:1,desc:'Defensor leal atraído pela taverna.'},
  berserker:{name:'Berserker',icon:'sword',power:15,cost:5,mutiny:8,range:0.4,speed:0.9,homes:['meadhall'],capacity:10,desc:'Guerreiro dos Campeões. Busca o inimigo mais próximo.'}
@@ -62,7 +62,7 @@ export const ROOMS={
  artificer:{name:'Artificiaria',icon:'flask',r:100,g:50,group:'Avançadas',requires:['forge','library','warehouse'],desc:'Permite inventar melhorias permanentes por 50♦.'},
  breeder:{name:'Criadouro',icon:'paw',r:80,g:0,group:'Avançadas',requires:['artificer'],desc:'Abriga uma fera. Libera recrutamento de feras.'},
  throne:{name:'Sala do trono',icon:'crown',r:100,g:100,group:'Avançadas',requires:['treasury','warehouse'],unique:true,desc:'Substitui o portão como objetivo dos inimigos.'},
- stabilizer:{name:'Estabilizador planar',icon:'portal',r:50,g:0,group:'Avançadas',on:'portal',desc:'Estabiliza um portal. Libera expedições a 13 planos.'},
+ stabilizer:{name:'Estabilizador planar',icon:'portal',r:50,g:0,group:'Avançadas',on:'portal',desc:'Libera expedições a 13 planos. O portal continua sujeito a invasões de 25% por turno; sele-o para interrompê-las.'},
  forest:{name:'Floresta subterrânea',icon:'tree',desc:'Produz 2♥ por exploração. Pode ser cortada para construir.'},
  gas:{name:'Gás venenoso',icon:'cloud',hazard:true,desc:'Derrota ocupantes imediatamente, também fora de combate. Espalha-se duas salas para os lados e sobe. Drene por 5♦.'},
  flammable:{name:'Gás inflamável',icon:'flame',hazard:true,desc:'Explode imediatamente ao alcançar Forja, Taverna ou Quartel, derrotando ocupantes e danificando salas. Drene por 5♦.'},
@@ -75,12 +75,12 @@ export const ROOMS={
  ruins:{name:'Ruínas antigas',icon:'mountain',desc:'Vestígios de uma civilização esquecida. Terreno construível.'},
  crypt:{name:'Cripta esquecida',icon:'skull',desc:'Permite recrutar até 20 mortos-vivos após ser conquistada.'},
  well:{name:'Poço dos desejos',icon:'water',desc:'Pague 10♦ para receber uma magia boa ou ruim.'},
- sealed:{name:'Câmara selada',icon:'bars',desc:'Uma presença maligna aguarda. Abrir libera uma maldição e espaço para construir.'},
+ sealed:{name:'Câmara selada',icon:'bars',desc:'Bloqueia novas descobertas na área 3×3 ao redor. Salas conhecidas não são afetadas. Abrir libera uma maldição; qualquer dano abre a câmara automaticamente.'},
  mine:{name:'Mina abandonada',icon:'hammer',desc:'Uma mina antiga. Gera 2♦ por exploração.'},
  ancienttemple:{name:'Templo abandonado',icon:'cross',desc:'Seu altar esquecido permite invocar uma magia uma vez.'},
  ancientlibrary:{name:'Biblioteca antiga',icon:'book',desc:'Seus conhecimentos concedem uma bênção ao serem encontrados.'},
- portal:{name:'Portal planar',icon:'portal',desc:'25% de chance de invasão por exploração. Estabilize-o para visitar outros planos.'},
- golemforge:{name:'Forja de Golem',icon:'anvil',desc:'Conquistada, permite recrutar golems aqui e em Forjas.'},
+ portal:{name:'Portal planar',icon:'portal',desc:'25% de chance de invasão por turno, mesmo sem ligação à base. Estabilizar libera expedições, mas não impede invasões. Selar encerra o risco.'},
+ golemforge:{name:'Forja de Golem',icon:'anvil',desc:'Um golem passivo guarda a forja. Escolha atacá-lo para iniciar combate; ao vencê-lo, libera o recrutamento de golems.'},
  dragon:{name:'Covil do dragão',icon:'skull',desc:'Roube 20♦ por exploração. Cada roubo tem 25% de chance de acordar o dragão.'},
  mud:{name:'Terreno pegajoso',icon:'water',desc:'Todas as unidades movem-se 50% mais devagar.'},
  mushrooms:{name:'Bosque de cogumelos',icon:'tree',desc:'A colheita pode conceder moral ou recursos.'},
@@ -109,7 +109,7 @@ export const ROOMS={
  chaos:{name:'Altar caótico',icon:'spark',desc:'Ative uma vez: arrisque uma maldição em troca de uma bênção e recursos.'},
  ancientprison:{name:'Prisão antiga',icon:'bars',desc:'Liberte um prisioneiro: 25% de chance de ganhar uma fera leal; caso contrário, ela ataca.'},
  challenge:{name:'Arena do campeão',icon:'flag',desc:'Desafie o campeão de 60 STR. Ao vencê-lo, um guerreiro leal se junta à fortaleza.'},
- rivalhold:{name:'Masmorra rival',icon:'gate',desc:'Um bastião inimigo. Derrote seus defensores para receber 30♦.'}
+ rivalhold:{name:'Masmorra rival',icon:'gate',desc:'Revela automaticamente 1d10+2 espaços, cada um resolvido como uma carta de espadas. Com combate, a vitória rende 10♦ por espaço.'}
 };
 export const PLANES=[
  {name:'Plano da Ordem',artifact:'Asas de Ícaro',effect:'speed',desc:'Sentinelas incansáveis. Recompensa: +15% de velocidade.'},

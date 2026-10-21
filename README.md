@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.6.6.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
+O resultado fica em `releases/conquer-web-1.7.0.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
 
 ## Conteúdo e controles
 
@@ -210,3 +210,15 @@ Cada sequência de fossos/elevadores ligada verticalmente mostra apenas um títu
 ### Travessia em fila — versão 1.6.6
 
 Unidades do mesmo lado seguem em fila nos corredores, com espaço entre os personagens e sem ultrapassar aliados mais lentos. A fila vale nas quatro direções, respeita portas e aliados parados em combate e se libera dentro da sala de destino para recompor a formação. Unidades grandes recebem mais espaço. O progresso é preservado pelos saves. `npm run test:corridor-queue` verifica a travessia no navegador.
+
+### Descobertas, portais e arte própria — versão 1.7.0
+
+- A masmorra rival revela automaticamente **1d10+2 espaços**, incluindo a origem. Cada carta é tratada como ♠. O crescimento usa espaços livres e abre somente as passagens de origem; não substitui salas existentes. Os defensores compartilham o lado inimigo. Havendo combate, a vitória rende **10♦ por espaço**, sujeito à capacidade de armazenamento; sem combate não há tesouro da masmorra. Se uma câmara selada impedir o crescimento, ele continua automaticamente quando ela é aberta.
+- As 46 salas naturais/de encontro do novo manifesto têm **duas composições próprias e uma terceira variante espelhada**, em vez de compartilhar famílias genéricas. O poço dos desejos tem poço, telhado e balde; criptas têm sarcófagos; colmeias têm favos; bibliotecas têm estantes. Os quatro atlas de origem e o manifesto permitem reproduzir os 138 PNGs. Dragões e fossos têm tratamento próprio.
+- O covil do dragão tem três pares de artes: dragão dormindo sobre ouro num palácio em ruínas; depois do despertar, as mesmas ruínas sem dragão nem tesouro. A criatura passa a agir como unidade separada, e a sala não permite mais roubar ouro. O estado persiste no save.
+- O golem da forja surge **passivo**. A ação **Atacar golem** torna o mesmo guardião hostil. Vencê-lo libera a forja para recrutamento. Golems aliados usam o mesmo tamanho 2 do guardião; armas de cerco têm tamanho 2,6. Saves antigos atualizam os tamanhos aliados.
+- Elevadores mantêm as dimensões originais das ilustrações. Apenas o trecho de ligação recebe paredes e apoios de pixel art, sem esticar a sala. O título continua apenas no tile inferior de cada sequência.
+- A câmara selada bloqueia novas descobertas no seu **3×3**, incluindo diagonais. Salas já conhecidas, suas funções e suas passagens permanecem disponíveis. Selecionar a câmara destaca a área. Abrir libera a maldição e remove o bloqueio; dano por magma, explosões ou invasão abre o selo automaticamente, sem transformar cavernas em salas danificáveis.
+- A rolagem de invasão de **25% por turno** agora é independente de produção, conexão com a base e estabilização. Portais estabilizados continuam sujeitos a invasões; selar o portal encerra o risco. Cada portal é verificado uma vez por turno, com resultado no diário e no painel. Uma invasão interrompe a descoberta antes de gastar carta ou criar a sala solicitada.
+
+Novos comandos: `npm run test:discoveries`, `npm run build:unique-art` e `npm run build:dragon-art`. O HTML único inclui as novas artes, sem baixar imagens durante a partida.

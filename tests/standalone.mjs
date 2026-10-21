@@ -16,9 +16,9 @@ try{
  await context.setOffline(true);const page=await context.newPage();
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url())&&r.url()!==virtualUrl)requests.push(r.url())});
  try{await page.goto(url)}catch(e){if(!e.message.includes('ERR_BLOCKED_BY_ADMINISTRATOR'))throw e;fileProtocolVerified=false;url=virtualUrl;await context.route(url,route=>route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:html}));await page.goto(url);console.log('NOTE environment policy blocks file://; validating identical standalone HTML via intercepted loopback document, without a server.')}await expect(page.locator('h1')).toHaveText('CONQUER');await page.evaluate(()=>document.fonts.ready);
- await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(442);
+ await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(445);
  assert((await page.locator('.title-art').evaluate(el=>getComputedStyle(el).backgroundImage)).includes('data:image/png;base64,'));
- await page.screenshot({path:'artifacts/standalone-menu.png'});pass('self-contained HTML runs offline with 273 room images, 126 damaged variants, 34 sprites and 9 passage modules embedded');
+ await page.screenshot({path:'artifacts/standalone-menu.png'});pass('self-contained HTML runs offline with 276 room images, 126 damaged variants, 34 sprites and 9 passage modules embedded');
  await page.click('#new-game');await page.fill('#fortress-input','Teste sem instalação');await page.fill('#seed-input','standalone');await page.click('button[type=submit]');await page.click('[data-modal=close]');
  await page.evaluate(()=>window.__CONQUER__.game.s.deck=[{suit:'♥',rank:8}]);await page.click('#end-turn');await expect(page.locator('.room-title')).toHaveText('Caverna vazia');
  await page.click('[data-tab=build]');await page.click('[data-action=build][data-arg=barracks]');await expect(page.locator('.room-title')).toHaveText('Quartel');

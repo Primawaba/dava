@@ -8,7 +8,7 @@ Mantidos: 20♥, 20♦, moral 10, cinco soldados leais, exploração adjacente n
 
 Para encerrar uma campanha com condição verificável, o Cristal do Vazio aparece na primeira sala explorada em profundidade 12 ou maior. Um Guardião de 110 STR base o protege. Derrotá-lo concede vitória. Isolar o guardião não conta como derrotá-lo: ele ocupa a sala e volta ao combate quando houver reconexão. O portão é o objetivo dos invasores até a construção do trono. A campanha termina quando um invasor chega ao objetivo sem oposição local.
 
-O mapa possui limites de implementação: x entre −20 e 20; y entre −6 e 30. Salas acima da superfície recebem o acréscimo de altura no custo. Na superfície não há exploração nem compra de cartas: o térreo (y = −1) apoia na linha do chão, e cada piso acima exige uma sala intacta imediatamente abaixo. Construções sem apoio são bloqueadas; salas de saves antigos sem apoio ficam inativas. Encerrar turno recolhe produção e libera a próxima construção sem obrigar a escavar. Cada sala ocupa uma célula, inclusive as originalmente descritas com múltiplos espaços. Trilhos e elevadores são salas próprias, sem sobreposição de construções.
+O mapa possui limites de implementação: x entre −20 e 20; y entre −6 e 30. Salas acima da superfície recebem o acréscimo de altura no custo. Na superfície não há exploração nem compra de cartas: o térreo (y = −1) apoia na linha do chão, e cada piso acima exige uma sala intacta imediatamente abaixo. Construções sem apoio são bloqueadas; salas de saves antigos sem apoio ficam inativas. Encerrar turno recolhe produção e libera a próxima construção sem obrigar a escavar. A masmorra rival revela 1d10+2 espaços; as demais formações originalmente descritas com múltiplos espaços ainda usam uma célula. Trilhos e elevadores são salas próprias, sem sobreposição de construções.
 
 ## Descobertas
 
@@ -93,3 +93,13 @@ Na versão 1.6.1, o tint base de todos os tipos de sala usa a mesma paleta compa
 Na versão 1.6.4, o escavador abre cavernas vazias e passagens permanentes ao subir até a primeira sala conhecida (com limite na linha do chão), antes de retomar a IA normal. O mapa usa a mesma regra de perigos, portas e salvamento durante a escavação. O visual contínuo dos fossos voltou às ilustrações cavernosas originais, com junções de pixels entre tiles. Fileiras incompletas de tropas passam a manter a mesma grade alternada das fileiras cheias.
 
 Na versão 1.6.6, a travessia usa filas por direção e passagem: aliados do mesmo lado guardam distância, incluindo atrás de líderes lentos, portas e combatentes parados. A distância considera o tamanho e a orientação do corredor. A fila se desfaz dentro da sala de destino para retomar as fileiras. Não há reservas persistentes de corredor; saves usam as posições e o destino já existentes.
+
+## Revisão 1.7.0
+
+A entrada 24 de Resquícios do CONQUER agora revela 1d10+2 espaços automaticamente, desenhando cartas como espadas para seus conteúdos. A origem conta no tamanho. A recompensa própria é 10♦ por espaço apenas após combate, separada dos prêmios de salas específicas e respeitando os limites de armazenamento. Descobertas rivais aninhadas expandem uma vez por origem; limites do mapa e salas existentes não são sobrescritos. Uma área selada pode pausar a expansão, que retoma quando o selo abre.
+
+O guardião da forja é neutro até ser atacado pela ação da sala. Passivos não participam da IA, não iniciam combate e não são alvos automáticos. Sua derrota libera a forja. Golems recrutados e guardiões usam escala 2; cerco usa 2,6. O covil do dragão mantém a sala e muda para a ilustração vazia após o despertar. O dragão hostil é uma entidade móvel separada.
+
+As 46 descobertas do manifesto têm dois desenhos próprios, mais a variante espelhada, e o covil tem três pares de estados. O fosso preserva a arte anterior em proporções normais; o conector altera apenas a passagem. A câmara selada impede novas descobertas em um quadrado de 3×3, com exceção dos espaços já conhecidos. Qualquer dano estrutural rompe o selo, libera a maldição uma vez e desbloqueia a área.
+
+Portais comuns e estabilizados fazem a rolagem de invasão a cada turno, mesmo isolados ou sem produção. Estabilização permite expedições e não sela a entrada. Cada resultado é registrado; o save impede repetir uma rolagem no mesmo turno. Invasões em áreas sem caminho podem continuar sem alcançar a base até que exista uma ligação; o surgimento das unidades não depende dessa ligação.

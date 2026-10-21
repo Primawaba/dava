@@ -136,3 +136,8 @@ Conferência visual de três colunas em PC e mobile, com quatro níveis, variant
 
 A suíte `test:burrowing` aprovou 6 verificações no navegador: início para cima apesar de caminho lateral, save durante a escavação, chegada à sala preservada, túnel permanente, retomada do caminho ao portão e mobile sem erros. O HTML autônomo aprovou suas 7 verificações offline. Capturas do escavador, das formações e dos fossos foram revistas em PC e mobile. Os fossos preservam as ilustrações anteriores, com junções por dithering nos pixels de seus interiores, substituindo a coluna geométrica da 1.6.3.
 A compilação final também aprovou 21 verificações gerais no navegador em PC e mobile, sem exceções não tratadas.
+
+## Revisão 1.6.5 — título único por sequência de elevadores
+
+130 testes aprovados. Os dois novos casos verificam uma sequência mista de quatro tiles com título apenas no inferior, duas sequências separadas por uma parede e preservação dos nomes de salas isoladas. Conferência visual de fossos no navegador em PC e mobile.
+O HTML autônomo final aprovou as 7 verificações offline, sem exceções JavaScript.

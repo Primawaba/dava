@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.6.4.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
+O resultado fica em `releases/conquer-web-1.6.5.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
 
 ## Conteúdo e controles
 
@@ -202,3 +202,7 @@ O verme escavador sobe cavando, um trecho por vez, antes de seguir a IA normal a
 O visual dos fossos volta às ilustrações cavernosas anteriores, com suas três variantes. Nas ligações verticais, apenas as tampas internas são retiradas; uma emenda com dithering entre os pixels das duas salas mantém a textura nítida. A coluna geométrica de trilhos da versão 1.6.3 foi substituída.
 
 As fileiras de tropas agora compartilham uma grade fixa: fileiras alternadas deslocam meia coluna, inclusive quando estão incompletas. Isso corrige o realinhamento indevido da segunda fileira em grupos de 6 a 9 unidades.
+
+### Título único do elevador — versão 1.6.5
+
+Cada sequência de fossos/elevadores ligada verticalmente mostra apenas um título, “Elevador”, no tile inferior. Os títulos dos tiles superiores são omitidos. Uma parede sem passagem divide as sequências; salas isoladas mantêm seu nome original e os detalhes continuam disponíveis no painel.

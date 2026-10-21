@@ -46,10 +46,38 @@ export class Renderer{
   if((vertical&&r.y>n.y)||(!vertical&&r.x>n.x))[r,n]=[n,r];
   const x=r.x*CW,y=r.y*CH,nx=n.x*CW,ny=n.y*CH;
   const door=this.game.s.barricades[this.game.passageKey(r,n)];
-  this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced,door);
+  if(!(vertical&&this.shaftLinked(r,n)))this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced,door);
   if(door)this.passageDoor((x+nx)/2,(y+ny)/2,vertical,door);
   const image=name=>this.images['passage-'+name];
   if((r.closed||n.closed)&&image('grate'))c.drawImage(image('grate'),(x+nx)/2-16,(y+ny)/2-16,32,32);
+ }
+ shaftLinked(a,b){return !!a&&!!b&&['shaft','elevator'].includes(a.type)&&['shaft','elevator'].includes(b.type)&&a.x===b.x&&Math.abs(a.y-b.y)===1&&this.game.linked(a,b)}
+ continuousShaft(r){return ['shaft','elevator'].includes(r.type)&&(this.shaftLinked(r,this.game.room(r.x,r.y-1))||this.shaftLinked(r,this.game.room(r.x,r.y+1)))}
+ shaftTile(r,image){
+  const c=this.ctx,x=r.x*CW,y=r.y*CH,up=this.shaftLinked(r,this.game.room(r.x,r.y-1)),down=this.shaftLinked(r,this.game.room(r.x,r.y+1));
+  const top=up?-CH/2:-58,bottom=down?CH/2:48;
+  let anchor=r;while(this.shaftLinked(anchor,this.game.room(anchor.x,anchor.y-1)))anchor=this.game.room(anchor.x,anchor.y-1);
+  if(!this.game.roomHazards(r).length&&!r.damaged)image=this.appearance.get(this.images[`shaft-${anchor.variant}`],r.type,[],this.passageTime||0,this.reduced);
+  c.save();c.beginPath();c.rect(x-74,y+top,148,bottom-top);c.clip();
+  // A world-space texture phase gives adjoining tiles identical edge pixels.
+  // Existing room pixels supply the rock grain and environmental tint.
+  c.fillStyle='#211f19';c.fillRect(x-60,y+top,120,bottom-top);
+  for(let wy=Math.floor((y+top)/16)*16;wy<y+bottom;wy+=16){
+   const phase=((Math.floor(wy/16)%3)+3)%3;
+   for(const side of [-1,1]){
+    const edge=60+phase*2;c.fillStyle='#343127';c.fillRect(x+(side<0?-edge:48),wy,edge-48,16);
+    if(image)c.drawImage(image,side<0?8:108,18+phase*8,12,16,x+(side<0?-edge:48),wy,18,16);
+   }
+   c.fillStyle='#393329';c.fillRect(x-43,wy,86,1);
+   c.fillStyle='#171914';c.fillRect(x-36,wy+1,72,14);
+  }
+  // Unbroken guide rails and cables, shared by every floor and variant.
+  for(const dx of [-31,27]){c.fillStyle='#302d24';c.fillRect(x+dx-2,y+top,8,bottom-top);c.fillStyle='#a18c62';c.fillRect(x+dx,y+top,3,bottom-top);c.fillStyle='#d1bb89';c.fillRect(x+dx,y+top,1,bottom-top)}
+  c.fillStyle='#77715c';c.fillRect(x-5,y+top,2,bottom-top);c.fillStyle='#454735';c.fillRect(x+4,y+top,1,bottom-top);
+  for(let wy=Math.ceil((y+top)/24)*24;wy<y+bottom;wy+=24){c.fillStyle='#504733';c.fillRect(x-35,wy,70,3);c.fillStyle='#b19d72';for(const dx of [-31,27])c.fillRect(x+dx-1,wy,5,2)}
+  // Only the ends of the entire open shaft receive a cap.
+  for(const cap of [!up?top:null,!down?bottom-8:null])if(cap!==null){c.fillStyle='#4b4432';c.fillRect(x-63,y+cap,126,8);c.fillStyle='#a18c62';c.fillRect(x-61,y+cap,122,2)}
+  c.restore();
  }
  passageDoor(x,y,vertical,door){
   const c=this.ctx;c.save();c.translate(x,y);if(vertical)c.rotate(Math.PI/2);c.imageSmoothingEnabled=false;
@@ -70,7 +98,7 @@ export class Renderer{
   // Ground boundary remains readable when the map scrolls underground.
   c.strokeStyle='#777b5e55';c.setLineDash([4,4]);c.beginPath();c.moveTo(bounds.left,-CH*.5);c.lineTo(bounds.right,-CH*.5);c.stroke();c.setLineDash([]);
   const visible=this.game.rooms.filter(r=>r.x*CW>bounds.left&&r.x*CW<bounds.right&&r.y*CH>bounds.top&&r.y*CH<bounds.bottom);
-  for(const r of visible){const x=r.x*CW,y=r.y*CH;if(r.y<0&&(r.y===-1||this.game.room(r.x,r.y+1))){c.fillStyle='#57594a';const bottom=r.y===-1?CH*.5:CH-54;for(const ox of [-53,47])c.fillRect(x+ox,y+40,6,bottom-40);c.fillStyle='#b1a889';for(const ox of [-51,49])c.fillRect(x+ox,y+40,2,bottom-40);}const image=this.roomImage(r,time);if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
+  for(const r of visible){const x=r.x*CW,y=r.y*CH;if(r.y<0&&(r.y===-1||this.game.room(r.x,r.y+1))){c.fillStyle='#57594a';const bottom=r.y===-1?CH*.5:CH-54;for(const ox of [-53,47])c.fillRect(x+ox,y+40,6,bottom-40);c.fillStyle='#b1a889';for(const ox of [-51,49])c.fillRect(x+ox,y+40,2,bottom-40);}const image=this.roomImage(r,time);if(this.continuousShaft(r))this.shaftTile(r,image);else if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
   }
   // Composite every room first, then its doorway aprons; no room PNG can cover a neighbor's connection.
   for(const r of visible)for(const[dx,dy]of [[1,0],[0,1]]){const n=this.game.room(r.x+dx,r.y+dy);if(n&&this.game.linked(r,n))this.corridor(r,n)}

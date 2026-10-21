@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.6.2.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
+O resultado fica em `releases/conquer-web-1.6.3.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
 
 ## Conteúdo e controles
 
@@ -190,3 +190,7 @@ Todas as salas agora recebem tint nos próprios pixels usando a mesma paleta de 
 ### Formação no chão das salas — versão 1.6.2
 
 Personagens ficam na parte inferior da sala. Tropas numerosas formam fileiras progressivamente mais altas, alternadas lateralmente em zigue-zague, desenhadas do fundo para a frente. A formação considera o tamanho dos sprites e se desfaz gradualmente ao entrar nos corredores; posições lógicas, alcance e pathfinding permanecem iguais. Projéteis e impactos acompanham a altura visual das salas.
+
+### Fossos contínuos — versão 1.6.3
+
+Fossos de elevador e elevadores conectados verticalmente formam uma coluna contínua em pixel art: paredes texturizadas, guias e cabos atravessam a fronteira dos tiles. A textura usa coordenadas do mundo para evitar reinícios nas emendas. Tampas aparecem apenas nas extremidades; não se criam ligações entre salas adjacentes sem passagem aberta. Portas de corredor permanecem visíveis e funcionais.

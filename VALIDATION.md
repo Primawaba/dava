@@ -125,3 +125,7 @@ A suíte geral do navegador também aprovou 21 verificações em PC e mobile, se
 
 Conferência visual em PC e mobile com grupos de 1, 5, 7, 12 e 20 personagens. A formação de 20 soldados apresentou quatro fileiras e 20 posições distintas, com ordenação de profundidade. O deslocamento vertical desaparece no centro dos corredores. Capturas: `artifacts/troop-floor-formation.png` e `artifacts/troop-floor-mobile.png`. O HTML autônomo aprovou as 7 verificações de carregamento offline, jogo, save, combate e mobile, sem exceções JavaScript.
 A suíte geral aprovou 21 verificações de navegador em PC e mobile, incluindo combate, projéteis, salvamento e layout, sem exceções não tratadas.
+
+## Revisão 1.6.3 — fossos de elevador contínuos
+
+Conferência visual de três colunas em PC e mobile, com quatro níveis, variantes diferentes, conexão entre fosso e elevador construído e uma passagem vertical ausente. Paredes usam a mesma textura de referência ao longo da coluna, com fase vertical global; trilhos e cabos atravessam os limites dos tiles. Apenas extremidades abertas recebem tampas. Capturas: `artifacts/continuous-elevator-shafts.png` e `artifacts/continuous-shafts-mobile.png`. A suíte de direções aprovou 8 verificações; o HTML autônomo aprovou 7, sem exceções no navegador.

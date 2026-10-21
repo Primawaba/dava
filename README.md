@@ -72,7 +72,7 @@ npm run build
 node scripts/release.mjs
 ```
 
-O resultado fica em `releases/conquer-web-1.6.5.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
+O resultado fica em `releases/conquer-web-1.6.6.zip`, com `index.html` na raiz. O arquivo de checksums fica ao lado do pacote.
 
 ## Conteúdo e controles
 
@@ -206,3 +206,7 @@ As fileiras de tropas agora compartilham uma grade fixa: fileiras alternadas des
 ### Título único do elevador — versão 1.6.5
 
 Cada sequência de fossos/elevadores ligada verticalmente mostra apenas um título, “Elevador”, no tile inferior. Os títulos dos tiles superiores são omitidos. Uma parede sem passagem divide as sequências; salas isoladas mantêm seu nome original e os detalhes continuam disponíveis no painel.
+
+### Travessia em fila — versão 1.6.6
+
+Unidades do mesmo lado seguem em fila nos corredores, com espaço entre os personagens e sem ultrapassar aliados mais lentos. A fila vale nas quatro direções, respeita portas e aliados parados em combate e se libera dentro da sala de destino para recompor a formação. Unidades grandes recebem mais espaço. O progresso é preservado pelos saves. `npm run test:corridor-queue` verifica a travessia no navegador.

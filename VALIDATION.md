@@ -141,3 +141,9 @@ A compilação final também aprovou 21 verificações gerais no navegador em PC
 
 130 testes aprovados. Os dois novos casos verificam uma sequência mista de quatro tiles com título apenas no inferior, duas sequências separadas por uma parede e preservação dos nomes de salas isoladas. Conferência visual de fossos no navegador em PC e mobile.
 O HTML autônomo final aprovou as 7 verificações offline, sem exceções JavaScript.
+
+## Revisão 1.6.6 — unidades em fila nos corredores
+
+136 testes aprovados. Seis casos novos verificam espaçamento e chegada nas quatro orientações, impossibilidade de ultrapassar líderes lentos, liberação após morte, prevenção de salto ao destino ao esperar, tráfego oposto e passagens distintas sem impasse, combatente parado na passagem e retomada de save. A verificação antiga de saída de todos os defensores aguarda agora o tempo de escoamento da fila, mantendo as mesmas exigências de distribuição por frentes.
+
+A suíte específica de navegador verifica IA real atravessando corredores horizontais e verticais, salvamento durante a fila, mobile sem overflow e ausência de exceções. Capturas: `corridor-queue-horizontal.png`, `corridor-queue-vertical.png`, `corridor-queue-mobile.png`. Também passaram 21 verificações gerais, 8 de tática/portas e 7 do HTML autônomo offline.

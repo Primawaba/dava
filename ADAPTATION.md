@@ -91,3 +91,5 @@ As 42 construções, incluindo o portão, recebem sprites danificados próprios 
 Na versão 1.6.1, o tint base de todos os tipos de sala usa a mesma paleta compartilhada pelo material do corredor, incluindo variantes danificadas e retratos. A contaminação mantém sua camada visual específica; apenas a caverna de cristal pulsa.
 
 Na versão 1.6.4, o escavador abre cavernas vazias e passagens permanentes ao subir até a primeira sala conhecida (com limite na linha do chão), antes de retomar a IA normal. O mapa usa a mesma regra de perigos, portas e salvamento durante a escavação. O visual contínuo dos fossos voltou às ilustrações cavernosas originais, com junções de pixels entre tiles. Fileiras incompletas de tropas passam a manter a mesma grade alternada das fileiras cheias.
+
+Na versão 1.6.6, a travessia usa filas por direção e passagem: aliados do mesmo lado guardam distância, incluindo atrás de líderes lentos, portas e combatentes parados. A distância considera o tamanho e a orientação do corredor. A fila se desfaz dentro da sala de destino para retomar as fileiras. Não há reservas persistentes de corredor; saves usam as posições e o destino já existentes.

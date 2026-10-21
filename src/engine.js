@@ -307,6 +307,23 @@ export class Game {
   if(u.cooldown<=0){this.damageBarricade(origin,next,u.power*1.8);if(door.kind==='offensive')this.damage(u,20*door.level);u.cooldown=1;u.attack=.3;this.events.push({type:'door-hit',unit:u.id})}
   return true;
  }
+ corridorTravel(u,next,travel){
+  const origin=this.movementOrigin(u,next);if(!origin||!this.linked(origin,next))return travel;
+  const dx=next.x-origin.x,dy=next.y-origin.y,progress=(u.x-origin.x)*dx+(u.y-origin.y)*dy,destination=key(next.x,next.y);
+  let allowed=travel;
+  for(const v of this.s.units){
+   if(v===u||v.hp<=0||v.team!==u.team)continue;
+   const inside=Math.max(Math.abs(v.x-Math.round(v.x)),Math.abs(v.y-Math.round(v.y)))>=.12;
+   if(v.moveTarget!==destination&&(v.moveTarget||!inside))continue;
+   if(Math.abs((v.x-origin.x)*dy-(v.y-origin.y)*dx)>.00001)continue;
+   const ahead=(v.x-origin.x)*dx+(v.y-origin.y)*dy;
+   // Release the queue inside the destination room so troops can reform there.
+   if(ahead<-.00001||ahead>.88||ahead<progress-.00001||Math.abs(ahead-progress)<.00001&&v.id>u.id)continue;
+   const gap=Math.min(.48,(dy?.24:.18)*Math.max(u.size||1,v.size||1));
+   allowed=Math.min(allowed,Math.max(0,ahead-progress-gap));
+  }
+  return allowed;
+ }
  moveUnit(u,next,dt){
   const at=this.room(Math.round(u.x),Math.round(u.y))||next,d=this.unitData(u);
   let speed=d.speed;if(u.team==='ally'&&['elevator','rails','shaft'].includes(at.type))speed*=2;
@@ -316,12 +333,12 @@ export class Game {
   if(door){
    const dx=next.x-origin.x,dy=next.y-origin.y,stop={x:origin.x+dx*.46,y:origin.y+dy*.46};
    if(distance(origin,u)>=.46-.00001){u.moveTarget=key(next.x,next.y);this.attackPassageDoor(u,origin,next);return}
-   const travel=Math.min(speed*dt,distance(u,stop));u.x+=dx*travel;u.y+=dy*travel;u.walk+=travel*12;if(dx)u.facing=Math.sign(dx);u.moveTarget=key(next.x,next.y);return;
+   const travel=this.corridorTravel(u,next,Math.min(speed*dt,distance(u,stop)));u.x+=dx*travel;u.y+=dy*travel;u.walk+=travel*12;if(dx)u.facing=Math.sign(dx);u.moveTarget=key(next.x,next.y);return;
   }
-  const dx=next.x-u.x,dy=next.y-u.y,len=Math.hypot(dx,dy),step=Math.min(len,speed*dt);
+  const dx=next.x-u.x,dy=next.y-u.y,len=Math.hypot(dx,dy),step=this.corridorTravel(u,next,Math.min(len,speed*dt));
   if(len>0){u.x+=dx/len*step;u.y+=dy/len*step;u.walk+=step*12;if(dx)u.facing=Math.sign(dx)}
   u.moveTarget=key(next.x,next.y);
-  if(len<=speed*dt+.00001){u.x=next.x;u.y=next.y;u.moveTarget=null;u.cooldown=Math.max(u.cooldown,d.range>.5?.18:0)}
+  if(len<=step+.00001){u.x=next.x;u.y=next.y;u.moveTarget=null;u.cooldown=Math.max(u.cooldown,d.range>.5?.18:0)}
  }
  damage(u,amount,{instant=false}={}){if(u.hp<=0||u.type==='immortal'&&!instant)return;if(instant)amount=u.hp+u.shield;const absorb=Math.min(u.shield,amount);u.shield-=absorb;u.hp-=amount-absorb;this.effects.push({x:u.x,y:u.y,kind:'hit',life:0.35});if(u.hp<=0){this._tacticsDirty=true;u.hp=0;this.effects.push({x:u.x,y:u.y,kind:'death',life:0.8});if(u.team==='enemy'){this.s.kills++;if(u.type==='guardian'&&this.s.rooms[u.home]?.type==='void')this.s.voidDefeated=true}else if(u.team==='ally')this.dead.push({...u});if(u.type==='immortal'){this.s.units=this.s.units.filter(v=>v.id!==u.id);const r=this.s.rooms[u.home];if(r){r.immortalId=null;if(r.type==='invincible')r.type='cave';r.closed=false;}this._routeCache=null;this.note('A criatura imortal foi eliminada por morte instantânea. A passagem está livre.','good')}this.events.push({type:'death',team:u.team})}}
  killInstant(u){this.damage(u,u.hp+u.shield,{instant:true})}

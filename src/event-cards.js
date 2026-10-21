@@ -1,8 +1,8 @@
 import {eventArtURL} from './event-art.js';
 const eventEscape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export class EventCards{
- constructor(flights,{onChange=()=>{},onResolved=()=>{},onTargets=()=>{}}={}){this.flights=flights;this.onChange=onChange;this.onResolved=onResolved;this.onTargets=onTargets;this.game=null;this.active=null;this.layer=null;this.selecting=false;this.started=0;this.hover=false;this.wasBlocking=false;document.addEventListener('keydown',e=>this.key(e),true)}
- get blocking(){return !!this.game&&(!!this.game.s.effectCards?.length||!!document.querySelector('.discovery-card')||this.flights.items.length>0)}
+ constructor(flights,{onChange=()=>{},onResolved=()=>{},onTargets=()=>{},beforeShow=()=>true,presentationBusy=()=>false}={}){this.flights=flights;this.onChange=onChange;this.onResolved=onResolved;this.onTargets=onTargets;this.beforeShow=beforeShow;this.presentationBusy=presentationBusy;this.game=null;this.active=null;this.layer=null;this.selecting=false;this.started=0;this.hover=false;this.wasBlocking=false;document.addEventListener('keydown',e=>this.key(e),true)}
+ get blocking(){return !!this.game&&(this.presentationBusy(this.game,performance.now())||this.game.events.some(e=>['life-lost','return-home'].includes(e.type))||!!this.game.s.effectCards?.length||!!document.querySelector('.discovery-card')||this.flights.items.length>0)}
  reset(game=null){this.layer?.remove();this.layer=null;this.active=null;this.selecting=false;this.hover=false;this.game=game;if(game)game.presentationEnabled=true;this.onTargets([]);this.wasBlocking=false;document.querySelector('.discovery-card')?.remove()}
  tick(game,now){
   if(this.game!==game)this.reset(game);
@@ -10,7 +10,7 @@ export class EventCards{
   if(this.layer){const returning=this.layer.hidden&&!modalOpen;this.layer.hidden=modalOpen;if(returning)requestAnimationFrame(()=>this.layer?.querySelector('button')?.focus());}
   const front=game.s.effectCards?.[0];
   if(this.active&&front?.id!==this.active.id){this.layer?.remove();this.layer=null;this.active=null;this.selecting=false;this.onTargets([])}
-  if(!this.active&&front&&!document.querySelector('.discovery-card')&&!this.flights.items.length&&!document.querySelector('#modal-root')?.firstChild){this.active=front;this.started=now;this.elapsed=0;this.lastTick=now;this.render()}
+  if(!this.active&&front&&!game.events.some(e=>['life-lost','return-home'].includes(e.type))&&this.beforeShow(game,now)&&!document.querySelector('.discovery-card')&&!this.flights.items.length&&!document.querySelector('#modal-root')?.firstChild){this.active=front;this.started=now;this.elapsed=0;this.lastTick=now;this.render()}
   if(this.active&&!this.active.input){if(!this.hover&&!document.hidden&&!modalOpen)this.elapsed+=Math.min(100,Math.max(0,now-this.lastTick));this.lastTick=now;if(this.elapsed>=4200)this.resolve();}
   const blocked=this.blocking;if(blocked!==this.wasBlocking){this.wasBlocking=blocked;this.onChange()}
  }

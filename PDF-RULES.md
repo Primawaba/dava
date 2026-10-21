@@ -1,5 +1,7 @@
 # Revisão de regras — PDF e CONQUER
 
+A tabela da revisão 1.1 abaixo é histórica; as decisões atuais de conexões, IA e barricadas estão em ADAPTATION.md e na atualização 1.11.0 ao final deste documento.
+
 Referência: `DELVE November 8th Checked Version Pages.pdf`, de Anna Blackwell, fornecido pelo usuário. As páginas abaixo são os números impressos no livreto, não o índice de páginas do leitor de PDF. CONQUER permanece a base para custos, unidades e conteúdo; as alterações explícitas pedidas pelo usuário têm prioridade.
 
 | Fonte | Regra conferida | Implementação na revisão 1.1 |
@@ -41,3 +43,17 @@ Cavernas naturais não recebem dano estrutural; apenas construções são danifi
 “Masmorra Rival, ocupando 1d10+2 espaços. Compre uma carta para definir o que há em cada espaço, tratando-as como se fossem ♠. [...] Ao fim do combate, obtenha 10♦ para cada espaço [...] (Caso não haja combate, tesouro nenhum é obtido)”. Implementado com revelação automática, uma origem por passagem e defensores do mesmo lado. No limite físico do mapa a geração preserva salas existentes.
 
 Resquícios 10: o golem da forja só inicia combate quando atacado, agora por ação explícita. Resquícios 9: a checagem por turno do portal não deve depender da produção ou ligação à base. Nesta adaptação a estabilização permite expedições; só selar interrompe as invasões. Os pedidos do jogador adicionam bloqueio 3×3 da câmara selada, abertura automática por dano, duas fases visuais do dragão e escala grande para golems aliados e cerco.
+
+## Atualização 1.11.0: múltiplas casas
+
+| Fonte | Tamanho ou relação aplicada | Decisão digital |
+| --- | --- | --- |
+| PDF pp. 11–16; CONQUER, Museu/Templo | Museu e Templo: 2; Criadouro: 4 | Área atômica, custo e capacidade únicos; módulos conectados e reparáveis |
+| PDF pp. 19–20; CONQUER, Naturais 4–8 | Rio, magma, lago, cristal e cratera | Tipos permanentes; rio/fluxo até 5 casas pelo ODT; lago/poço 1d4; cristal 1d2; cratera vertical até y=30 |
+| CONQUER, Naturais 7/17/19 | Ninho 1d2, termas/colmeia 1d4 | STR por área; termas +2 moral/casa; rainha adicional ao ocupar 4 |
+| PDF pp. 21–22; CONQUER, Resquícios 1/5/8/13/14/17/19 | Vila, mina, biblioteca, covil, elevador, cidade e labirinto | Geração contínua tipada sem nova carta; mina usa a maior profundidade; shaft vertical |
+| CONQUER, Resquício 24 | Masmorra rival 1d10+2 | Preservado o gerador próprio; cada carta interna ocupa uma casa e não infla recursivamente o tamanho |
+| Pedido atual do usuário | Fontes nunca drenáveis; somente pontes | Prevalece sobre as regras genéricas de drenagem de salas inundadas |
+| Pedidos atuais do usuário | Cavernas 89/7/3/1%; covis por força; porta cobre encaixe | Exceções de design mantidas e testadas |
+
+As tabelas completas de magias, Wyrd, invenções, artefatos e condições dos planos ainda têm simplificações digitais; a presença de uma arte ou de uma área maior não implica implementação integral de seus efeitos. O relatório solicitado fará essa distinção por mecânica.

@@ -2,6 +2,19 @@
 
 Jogo single player de exploração, construção e defesa de uma fortaleza subterrânea. Interface em português, combate em tempo real com IA, partidas reproduzíveis por semente e distribuição web instalável (PWA).
 
+
+## Atualização 1.11.0
+
+- Cavernas vazias: **89%** com 1 espaço, **7%** com 2, **3%** com 3 e **1%** com 4. Chefes e formações com tamanho próprio usam suas regras específicas.
+- Construções e salas de várias casas têm encaixes ilustrados sem deformação. Barricadas cobrem a abertura inteira, substituem a tocha e mantêm bloqueios de movimento, tiros, líquidos e gases. O material e a contaminação de cada lado determinam a cor do encaixe.
+- Cada casa extra de covil continua o cenário do chefe, com o mesmo material e tint; não repete a criatura nem concede recompensas adicionais. Covis já salvos recebem a ligação visual ao cenário principal.
+- Fontes naturais de água, magma e crateras **não podem ser drenadas**. Só salas atingidas pelo fluxo podem ser drenadas. Construir uma ponte mantém a fonte e desenha a ponte sobre sua arte; a fonte continua existindo e pode alimentar novas passagens.
+- Formações com tamanho próprio: rios e fluxos de magma até 5 casas, lagos/poços 1d4, cristais e ninhos 1d2, fontes termais/colmeias/vilas/minas/cidades/labirintos 1d4, bibliotecas antigas 1d2, covis desolados 1d4+2, poços de elevador até 1d4 casas verticais e crateras até o limite inferior do mapa. Não sobrescrevem casas existentes e respeitam câmaras seladas e o início protegido de magma.
+- Museu e Templo ocupam 2 casas; Criadouro ocupa 4. Uma construção paga um preço, mantém uma capacidade e reserva sua área inteira. Dano em qualquer módulo suspende a função da sala. Pré-visualizações de disponibilidade não alteram a semente.
+- Vitória: tropas voltam caminhando pelos caminhos abertos, com fileiras espaçadas. Derrota: inimigos ficam brancos e se desfazem em partículas junto com a gema. A carta espera a animação terminar, inclusive com movimento reduzido.
+
+Os formatos geométricos não mudam os custos já adaptados do jogo. O mapa continua no papel, sem os fundos adicionais removidos anteriormente. Na versão offline, uma transição visual em andamento não é reexecutada ao carregar: o salvamento guarda o resultado já resolvido da batalha.
+
 ## Baixar e abrir no computador
 
 1. Na página do repositório no GitHub, clique em **Code → Download ZIP**.
@@ -237,7 +250,7 @@ Fila e decisões pendentes ficam no save. Carregar reapresenta o que falta, sem 
 
 ## Cavernas, pintura do mapa e cartas — versão 1.9.0
 
-- Cada descoberta de caverna vazia sorteia 1/2/3/4 espaços com probabilidades de **50%/30%/15%/5%**. Os módulos são revelados juntos, sem novas cartas, recompensas ou turnos. A expansão respeita os limites, as câmaras seladas e as salas existentes; pode ser menor quando faltar espaço. Somente módulos do mesmo grupo compartilham o interior aberto. Construir em um módulo restabelece suas paredes e corredores.
+- Cada descoberta de caverna vazia sorteia 1/2/3/4 espaços com probabilidades de **89%/7%/3%/1%**. Os módulos são revelados juntos, sem novas cartas, recompensas ou turnos. A expansão respeita os limites, as câmaras seladas e as salas existentes; pode ser menor quando faltar espaço. Somente módulos do mesmo grupo compartilham o interior aberto. Construir em um módulo restabelece suas paredes e corredores.
 - Covis de chefes usam a força total do encontro, com profundidade e dificuldade: abaixo de 30 STR, 1 espaço; 30–59, 2; 60–99, 3; 100+, 4. A ilustração especial e o chefe único permanecem na sala principal. Dragão adormecido e golem passivo usam a força que terão em combate. Escavações do verme não geram expansões recursivas.
 - Na versão 1.10.0, todos os espaços voltam ao fundo de papel: os preenchimentos de tijolos/preto e o shader de tinta da versão 1.9.0 foram removidos. O miasma continua roxo nas salas e passagens.
 - **Exportar imagem**, no menu de pausa ou no botão de download do mapa, gera PNG da fortaleza inteira sem interface. A prévia permite baixar ou compartilhar a imagem; no iPhone também pode ser salva com toque prolongado. A exportação limita dimensão e área para evitar exceder a memória de canvas de aparelhos móveis.

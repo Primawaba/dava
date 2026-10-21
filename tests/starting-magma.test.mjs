@@ -8,7 +8,7 @@ function discover(x,y,rank){
  if(y===1&&x!==0){const below=g.addRoom(0,1,'barracks');g.connectRooms(from,below);from=below}
  if(y===2){for(let depth=1;depth<=2;depth++){const n=g.addRoom(0,depth,'cave');g.connectRooms(from,n);from=n}}
  const sign=Math.sign(x);for(let col=sign;col!==x;col+=sign){if(!sign)break;const n=g.addRoom(col,y,'cave');g.connectRooms(from,n);from=n}
- g.s.deck=[{suit:'♣',rank}];g.roll=n=>n===2?2:1;
+ g.s.deck=[{suit:'♣',rank}];g.roll=n=>n===4?2:1;
  const result=g.explore(x,y,from);assert(result.ok,result.reason);return{g,r:result.room};
 }
 test('magma and volcanic craters cannot spawn anywhere in the starting strip',()=>{

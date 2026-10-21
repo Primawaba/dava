@@ -226,10 +226,35 @@ export class Game {
   if(ROOMS[type]?.hazard)this.effect(ROOMS[type].name,ROOMS[type].desc,'bad');
   if(enemy>0)this.spawnEnemies(r,enemy,enemyType);
   if(type==='rivalhold')this.expandRivalDungeon(r);
+  if(type==='cave')this.expandEmptyCavern(r);
+  else if(type==='dragon'||type==='golemforge'||enemy>0&&ENEMIES[enemyType]?.single)this.expandEmptyCavern(r,this.bossCavernSize((type==='dragon'?100+Math.max(0,y)*5:type==='golemforge'?40+Math.max(0,y)*5:enemy)*DIFFICULTIES[this.s.difficulty].enemy));
   this.spreadHazards();
   this.checkMutiny();
   if(this.enemies.length)this.beginCombat();
   this.events.push({type:'explore',room:r,card:c});return{ok:true,room:r,card:c};
+ }
+ // A single discovery reveals one connected chamber, with no extra cards or rewards.
+ bossCavernSize(strength){return strength>=100?4:strength>=60?3:strength>=30?2:1}
+ emptyCavernSize(){const roll=this.roll(100);return roll<=50?1:roll<=80?2:roll<=95?3:4}
+ expandEmptyCavern(root,size=this.emptyCavernSize()){
+  if(!root||root.cavernGroup)return [];
+  const id=key(root.x,root.y),members=[root],wanted=clamp(Math.floor(size)||1,1,4);root.cavernGroup=id;
+  while(members.length<wanted){
+   const options=[];
+   for(const from of members)for(const [dx,dy]of DIRS){const x=from.x+dx,y=from.y+dy;
+    if(x< -20||x>20||y<0||y>30||this.room(x,y)||this.sealedBlock(x,y))continue;
+    // Never engulf another already known room or bypass its unopened wall.
+    options.push({from,x,y});
+   }
+   if(!options.length)break;
+   const pick=options[this.roll(options.length)-1],room=this.addRoom(pick.x,pick.y,'cave');room.cavernGroup=id;members.push(room);this.connectRooms(pick.from,room);
+   // All touching modules of this one chamber share an open interior.
+   for(const other of members)if(distance(room,other)===1)this.connectRooms(room,other);
+   this.s.maxDepth=Math.max(this.s.maxDepth,room.y);
+  }
+  root.cavernSize=members.length;
+  if(members.length>1)this.note(`Uma caverna ampla se estende por ${members.length} espaços.`, 'good');
+  return members;
  }
  resolveRemnant(c,x,y){
   let type='ruins',enemy=0,enemyType='raider';
@@ -581,7 +606,7 @@ export class Game {
   if(!s.rooms||Array.isArray(s.rooms)||Object.keys(s.rooms).length>2000||!s.rooms['0,0']||!Array.isArray(s.units)||s.units.length>3000||!Array.isArray(s.deck)||s.deck.length>54||!Array.isArray(s.log)||s.log.length>100||!['playing','lost','won'].includes(s.status)||!DIFFICULTIES[s.difficulty]||!finite(s.seed)||typeof s.name!=='string'||!Array.isArray(s.artifacts)||s.artifacts.length>30)throw Error('Estado de jogo inválido.');
   if(typeof s.combat!=='boolean'||typeof s.paused!=='boolean'||![.5,1,2].includes(s.speed)||!Number.isInteger(s.nextId)||s.nextId<1||!(s.expedition===null||Number.isInteger(s.expedition)&&s.expedition>=0&&s.expedition<PLANES.length))throw Error('Estado de combate inválido.');
   for(const n of ['turn','resources','gold','baseMorale','nextId','seconds','blessings','inventions','trophies','maxDepth','kills','battles'])if(!finite(s[n])||Math.abs(s[n])>1e9)throw Error('Valores inválidos no salvamento.');
-  for(const[k,r]of Object.entries(s.rooms)){if(!r||!coordinate(r.x)||!coordinate(r.y)||key(r.x,r.y)!==k||!Object.hasOwn(ROOMS,r.type)||!Number.isInteger(r.variant)||r.variant<0||r.variant>2)throw Error('Mapa inválido.');if(r.trap&&(!['damage','delay'].includes(r.trap.kind)||![1,2,3].includes(r.trap.level)))throw Error('Armadilha inválida.');if(r.barricade&&(!['defensive','offensive'].includes(r.barricade.kind)||!finite(r.barricade.hp)))throw Error('Barricada inválida.')}
+  for(const[k,r]of Object.entries(s.rooms)){if(!r||!coordinate(r.x)||!coordinate(r.y)||key(r.x,r.y)!==k||!Object.prototype.hasOwnProperty.call(ROOMS,r.type)||!Number.isInteger(r.variant)||r.variant<0||r.variant>2)throw Error('Mapa inválido.');if(r.trap&&(!['damage','delay'].includes(r.trap.kind)||![1,2,3].includes(r.trap.level)))throw Error('Armadilha inválida.');if(r.barricade&&(!['defensive','offensive'].includes(r.barricade.kind)||!finite(r.barricade.hp)))throw Error('Barricada inválida.')}
   s.effectCards??=[];s.nextEffectId??=1;
   if(!Array.isArray(s.effectCards)||s.effectCards.length>2000||!Number.isInteger(s.nextEffectId)||s.nextEffectId<1)throw Error('Fila de eventos inválida.');
   const effectIds=new Set();for(const c of s.effectCards){if(!c||!Number.isInteger(c.id)||c.id<1||c.id>=s.nextEffectId||effectIds.has(c.id)||typeof c.title!=='string'||c.title.length>200||typeof c.description!=='string'||c.description.length>2000||!['good','bad','neutral'].includes(c.tone))throw Error('Carta de evento inválida.');effectIds.add(c.id);if(c.input&&!(c.input.kind==='unit-home'&&Number.isInteger(c.input.unitId)&&c.input.unitId>0||c.input.kind==='prison'&&Number.isInteger(c.input.x)&&Number.isInteger(c.input.y)&&s.rooms[key(c.input.x,c.input.y)]))throw Error('Escolha de evento inválida.');}
@@ -590,7 +615,7 @@ export class Game {
   const dungeonRoots=new Set();for(const d of s.rivalDungeons){
    if(!d||!s.rooms[d.root]||dungeonRoots.has(d.root)||!Number.isInteger(d.requested)||d.requested<3||d.requested>12||!Array.isArray(d.members)||d.members.length<1||d.members.length>d.requested||!d.members.includes(d.root)||new Set(d.members).size!==d.members.length||d.members.some(id=>!s.rooms[id])||!Array.isArray(d.enemyIds)||d.enemyIds.length>3000||d.enemyIds.some(id=>!Number.isInteger(id)||id<=0)||typeof d.fought!=='boolean'||typeof d.claimed!=='boolean')throw Error('Masmorra rival inválida.');dungeonRoots.add(d.root);
   }
-  const knownType=t=>Object.hasOwn(UNITS,t)||Object.hasOwn(ENEMIES,t);
+  const knownType=t=>Object.prototype.hasOwnProperty.call(UNITS,t)||Object.prototype.hasOwnProperty.call(ENEMIES,t);
   const validUnit=u=>u&&(u.frontTarget===undefined||u.frontTarget===null||Number.isInteger(u.frontTarget)&&u.frontTarget>0)&&(u.size===undefined||finite(u.size)&&u.size>0&&u.size<=5)&&(u.order===undefined||['guard','defend'].includes(u.order))&&(u.facing===undefined||[-1,1].includes(u.facing))&&knownType(u.type)&&(['ally','enemy'].includes(u.team)&&u.type!=='immortal'||u.team==='neutral'&&['immortal','golem'].includes(u.type))&&['id','x','y','hp','maxHp','power','cooldown','shield','attack','walk','stun'].every(n=>finite(u[n]))&&u.maxHp>0&&u.power>0&&Math.abs(u.x)<=100&&Math.abs(u.y)<=100&&s.rooms[u.home];
   const ids=new Set();for(const u of s.units){if(!validUnit(u)||!['ally','enemy','neutral'].includes(u.team)||!finite(u.id)||ids.has(u.id)||!finite(u.x)||!finite(u.y)||Math.abs(u.x)>100||Math.abs(u.y)>100||!finite(u.hp)||!finite(u.maxHp)||!finite(u.power)||!finite(u.cooldown)||!finite(u.shield)||typeof u.type!=='string'||!s.rooms[u.home]||u.power<=0||u.maxHp<=0)throw Error('Unidade inválida.');ids.add(u.id)}
   for(const u of s.units)if(u.team==='neutral'&&u.type==='golem'){const forge=s.rooms[u.home];if(forge?.type!=='golemforge'||forge.golemId!==u.id||u.x!==forge.x||u.y!==forge.y||u.hp<=0)throw Error('Golem passivo inválido.');}

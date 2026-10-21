@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Game} from '../src/engine.js';
 const origin={x:0,y:0};
-const discover=(g,x,y,from)=>{g.s.deck=[{suit:'♥',rank:2}];const result=g.explore(x,y,from);assert(result.ok,result.reason);return result.room};
+const discover=(g,x,y,from)=>{g.emptyCavernSize=()=>1;g.s.deck=[{suit:'♥',rank:2}];const result=g.explore(x,y,from);assert(result.ok,result.reason);return result.room};
 const square=()=>{const g=new Game({seed:47});discover(g,0,1,origin);discover(g,1,1,{x:0,y:1});discover(g,1,0,{x:1,y:1});return g};
 test('creating adjacent rooms never creates a passage',()=>{const g=new Game();const b=g.addRoom(1,0,'cave');assert(!g.linked(g.room(0,0),b));assert.equal(g.path(origin,b),null);assert(!g.lineOfSight(origin,b));assert.equal(Object.keys(g.s.passages).length,0)});
 test('exploration creates precisely the clicked edge despite adjacent known rooms',()=>{const g=square();assert.equal(g.rooms.length,4);assert.equal(Object.keys(g.s.passages).length,3);assert(!g.linked(g.room(1,0),g.room(0,0)));assert.equal(g.path(origin,{x:1,y:0}).length,3);assert(!g.lineOfSight(origin,{x:1,y:0}));assert(g.directions(g.room(0,0)).some(d=>d.kind==='passage'&&d.x===1&&d.y===0))});

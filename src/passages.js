@@ -11,11 +11,13 @@ const PASSAGE_MATERIALS={
  forest:{wall:[69,86,53],light:[138,157,98],floor:[25,35,23]},
  crypt:{wall:[91,89,77],light:[175,169,140],floor:[28,28,25]},
  crystal:CRYSTAL_PALETTE,
+ miasma:{wall:[99,71,114],light:[171,141,184],floor:[33,24,39]},
  gas:{wall:[82,96,61],light:[147,165,104],floor:[29,40,25]}
 };
 export function passageArchitecture(room){return ROOMS[room.type]?.r!==undefined||['gate','crypt','ancienttemple','ancientlibrary','ancientprison','rivalhold','city','tomb','sealed','vault'].includes(room.type)?'built':'cavern'}
 export function passageMaterial(room){
  const type=room.contaminant||room.type;
+ if(type==='miasma')return 'miasma';
  if(['water','sewer','well','laundry','pump','springs','mud'].includes(type))return 'water';
  if(['lava','crater','forge','golemforge','kitchen','dragon'].includes(type))return 'fire';
  if(['gas','flammable','miasma','blindgas'].includes(type))return 'gas';

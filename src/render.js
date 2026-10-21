@@ -1,3 +1,4 @@
+import {Terrain} from './terrain.js';
 import {RoomFraming} from './room-framing.js';
 import {RoomAppearance} from './room-appearance.js';
 import {ProceduralPassages} from './passages.js';
@@ -5,7 +6,7 @@ import {ROOMS,DIRS,SPRITE_FRAMES,PASSAGES,DAMAGEABLE_ROOMS} from './data.js';
 import {key} from './engine.js';
 export const CW=180,CH=144;
 export class Renderer{
- constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.appearance=new RoomAppearance();this.framing=new RoomFraming();this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas);this.resize()}
+ constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.appearance=new RoomAppearance();this.framing=new RoomFraming();this.terrain=new Terrain();this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();if(typeof ResizeObserver!=='undefined'){this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas)}else window.addEventListener('resize',()=>this.resize());this.resize()}
  async load(){
   const assets=Object.keys(ROOMS).flatMap(type=>[0,1,2].map(v=>({id:`${type}-${v}`,src:`./assets/rooms/${type}-${v}.png`})));
   assets.push(...[0,1,2].map(v=>({id:`awake-dragon-${v}`,src:`./assets/rooms/awake-dragon-${v}.png`})));
@@ -18,7 +19,7 @@ export class Renderer{
  }
  rawRoomImage(r){if(r.type==='dragon'&&r.dragonAwake)return this.images[`awake-dragon-${r.variant}`]||this.images[`dragon-${r.variant}`];return this.images[`${r.damaged&&DAMAGEABLE_ROOMS.includes(r.type)?'damaged-':''}${r.type}-${r.variant}`]||this.images[`${r.type}-${r.variant}`]}
  framedRoomImage(r){const raw=this.rawRoomImage(r);return ROOMS[r.type]?.r===undefined&&!['gate','surface','shaft'].includes(r.type)?this.framing.frame(raw):raw}
- roomImage(r,time=0){return this.appearance.get(this.framedRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
+ roomImage(r,time=0){return this.terrain.foreground(this.appearance.get(this.framedRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced))}
  roomURL(r,time=0){return this.appearance.url(this.framedRoomImage(r),r.type,this.game?.roomHazards(r)||[],time,this.reduced)}
  resize(){const r=this.canvas.getBoundingClientRect();this.width=r.width;this.height=r.height;const dpr=Math.min(devicePixelRatio||1,2);this.canvas.width=Math.round(r.width*dpr);this.canvas.height=Math.round(r.height*dpr);this.dpr=dpr}
  screenToWorld(x,y){return{x:(x-this.width/2)/this.zoom+this.camera.x,y:(y-this.height/2)/this.zoom+this.camera.y}}
@@ -33,7 +34,7 @@ export class Renderer{
   }return null;
  }
  setupInput(){const c=this.canvas;
-  c.addEventListener('pointerdown',e=>{const p=this.point(e);this.pointers.set(e.pointerId,p);c.setPointerCapture(e.pointerId);this.drag={start:p,last:p,moved:false};if(this.pointers.size===2){const a=[...this.pointers.values()];this.pinch={distance:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),zoom:this.zoom};this.drag.moved=true}this.onHover(null)});
+  c.addEventListener('pointerdown',e=>{const p=this.point(e);this.pointers.set(e.pointerId,p);c.setPointerCapture?.(e.pointerId);this.drag={start:p,last:p,moved:false};if(this.pointers.size===2){const a=[...this.pointers.values()];this.pinch={distance:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),zoom:this.zoom};this.drag.moved=true}this.onHover(null)});
   c.addEventListener('pointermove',e=>{const p=this.point(e);if(this.pointers.has(e.pointerId)){this.pointers.set(e.pointerId,p);if(this.pointers.size===2&&this.pinch){const a=[...this.pointers.values()];this.zoom=Math.max(.35,Math.min(2.2,this.pinch.zoom*Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)/Math.max(1,this.pinch.distance)));return}if(this.drag){const d=this.drag;if(Math.hypot(p.x-d.start.x,p.y-d.start.y)>5)d.moved=true;if(d.moved){this.camera.x-=(p.x-d.last.x)/this.zoom;this.camera.y-=(p.y-d.last.y)/this.zoom}d.last=p}return}this.hover=this.tile(p.x,p.y);this.onHover({tile:this.hover,point:p,direction:this.directionAt(p)})});
   c.addEventListener('pointerup',e=>{const p=this.point(e);const clicked=this.drag&&!this.drag.moved&&!this.pinch;this.pointers.delete(e.pointerId);if(clicked){const arrow=this.directionAt(p);if(arrow)this.onSelect({...arrow,action:'direction'});else{const t=this.tile(p.x,p.y);this.selected=t;this.onSelect(t)}}if(!this.pointers.size){this.drag=null;this.pinch=null}else if(this.drag)this.drag.moved=true});
   c.addEventListener('pointercancel',e=>{this.pointers.delete(e.pointerId);this.drag=null;this.pinch=null});c.addEventListener('pointerleave',()=>{this.hover=null;this.onHover(null)});
@@ -49,7 +50,7 @@ export class Renderer{
   if((vertical&&r.y>n.y)||(!vertical&&r.x>n.x))[r,n]=[n,r];
   const x=r.x*CW,y=r.y*CH,nx=n.x*CW,ny=n.y*CH;
   const door=this.game.s.barricades[this.game.passageKey(r,n)];
-  if(!(vertical&&this.shaftLinked(r,n)))this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced,door,{start:this.framing.ports(this.framedRoomImage(r))[vertical?'south':'east'],end:this.framing.ports(this.framedRoomImage(n))[vertical?'north':'west']});
+  if(!(r.type==='cave'&&n.type==='cave'&&r.cavernGroup&&r.cavernGroup===n.cavernGroup)&&!(vertical&&this.shaftLinked(r,n)))this.passages.draw(c,r,n,vertical,this.images,this.passageTime||0,this.reduced,door,{start:this.framing.ports(this.framedRoomImage(r))[vertical?'south':'east'],end:this.framing.ports(this.framedRoomImage(n))[vertical?'north':'west']});
   if(door)this.passageDoor((x+nx)/2,(y+ny)/2,vertical,door);
   const image=name=>this.images['passage-'+name];
   if((r.closed||n.closed)&&image('grate'))c.drawImage(image('grate'),(x+nx)/2-16,(y+ny)/2-16,32,32);
@@ -89,16 +90,19 @@ export class Renderer{
  draw(time=0){this.passageTime=time;const c=this.ctx,w=this.width,h=this.height;if(!w||!h)return;c.setTransform(this.dpr,0,0,this.dpr,0,0);c.imageSmoothingEnabled=false;c.fillStyle='#e5ddc6';c.fillRect(0,0,w,h);if(!this.game){this.directionMarkers=[];return;}
   c.save();c.translate(w/2,h/2);c.scale(this.zoom,this.zoom);c.translate(-this.camera.x,-this.camera.y);
   const bounds={left:this.camera.x-w/2/this.zoom-CW,right:this.camera.x+w/2/this.zoom+CW,top:this.camera.y-h/2/this.zoom-CH,bottom:this.camera.y+h/2/this.zoom+CH};
-  c.strokeStyle='#6e77551c';c.lineWidth=.65;for(let x=Math.floor(bounds.left/CW);x<=Math.ceil(bounds.right/CW);x++){c.beginPath();c.moveTo((x+.5)*CW,bounds.top);c.lineTo((x+.5)*CW,bounds.bottom);c.stroke()}for(let y=Math.floor(bounds.top/CH);y<=Math.ceil(bounds.bottom/CH);y++){c.beginPath();c.moveTo(bounds.left,(y+.5)*CH);c.lineTo(bounds.right,(y+.5)*CH);c.stroke();c.fillStyle='#7d82624a';c.font='9px Georgia';c.textAlign='left';c.fillText(y>=0?String(y).padStart(2,'0'):`+${-y}`,bounds.left+CW*.7,y*CH)}
+  if(!this.exporting){c.strokeStyle='#6e77551c';c.lineWidth=.65;for(let x=Math.floor(bounds.left/CW);x<=Math.ceil(bounds.right/CW);x++){c.beginPath();c.moveTo((x+.5)*CW,bounds.top);c.lineTo((x+.5)*CW,bounds.bottom);c.stroke()}for(let y=Math.floor(bounds.top/CH);y<=Math.ceil(bounds.bottom/CH);y++){c.beginPath();c.moveTo(bounds.left,(y+.5)*CH);c.lineTo(bounds.right,(y+.5)*CH);c.stroke();c.fillStyle='#7d82624a';c.font='9px Georgia';c.textAlign='left';c.fillText(y>=0?String(y).padStart(2,'0'):`+${-y}`,bounds.left+CW*.7,y*CH)}
   c.fillStyle='#d7dfd332';c.fillRect(bounds.left,bounds.top,bounds.right-bounds.left,Math.max(0,-CH*.5-bounds.top));
   // Ground boundary remains readable when the map scrolls underground.
   c.strokeStyle='#777b5e55';c.setLineDash([4,4]);c.beginPath();c.moveTo(bounds.left,-CH*.5);c.lineTo(bounds.right,-CH*.5);c.stroke();c.setLineDash([]);
+  }
   const visible=this.game.rooms.filter(r=>r.x*CW>bounds.left&&r.x*CW<bounds.right&&r.y*CH>bounds.top&&r.y*CH<bounds.bottom);
-  for(const r of visible){const x=r.x*CW,y=r.y*CH;if(r.y<0&&(r.y===-1||this.game.room(r.x,r.y+1))){c.fillStyle='#57594a';const bottom=r.y===-1?CH*.5:CH-54;for(const ox of [-53,47])c.fillRect(x+ox,y+40,6,bottom-40);c.fillStyle='#b1a889';for(const ox of [-51,49])c.fillRect(x+ox,y+40,2,bottom-40);}const image=this.roomImage(r,time);if(this.continuousShaft(r))this.shaftTile(r,image);else if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
+  for(const r of visible)this.terrain.draw(c,r,this.game);
+  for(const r of visible){const x=r.x*CW,y=r.y*CH;if(r.y<0&&(r.y===-1||this.game.room(r.x,r.y+1))){c.fillStyle='#57594a';const bottom=r.y===-1?CH*.5:CH-54;for(const ox of [-53,47])c.fillRect(x+ox,y+40,6,bottom-40);c.fillStyle='#b1a889';for(const ox of [-51,49])c.fillRect(x+ox,y+40,2,bottom-40);}const image=this.roomImage(r,time);if(r.type==='cave'&&r.cavernGroup)this.terrain.cavern(c,r,this.game,image);else if(this.continuousShaft(r))this.shaftTile(r,image);else if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
   }
   for(const r of visible){const below=this.game.room(r.x,r.y+1);if(this.shaftLinked(r,below))this.shaftSeam(r,below)}
   // Composite every room first, then its doorway aprons; no room PNG can cover a neighbor's connection.
   for(const r of visible)for(const[dx,dy]of [[1,0],[0,1]]){const n=this.game.room(r.x+dx,r.y+dy);if(n&&this.game.linked(r,n))this.corridor(r,n)}
+  if(!this.exporting){
   const directions=this.game.directions();
   for(const r of visible){const x=r.x*CW,y=r.y*CH;
    if(r.trap){c.strokeStyle='#9c6149';c.lineWidth=1.5;c.beginPath();for(let i=0;i<6;i++){const px=x-17+i*7;c.moveTo(px,y+34);c.lineTo(px+4,y+25);c.lineTo(px+7,y+34)}c.stroke()}
@@ -133,11 +137,21 @@ export class Renderer{
    c.strokeStyle='#965b4d66';c.fillStyle='#965b4d0c';c.setLineDash([3,4]);c.fillRect(x*CW-62,y*CH-40,124,80);c.strokeRect(x*CW-62,y*CH-40,124,80);c.setLineDash([]);c.fillStyle='#965b4d';c.font='9px Georgia';c.textAlign='center';c.fillText('SELADO',x*CW,y*CH+3);
   }
   if(this.eventTargets?.length)for(const target of this.eventTargets){c.strokeStyle='#b4934b';c.lineWidth=2;this.corners(target.x*CW-82,target.y*CH-63,164,118)}
+  }
   const formation=this.unitFormation();
   for(const {u,x,y} of formation)this.unit(u,x,y,time);
   for(const p of this.game.projectiles){const x=(p.x+(p.tx-p.x)*p.t)*CW,y=(p.y+(p.ty-p.y)*p.t)*CH+this.floorOffset(p.x,p.y)*(1-p.t)+this.floorOffset(p.tx,p.ty)*p.t;c.save();c.translate(x,y);c.rotate(Math.atan2((p.ty-p.y)*CH,(p.tx-p.x)*CW));c.strokeStyle=p.team==='enemy'?'#a4563e':'#2f6853';c.fillStyle=c.strokeStyle;c.lineWidth=2;if(p.kind==='arrow'||p.kind==='bolt'){c.beginPath();c.moveTo(-13,0);c.lineTo(9,0);c.moveTo(4,-4);c.lineTo(10,0);c.lineTo(4,4);c.stroke();c.lineWidth=1;c.moveTo(-8,0);c.lineTo(-12,-3);c.stroke()}else{c.shadowColor=c.fillStyle;c.shadowBlur=10;c.beginPath();c.arc(0,0,p.kind==='flask'?4:5,0,Math.PI*2);c.fill();c.shadowBlur=0;c.strokeStyle='#b9c9a4';c.lineWidth=1;c.beginPath();c.moveTo(-5,0);c.lineTo(-17,0);c.stroke()}c.restore()}
   if(!this.reduced)for(const e of this.game.effects){c.globalAlpha=Math.min(1,e.life*2);c.strokeStyle=e.kind==='death'?'#a16e51':'#a16e51';c.lineWidth=1.5;c.beginPath();c.arc(e.x*CW,e.y*CH+this.floorOffset(e.x,e.y),(1-e.life)*20+5,0,Math.PI*2);c.stroke();c.globalAlpha=1}
   c.restore();
+ }
+ // Export the entire fortress through the same renderer, excluding every overlay.
+ exportCanvas(){
+  if(!this.game)throw Error('Inicie uma fortaleza primeiro.');
+  const rooms=this.game.rooms,left=Math.min(...rooms.map(r=>r.x))*CW-CW/2-32,right=Math.max(...rooms.map(r=>r.x))*CW+CW/2+32,top=Math.min(...rooms.map(r=>r.y))*CH-CH/2-32,bottom=Math.max(...rooms.map(r=>r.y))*CH+CH/2+32;
+  const width=right-left,height=bottom-top,scale=Math.min(2,4096/width,4096/height,Math.sqrt(12000000/(width*height))),canvas=document.createElement('canvas');canvas.width=Math.ceil(width*scale);canvas.height=Math.ceil(height*scale);
+  const saved={ctx:this.ctx,width:this.width,height:this.height,dpr:this.dpr,zoom:this.zoom,camera:this.camera,exporting:this.exporting,directionMarkers:this.directionMarkers,passageTime:this.passageTime};
+  try{Object.assign(this,{ctx:canvas.getContext('2d'),width:canvas.width,height:canvas.height,dpr:1,zoom:scale,camera:{x:(left+right)/2,y:(top+bottom)/2},exporting:true});this.draw(0)}finally{Object.assign(this,saved)}
+  return canvas;
  }
  // Feet rest at y + 35 inside rooms; the offset fades to the corridor centre.
  floorOffset(x,y){const distance=Math.max(Math.abs(x-Math.round(x)),Math.abs(y-Math.round(y)));return 20*Math.max(0,1-distance/.45)}
@@ -171,11 +185,11 @@ export class Renderer{
   if(image)c.drawImage(image,Math.round(-size/2)+attack,Math.round(15-size),Math.round(size),Math.round(size));
   else{c.fillStyle=ally?'#436d4b':'#9a563b';c.fillRect(-5,-10,10,22)}
   if(u.facing<0)c.scale(-1,1);
-  const marker=u.team==='neutral'?'#b5a56f':ally?'#356a4e':'#a44732';c.fillStyle=marker;c.fillRect(-3,17,6,3);
+  if(!this.exporting){const marker=u.team==='neutral'?'#b5a56f':ally?'#356a4e':'#a44732';c.fillStyle=marker;c.fillRect(-3,17,6,3);
   if(u.type==='immortal'){c.fillStyle='#d8c692';c.font='bold 17px Georgia';c.textAlign='center';c.fillText('∞',0,9-size);}
   if(this.game.s.combat&&u.type!=='immortal'){const width=Math.max(22,size*.55),top=12-size;
    c.fillStyle='#302f26';c.fillRect(-width/2-1,top-1,width+2,5);c.fillStyle=marker;c.fillRect(-width/2,top,width*Math.max(0,u.hp/u.maxHp),3);
    if(u.shield>0){c.fillStyle='#79a0a2';c.fillRect(-width/2,top-4,width*Math.min(1,u.shield/20),2)}
-  }c.restore();
+  }}c.restore();
  }
 }

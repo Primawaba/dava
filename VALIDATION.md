@@ -175,3 +175,12 @@ A suíte `test:event-cards` aprovou 11 verificações no navegador: baralho e pa
 Também passaram 21 verificações gerais, 7 do HTML autônomo offline e 10 das animações de recursos, incluindo limites, gastos durante o voo, carregamento e movimento reduzido. Capturas: `event-card-after-rewards.png`, `event-card-target-selection.png` e `event-card-mobile.png` em `artifacts/`.
 
 O salvamento pelo menu durante a seleção no mapa também foi verificado: a carta se oculta sob o diálogo, preserva sua escolha pendente e retorna ao fechar o menu. A suíte de descobertas passou novamente nas 9 verificações com a nova fila ativa.
+
+## Versão 1.9.0 — cavernas modulares, pintura, eventos e exportação
+
+- **186 testes de motor**: distribuição exata de tamanhos 50/30/15/5, descoberta de 1–4 espaços com uma carta/recompensa/ação, preservação de vizinhos, bloqueio por câmara selada, limites, persistência, ausência de expansão recursiva na escavação, chefe único e crescimento monotônico do covil por força. Paleta roxa de miasma verificada.
+- `test:terrain`: **7 verificações** em navegador: soma da força aliada viva, preto/tijolos/alpha da tinta, PNG independente de câmera e sem rótulos, download real, retrato quadrado e toque mobile, inicialização/redimensionamento/importação de save sem ResizeObserver/Array.at/Object.hasOwn/armazenamento, ausência de exceções.
+- Regressões: **21** verificações PC/mobile; **11** de fila de eventos e escolhas; **8** de exploração direcional; **6** de aparência; **4** de enquadramento (576 pares e 32.830 amostras de entrada); passagens (3.264 amostras, 16 máscaras, 4 zooms, 200 pares).
+- `test:standalone`: **9 verificações**, incluindo retrato de evento embutido e PNG exportado sem requisições externas. A política deste ambiente bloqueia `file://`; a validação usa o mesmo HTML em documento loopback interceptado, sem servidor e com rede offline.
+- Arte: 52 PNGs quadrados de eventos, além dos 445 PNGs existentes carregados pelo renderer. Fontes de atlas não entram no pacote web; os recortes entram no HTML único. Módulos e fundo procedural ficam em cache.
+- Limite de validação: **Safari/WebKit real não testado**. A instalação do WebKit foi tentada e todos os endpoints retornaram HTTP 403. Testes Chromium com toque e APIs removidas não substituem teste em iPhone. O endereço externo RawGitHack também não pôde ser consultado por bloqueio de rede. A prévia Quick Look do HTML baixado no app Arquivos pode impedir JavaScript; a versão HTTPS deve ser aberta no Safari.

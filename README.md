@@ -234,3 +234,24 @@ Magias boas/ruins, proteção do templo, artefatos, colheitas, conversões, moti
 Efeitos informativos podem avançar por **Continuar** ou após o tempo de leitura; passar o mouse sobre a carta interrompe esse avanço automático. Decisões obrigatórias não fecham por tempo nem por Esc. A prisão antiga permite escolher entre manter ou libertar a criatura. O guerreiro leal recebido por magia permite escolher seu destino por botões ou pelo mapa, com salas válidas destacadas. Um alvo inválido não encerra a carta. Se o alvo deixou de existir, a carta informa isso e oferece uma saída explícita.
 
 Fila e decisões pendentes ficam no save. Carregar reapresenta o que falta, sem conceder os recursos ou tropas novamente. O combate só começa depois da última carta e respeita a pausa que já estava ativa. `npm run test:event-cards` verifica a ordem, as decisões e o fluxo em PC/mobile.
+
+## Cavernas, pintura do mapa e cartas — versão 1.9.0
+
+- Cada descoberta de caverna vazia sorteia 1/2/3/4 espaços com probabilidades de **50%/30%/15%/5%**. Os módulos são revelados juntos, sem novas cartas, recompensas ou turnos. A expansão respeita os limites, as câmaras seladas e as salas existentes; pode ser menor quando faltar espaço. Somente módulos do mesmo grupo compartilham o interior aberto. Construir em um módulo restabelece suas paredes e corredores.
+- Covis de chefes usam a força total do encontro, com profundidade e dificuldade: abaixo de 30 STR, 1 espaço; 30–59, 2; 60–99, 3; 100+, 4. A ilustração especial e o chefe único permanecem na sala principal. Dragão adormecido e golem passivo usam a força que terão em combate. Escavações do verme não geram expansões recursivas.
+- Construções recebem fundo de tijolos na paleta do ambiente; cavernas recebem preto, e espaços desconhecidos mantêm o papel. Um shader de software com ruído em coordenadas do mundo produz a borda de tinta. Texturas e módulos ficam em cache, sem exigir WebGL. O miasma usa roxo tanto na sala quanto na passagem e no fundo de construções contaminadas.
+- **Exportar imagem**, no menu de pausa ou no botão de download do mapa, gera PNG da fortaleza inteira sem interface. A prévia permite baixar ou compartilhar a imagem; no iPhone também pode ser salva com toque prolongado. A exportação limita dimensão e área para evitar exceder a memória de canvas de aparelhos móveis.
+- As cartas têm **52 ilustrações quadradas** em pixel art, associadas ao evento, incluindo cada resultado de magia e cada artefato planar. A fila, animações de recursos e escolhas obrigatórias continuam funcionando.
+- Ao lado dos defensores aparece a soma da força nominal das tropas aliadas vivas, igual à força do painel Tropas; criaturas neutras, inimigos e unidades derrotadas não entram na soma.
+
+### iPhone / Safari
+
+O HTML baixado pode abrir no **Quick Look do app Arquivos**, que mostra a tela estática sem executar o jogo. Isso não equivale a abrir uma página no Safari. Para jogar no iPhone, abra a versão web em um endereço HTTPS:
+
+**https://raw.githack.com/Primawaba/dava/main/JOGAR-CONQUER.html**
+
+Esse endereço usa o serviço externo RawGitHack para servir o HTML público deste repositório; sua disponibilidade depende desse serviço. O link foi preparado, mas não pôde ser acessado neste ambiente por bloqueio de rede. Os salvamentos locais pertencem ao endereço usado; para transferir uma jornada, exporte e importe seu JSON.
+
+Há fallback para altura `vh`, redimensionamento sem `ResizeObserver`, navegação sem `Array.at` e armazenamento indisponível. Testes Chromium com toque e recursos removidos passaram. **Safari/WebKit real não foi validado**: o download do WebKit foi bloqueado com HTTP 403; um teste em iPhone continua necessário.
+
+Validação desta versão: `npm test`, `npm run test:terrain`, `npm run test:event-cards`, `npm run test:directions`, `npm run test:browser` e `npm run test:standalone`. Para regenerar as ilustrações a partir das folhas de arte: `npm run build:event-art`.

@@ -8,7 +8,7 @@ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'
 const errors=[];let checks=0;const pass=label=>{checks++;console.log('PASS',label)};
 async function prepare(page){
  page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:4178/?test=1');
- await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:47});window.__CONQUER__.renderer.resize()});
+ await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:47});window.__CONQUER__.game.emptyCavernSize=()=>1;window.__CONQUER__.renderer.resize()});
  await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(445);
 }
 async function arrow(page,from,to,touch=false){
@@ -24,7 +24,7 @@ try{
  await arrow(page,{x:0,y:0},{x:0,y:1});await expect(page.locator('.room-title')).toHaveText('Caverna vazia');assert.equal((await graph(page)).edges,1);pass('clicking an arrow explores immediately from its own origin');
  await arrow(page,{x:0,y:1},{x:1,y:1});await arrow(page,{x:1,y:1},{x:1,y:0});assert.deepEqual(await graph(page),{rooms:4,edges:3,turn:3,direct:false,path:3});pass('three discoveries create three edges and leave the adjacent gate wall intact');
  await page.screenshot({path:'artifacts/directions-before-opening.png'});
- const unopened=await page.evaluate(()=>{const r=window.__CONQUER__.renderer,g=window.__CONQUER__.game;g.s.combat=true;g.s.paused=true;r.draw(0);const p=r.ctx.getImageData(Math.floor((r.width/2+(90-r.camera.x)*r.zoom)*r.dpr),Math.floor((r.height/2-r.camera.y*r.zoom)*r.dpr),1,1).data[0];g.s.combat=false;return p});assert(unopened>=200);pass('a missing edge draws no corridor behind the opening arrow');
+ const unopened=await page.evaluate(()=>{const r=window.__CONQUER__.renderer,g=window.__CONQUER__.game,calls=[],original=r.corridor;r.corridor=function(a,b){calls.push(g.passageKey(a,b));return original.call(this,a,b)};try{r.draw(0)}finally{r.corridor=original}return calls.includes('0,0|1,0')});assert.equal(unopened,false);pass('a missing edge never invokes the corridor painter, regardless of terrain background');
  const before=await page.evaluate(()=>{const g=window.__CONQUER__.game;return{deck:JSON.stringify(g.s.deck),card:g.s.card,resources:g.s.resources,gold:g.s.gold}});
  // No scripted draw here: opening a known edge must leave the deck untouched.
  await expect.poll(()=>page.evaluate(()=>window.__CONQUER__.renderer.directionMarkers.some(d=>d.kind==='passage'))).toBe(true);
@@ -33,7 +33,7 @@ try{
  await page.screenshot({path:'artifacts/directions-after-opening.png'});
  const saved=await page.evaluate(()=>window.__CONQUER__.game.serialize());await page.evaluate(raw=>window.__CONQUER__.loadRaw(raw),saved);assert.equal((await graph(page)).edges,4);pass('opening is saved and restored as an explicit edge');
  // Accessible panel controls preserve the source when several rooms face one target.
- await page.evaluate(()=>{const {Game}=window.__CONQUER__,g=new Game({seed:9});g.s.deck=[{suit:'♥',rank:2}];g.explore(0,1,{x:0,y:0});g.s.deck=[{suit:'♥',rank:2}];g.explore(1,1,{x:0,y:1});window.__CONQUER__.setGame(g)});
+ await page.evaluate(()=>{const {Game}=window.__CONQUER__,g=new Game({seed:9});g.emptyCavernSize=()=>1;g.s.deck=[{suit:'♥',rank:2}];g.explore(0,1,{x:0,y:0});g.s.deck=[{suit:'♥',rank:2}];g.explore(1,1,{x:0,y:1});window.__CONQUER__.setGame(g)});
  const east=page.locator('[data-action=direction][data-from="0,0"][data-to="1,0"]');await east.focus();await page.keyboard.press('Enter');assert.equal((await graph(page)).direct,true);assert.equal(await page.evaluate(()=>window.__CONQUER__.game.linked(window.__CONQUER__.game.room(1,0),window.__CONQUER__.game.room(1,1))),false);pass('keyboard panel action retains the chosen source for an ambiguous target');
  const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});await prepare(mobile);
  await arrow(mobile,{x:0,y:0},{x:0,y:1},true);await expect(mobile.locator('.room-title')).toHaveText('Caverna vazia');assert.equal((await graph(mobile)).edges,1);

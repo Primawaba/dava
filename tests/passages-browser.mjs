@@ -9,7 +9,7 @@ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];await installConnectedFixtures(page);page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:4177/?test=1');
- await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(517);
+ await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(524);
  await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:3});window.__CONQUER__.renderer.resize()});
  const results=await page.evaluate(()=>{
   const {Game,renderer:r}=window.__CONQUER__,failures=[];let samples=0;
@@ -41,7 +41,7 @@ try{
   for(const vertical of [false,true])for(const ta of types)for(const tb of types){
    const a=room(ta),b=room(tb,vertical?0:1,vertical?1:0),e=p.get(a,b,vertical,r.images);
    const data=e.canvas.getContext('2d').getImageData(0,10,e.length,1).data;
-   for(let x=0;x<e.length;x++){if(data[x*4+3]!==255||data[x*4]>=220)throw Error('Broken material transition '+ta+tb)}
+   for(let x=0;x<e.length;x++){if(data[x*4+3]!==255||Math.abs(data[x*4]-229)+Math.abs(data[x*4+1]-221)+Math.abs(data[x*4+2]-198)<50)throw Error('Broken material transition '+ta+tb)}
    checked++;if(!vertical&&ta==='cave')fingerprints.push(e.canvas.toDataURL());
   }
   const a=room('cave'),b=room('mine',1),first=p.get(a,b,false,r.images),repeat=p.get(a,b,false,r.images);
@@ -75,5 +75,5 @@ try{
  await page.screenshot({path:'artifacts/procedural-materials-mobile.png'});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(errors,[]);
  await writeFile('artifacts/passages-results.json' ,JSON.stringify({...results,procedural},null,2));
- console.log(`PASS: ${results.samples} opaque passage centerline samples, 16 masks × 4 zoom levels; 445 PNG assets; 200 material/orientation pairs, cache invalidation, deterministic textures and reduced motion; three architectural cases and torch behavior; no browser errors.`);
+ console.log(`PASS: ${results.samples} opaque passage centerline samples, 16 masks × 4 zoom levels; 524 PNG assets; 200 material/orientation pairs, cache invalidation, deterministic textures and reduced motion; three architectural cases and torch behavior; no browser errors.`);
 }finally{await browser.close();server.kill()}

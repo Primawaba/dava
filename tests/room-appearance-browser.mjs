@@ -6,7 +6,7 @@ const server=spawn(process.execPath,['scripts/serve.mjs','dist'],{env:{...proces
 const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});const errors=[];let checks=0;const pass=s=>{checks++;console.log('PASS',s)};
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:4182/?test=1');
- await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:52})});await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(517);
+ await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:52})});await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(524);
  const materials=await page.evaluate(async()=>{
   const {ROOMS}=await import('./src/data.js'),{passagePalette}=await import('./src/passages.js'),r=window.__CONQUER__.renderer;
   let checked=0,foreground=0,preserved=0;const families=new Set();
@@ -25,7 +25,7 @@ try{
    checked++;
   }
   return{checked,foreground,preserved,families:families.size};
- });assert(materials.checked>=132);assert.equal(materials.families,11);assert(materials.foreground>10000&&materials.preserved>10000);pass('every room type and damaged variant uses its corridor palette, preserves background/alpha and only crystal pulses');
+ });assert(materials.checked>=132);assert.equal(materials.families,12);assert(materials.foreground>10000&&materials.preserved>10000);pass('every room type and damaged variant uses its corridor palette, preserves background/alpha and only crystal pulses');
  const visuals=await page.evaluate(()=>{
   const r=window.__CONQUER__.renderer,raw=r.images['barracks-0'],effect=r.appearance;
   const frame=image=>{const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const c=canvas.getContext('2d');c.drawImage(image,0,0);return c.getImageData(0,0,canvas.width,canvas.height).data};

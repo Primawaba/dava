@@ -1,4 +1,5 @@
 export const paths={
+ rails:'M7 2v20M17 2v20M4 5h16M4 10h16M4 15h16M4 20h16',columns:'M4 3h16v3H4zM7 6v13m10-13v13M4 19h16v3H4z',drawbridge:'M3 21V5h3v16m0-3L19 7m-1 0h4v14M6 8l12 1',elevator:'M5 5h14v14H5zM12 1v3m-3-1 3-2 3 2M12 20v3m-3-2 3 2 3-2',
  sword:'M5 19 18 6m-9 5 4 4M4 16l4 4M15 3h6v6l-4-1z',
  bow:'M6 3q16 9 0 18l5-9zM3 12h18m-4-4 4 4-4 4',
  spark:'m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z',

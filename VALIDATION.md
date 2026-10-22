@@ -1,5 +1,15 @@
 # Validação da entrega
 
+## Validação 1.14.0 — 22/10/2026
+
+- **305 testes do motor aprovados**, sem falhas ou testes ignorados. Regressões novas cobrem o trajeto de fuga em L e o retorno dos profissionais, proporção/velocidade do idle, alvos no mapa, crateras secas/molhadas, perfuração, gás inflamável com magma, invasões simultâneas, defesas por corredor e derrota definitiva do Vazio.
+- O navegador verifica construção por clique no mapa, mosaicos, emblemas no frame de papel, NPCs de recurso, os 38 arquivos de pinturas completas e sua escala uniforme, pixels opacos na emenda, portais nas duas pontas e evento antes do game over.
+- O HTML único incorpora também os emblemas, profissionais e pinturas novas; os testes verificam funcionamento offline e ausência de requisições externas. A política deste ambiente bloqueia `file://`; o teste carrega o mesmo HTML por documento local interceptado, sem servidor de assets.
+- Fluxos de cartas, portas, RISE, acabamento, aparência e exploração continuam exercitados nos respectivos roteiros. Safari/iPhone físico não foi homologado neste ambiente.
+
+Cobertura atual: [ATUALIZACAO-1.14.md](ATUALIZACAO-1.14.md). Registros de versões anteriores abaixo são históricos.
+
+
 ## Validação 1.13.0 — 22/10/2026
 
 - **285 testes do motor aprovados**, incluindo resolução/salvamento das 39 magias, captura e grades, esgoto, profissionais não combatentes, idle, rios horizontais, raiz de produção, drenagem por origem, projetos gratuitos e separação de portas entre mapas planares.

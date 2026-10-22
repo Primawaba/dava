@@ -3,6 +3,14 @@
 Jogo single player de exploração, construção e defesa de uma fortaleza subterrânea. Interface em português, combate em tempo real com IA, partidas reproduzíveis por semente e distribuição web instalável (PWA).
 
 
+## Atualização 1.14.0 — correções do relatório de teste
+
+NPCs circulam na própria estação e fogem/retornam pelos corredores; mineradores e lenhadores têm sprites próprios. Tropas passeiam mais devagar, priorizam o abrigo e retomam o idle após vencer. Salas grandes usam pinturas completas sem esticar, cavernas vazias voltam às chances 89%/7%/3%/1%, produtores ganham emblemas próprios dentro do mapa e salas de riqueza recebem dourado.
+
+Escolhas de locais usam o mapa. Infraestrutura e defesas têm mosaicos de ícones. Crateras distinguem chaminé seca, borda pela metade e magma indrenável abaixo, perfurando construções. Magma detona gás inflamável, invasões não cancelam a exploração e a derrota no Cristal do Vazio encerra a campanha mesmo com gemas.
+
+Veja [detalhes e validação da versão 1.14](ATUALIZACAO-1.14.md). Os registros seguintes descrevem versões anteriores.
+
 ## Atualização 1.13.0 — colônia e regras avançadas
 
 Encaixes e cores corrigidos, rios horizontais, caverna de ♥ com quatro painéis, profissionais, tropas passeando, produção ilustrada, armadilhas, captura opcional e grades de prisão. A revisão também adiciona tabelas de magia/invenções, coringas distintos, transporte sobreposto, Wyrd e mapas planares persistentes.

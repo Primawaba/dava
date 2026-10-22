@@ -1,6 +1,6 @@
 {
   "name": "conquer-fortaleza",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "private": true,
   "type": "module",
   "description": "CONQUER — estratégia single player de fortaleza subterrânea",
@@ -42,7 +42,9 @@
     "build:colony-art": "node scripts/colony-art.mjs",
     "test:worlds": "node tests/worlds-browser.mjs",
     "build:invention-art": "node scripts/invention-art.mjs",
-    "build:spell-art": "node scripts/spell-art.mjs"
+    "build:spell-art": "node scripts/spell-art.mjs",
+    "test:refinements": "node tests/refinements-browser.mjs",
+    "build:whole-art": "node scripts/whole-art.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1"

@@ -27,7 +27,7 @@ endersgate:{name:'Portão de Ender',r:0,g:0,inventionOnly:13,desc:'Permite aniqu
 orefinder:{name:'Localizador de Minério',r:0,g:0,inventionOnly:6,desc:'Oferece duas cartas antes de explorar. Coringas são obrigatórios.'},
 
  surface:{name:'Terreno de superfície',icon:'home',desc:'Construa diretamente, sem comprar carta. Acima do térreo, exige uma sala de apoio imediatamente abaixo.'},
- gate:{name:'Portão da Fortaleza',icon:'gate',desc:'Três gemas protegem o último reduto. Cada invasão sem oposição destrói uma gema; a terceira encerra a campanha.'},
+ gate:{name:'Portão da Fortaleza',icon:'gate',desc:'Três gemas protegem o último reduto. Cada invasão sem oposição destrói uma gema; a terceira encerra a campanha. A derrota no Cristal do Vazio é definitiva, mesmo com gemas restantes.'},
  cave:{name:'Caverna vazia',icon:'mountain',desc:'Espaço explorado. Pode receber uma construção.'},
  barracks:{name:'Quartel',icon:'sword',r:8,g:0,group:'Tropas',desc:'Abriga até 10 soldados ou arqueiros.'},
  kennel:{name:'Canil',icon:'paw',r:5,g:0,group:'Tropas',desc:'Abriga 5 cães ou uma fera.'},

@@ -9,7 +9,7 @@ const errors=[];let checks=0;const pass=label=>{checks++;console.log('PASS',labe
 async function prepare(page){
  page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:4178/?test=1');
  await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:47});window.__CONQUER__.game.emptyCavernSize=()=>1;window.__CONQUER__.renderer.resize()});
- await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(517);
+ await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(524);
 }
 async function arrow(page,from,to,touch=false){
  await page.evaluate(()=>{window.__CONQUER__.game.s.deck=[{suit:'♥',rank:2}]});

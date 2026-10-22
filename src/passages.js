@@ -5,6 +5,7 @@ const PASSAGE_MATERIALS={
  rock:{wall:[89,84,66],light:[163,153,119],floor:[27,29,24]},
  masonry:{wall:[99,95,78],light:[176,166,134],floor:[30,31,27]},
  mine:{wall:[103,82,55],light:[173,146,99],floor:[33,29,22]},
+ gold:{wall:[137,100,30],light:[238,202,91],floor:[47,35,13]},
  water:{wall:[39,95,117],light:[118,183,197],floor:[15,39,49]},
  fire:{wall:[109,71,47],light:[191,135,75],floor:[47,28,22]},
  organic:{wall:[105,97,51],light:[177,159,90],floor:[38,35,21]},
@@ -19,7 +20,8 @@ export function passageMaterial(room){
  const type=room.hazards?.[0]||room.contaminant||room.type;
  if(type==='miasma')return 'miasma';
  if(['water','sewer','well','laundry','pump','springs','mud'].includes(type))return 'water';
- if(['lava','crater','forge','golemforge','kitchen','dragon','dragonforge'].includes(type))return 'fire';
+ if(['treasury','vault','dragon','city','rivalmine','mine','parlor','gold','games'].includes(type))return 'gold';
+ if(['lava','crater','forge','golemforge','kitchen','dragonforge'].includes(type))return 'fire';
  if(['gas','flammable','miasma','blindgas'].includes(type))return 'gas';
  if(['hive','nest','breeder','slime'].includes(type))return 'organic';
  if(['forest','fungus','fungi','mushrooms'].includes(type))return 'forest';

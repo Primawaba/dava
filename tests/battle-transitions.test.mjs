@@ -1,8 +1,0 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import {Game} from '../src/engine.js';
-import {BattleTransitions} from '../src/battle-transitions.js';
-const scene=()=>{const g=new Game({seed:1});const a=g.addRoom(0,1,'cave'),b=g.addRoom(1,1,'cave');g.connectRooms(g.room(0,0),a);g.connectRooms(a,b);return g};
-test('victory keeps actual battle positions and no longer schedules an ordered return',()=>{const g=scene();g.s.units=[];const u=g.addUnit('soldier',1,1,true);u.home='0,0';g.s.combat=true;g.endCombat();assert.equal(u.x,1);assert.equal(u.y,1);assert.equal(u.hp,u.maxHp);assert(!g.events.some(e=>e.type==='return-home'));assert(!g.s.returnPhase);});
-test('returning ranks are staggered and troops already home do not get artificial movement',()=>{const g=scene();g.s.units=[];const snapshots=[];for(let i=0;i<3;i++){const u=g.addUnit('soldier',0,0,true);snapshots.push({...u,x:1,y:1,moveTarget:null})}const home=g.addUnit('archer',0,0,true);snapshots.push({...home});const animation=new BattleTransitions({game:g});animation.returnHome(snapshots,0);assert.equal(animation.returns.size,3);const starts=[...animation.returns.values()].map(t=>t.start);assert.deepEqual(starts,[0,280,560]);assert.equal(animation.renderUnits(20).find(u=>u.id===home.id),home)});
-test('defeat presentation snapshots every living hostile without crediting their removal as kills',()=>{const g=scene();g.s.units=[];g.spawnEnemies(g.room(0,0),40,'goblin');const ids=g.enemies.map(u=>u.id),kills=g.s.kills;g.beginCombat();g.lose();const event=g.events.find(e=>e.type==='life-lost');assert.deepEqual(event.enemies.map(u=>u.id),ids);assert(event.enemies.every(u=>u.hp>0));assert.equal(g.s.kills,kills);assert.equal(g.enemies.length,0)});

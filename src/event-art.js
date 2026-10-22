@@ -1,4 +1,4 @@
-import {GOOD_MAGIC,BAD_MAGIC} from './rule-catalogue.js';
+import {GOOD_MAGIC,BAD_MAGIC} from './catalogue.js';
 // Explicit semantic mapping: illustrations are presentation only; saves store
 // the original effect and choice, so adding art never replays a reward.
 const EVENT_ART={
@@ -9,3 +9,5 @@ const EVENT_ART={
 for(const [n,e]of GOOD_MAGIC.entries())EVENT_ART[e[0]]=60+n;for(const [n,e]of BAD_MAGIC.entries())EVENT_ART[e[0]]=86+n;
 export function eventArtIndex(card){return EVENT_ART[card.title]??(/miasma/i.test(card.title)?30:/magma|lava/i.test(card.title)?28:/água|inund/i.test(card.title)?27:/gás.*venen/i.test(card.title)?29:card.tone==='bad'?34:35)}
 export function eventArtURL(card){const path=`events/event-${eventArtIndex(card)}.png`;return typeof embeddedAssets!=='undefined'?embeddedAssets[path]:'./assets/'+path}
+
+export function hasEventArt(card){return Object.prototype.hasOwnProperty.call(EVENT_ART,card.title);}

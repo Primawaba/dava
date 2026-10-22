@@ -3,6 +3,10 @@
 Jogo single player de exploração, construção e defesa de uma fortaleza subterrânea. Interface em português, combate em tempo real com IA, partidas reproduzíveis por semente e distribuição web instalável (PWA).
 
 
+## Atualização 1.12.0 — regras de CONQUER esclarecidas por RISE
+
+Conforto e motim por abrigo, prisioneiros reais, Persuasão/Informação, Contratação negociada, dedicação e sacrifício em altares, encontros territoriais, domesticação, desafios e labirintos agora têm regras próprias e escolhas na interface. Clérigos podem ser instalados nas salas de interação; selar portal exige seu sacrifício. Veja [implementação, fontes e limites](RISE-IMPLEMENTATION.md).
+
 ## Atualização 1.11.0
 
 - Cavernas vazias: **89%** com 1 espaço, **7%** com 2, **3%** com 3 e **1%** com 4. Chefes e formações com tamanho próprio usam suas regras específicas.

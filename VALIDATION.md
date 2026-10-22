@@ -202,3 +202,12 @@ O salvamento pelo menu durante a seleção no mapa também foi verificado: a car
 - O teste offline continua usando documento interceptado idêntico ao HTML final porque o ambiente bloqueia `file://`. Toque em Chromium não substitui Safari/iPhone real; a limitação de WebKit anteriormente documentada permanece.
 - Novos recursos: 4 encaixes de alvenaria, 36 extensões de cenário e 1 ponte sobre fonte. Folhas de origem são excluídas de `dist`; PNGs usados pelo runtime estão incorporados ao HTML único.
 - O relatório de revisão será produzido após esta etapa de implementação e testes; suas propostas não serão aplicadas automaticamente ao motor.
+
+## Versão 1.12.0 — correções com referência a RISE
+
+- `npm test`: **241 testes aprovados**, incluindo 38 casos novos de regras, persistência e combate de unidades convertidas.
+- `npm run test:rise`: sete verificações no navegador, com escolhas reais de dedicação/sacrifício, contratação paga após save/load, labirinto, provocação territorial, toque e ausência de exceções.
+- Integração: `test:browser` (21), `test:event-cards` (11), `test:finishing` (9) e `test:standalone` (9). O HTML independente inclui o novo módulo e as escolhas sem depender de servidor ou assets externos.
+- Testes antigos de descoberta foram atualizados para exigir a espécie correta também em guardiões neutros. Os testes de espólios/pausa da masmorra rival usam agora uma descoberta hostil; criptas novas são passivas conforme CONQUER.
+- Build web e HTML independente em versão 1.12.0. Ver [regras implementadas e aproximações restantes](RISE-IMPLEMENTATION.md).
+- Permanecem os limites anteriores: teste móvel em Chromium; Safari/WebKit real não homologado. Nesta máquina, a política bloqueia `file://`; o teste do HTML independente usa o mesmo documento interceptado em loopback e verifica ausência de requisições externas.

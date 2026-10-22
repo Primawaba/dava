@@ -4,6 +4,10 @@ Revisão de 21/10/2026, após implementação e testes da versão **1.11.0**, co
 
 A base nova permite aproximar bastante o jogo dos documentos sem refazer a apresentação. As maiores oportunidades estão em **identidade das salas de várias casas, resolução de efeitos, coringas, magias e invenções**. A existência de uma sala ilustrada ou de uma carta de evento não significa que todas as suas regras estejam implementadas.
 
+## Progresso após a auditoria
+
+A versão 1.12.0 corrige parte das recomendações usando RISE: [registro de implementação e limites](RISE-IMPLEMENTATION.md). A análise abaixo permanece como registro da versão 1.11.0; não é uma lista atualizada automaticamente de pendências.
+
 ## Referência complementar adicionada após a auditoria
 
 RISE: A Game of Spreading Evil também integra agora a base de regras do CONQUER. O [complemento de RISE](RISE-RULES.md) identifica suas tabelas de Informação, magias, conforto, prisioneiros e incursões, além dos conflitos com DELVE. A revisão original abaixo continua sendo o registro da auditoria 1.11.0; esta inclusão não implementa suas propostas.

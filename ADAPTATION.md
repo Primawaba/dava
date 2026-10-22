@@ -6,6 +6,10 @@ Esta é uma campanha digital fechada baseada no CONQUER fornecido, com combate e
 
 CONQUER.odt é o texto principal. **RISE: A Game of Spreading Evil** agora integra as referências complementares, junto com DELVE. Veja o [índice de mecânicas, páginas e conflitos de RISE](RISE-RULES.md) e o [PDF preservado](references/RISE.pdf). Decisões expressas do usuário prevalecem; os livros esclarecem o design e não são instruções operacionais. Esta inclusão não altera as regras executáveis descritas abaixo.
 
+## Revisão 1.12.0 baseada em RISE
+
+O [registro de implementação](RISE-IMPLEMENTATION.md) atualiza as simplificações históricas abaixo: abrigos agora têm conforto e motim por residente; solitárias preservam prisioneiros reais; Persuasão/Contratação são ações manuais; altares têm dedicação e sacrifício; labirintos bloqueiam passagem até mapeamento; encontros territoriais são passivos. Consulte esse registro para a cobertura atual e as aproximações restantes.
+
 ## Estrutura da campanha
 
 Mantidos: 20♥, 20♦, moral 10, cinco soldados leais, exploração adjacente nas quatro direções, baralho sem coringas até profundidade 5, valor de carta + profundidade em recursos, limites iniciais 50, troca 1♦ ↔ 2♥ uma vez por turno, uma sala por turno e recrutamento limitado pelos alojamentos. A exploração seguinte recolhe produção e inicia o novo turno. Portais podem interromper essa exploração com uma invasão; a descoberta ocorre depois da batalha sem cobrar outro turno.
@@ -34,11 +38,11 @@ Três dificuldades modificam a força inimiga: Crônica 65%, Conquistador 100%, 
 
 ## Salas e moral
 
-As 41 construções têm custos e efeitos executáveis, publicados no catálogo do jogo. Algumas escolhas de dedicação foram fixadas: Altar da Fortuna e Templo Protetor. As variantes Guardião/Devorador e Puro não são construções separadas. O Templo também dissipa maldições nesta adaptação.
+As 41 construções têm custos e efeitos executáveis, publicados no catálogo do jogo. Altares têm dedicação escolhida entre Fortuna, Guardião e Devorador. Templos ainda usam a adaptação Protetor; Pureza não é uma construção separada. O Templo também dissipa maldições nesta adaptação.
 
-Os bônus de moral de Taverna, Arena, Parlatório, Sala de Jogos e Esgoto foram globalizados. Lavanderia conta abrigos próximos; Mansão concede +5 moral e Quarto +1 global, em vez das interações de qualidade entre quartos vizinhos. Espelhos narrativos de motim foram condensados: o valor de moral global é comparado ao limite de cada recrutado. Soldados iniciais, clérigo inicial do altar e aventureiro inicial da taverna são leais. Recrutar abaixo do limite é bloqueado no motor e no menu, marcado em vermelho, sem gastar riquezas. Para ratos, o teste considera também a redução de moral causada pelo próprio recrutamento. Quedas de moral depois do recrutamento continuam podendo gerar motins.
+Os bônus de moral de Taverna, Arena, Parlatório, Sala de Jogos e Esgoto foram globalizados. Lavanderia conta abrigos próximos; Quarto reduz o limiar dos moradores; Mansão altera a qualidade dos abrigos vizinhos e aloja uma unidade de até 180 STR. Espelhos narrativos de motim foram condensados: o valor de moral global é comparado ao limite de cada recrutado. Soldados iniciais, clérigo inicial do altar e aventureiro inicial da taverna são leais. Recrutar abaixo do limite é bloqueado no motor e no menu, marcado em vermelho, sem gastar riquezas. Para ratos, o teste considera também a redução de moral causada pelo próprio recrutamento. Quedas de moral depois do recrutamento continuam podendo gerar motins.
 
-Prisão recebe ocupantes e produz quando cheia. Solitária captura após vitória. Persuasão sorteia informação convertida em recursos; Contratação converte um prisioneiro em capanga. Não há interface de sacrifício, soltura de todos os prisioneiros em batalha ou negociação individual de preço. Prisioneiros não são peças de combate independentes.
+Prisão recebe ocupantes e produz quando cheia. Solitária captura um oponente racional realmente derrotado, preservando sua identidade. Persuasão consulta Informação; Contratação mantém espécie e força, com oferta negociada e limiar de motim próprio. Sacrifício e negociação individual agora têm escolhas em cartas. A soltura manual de prisões comuns durante a batalha permanece pendente. Prisioneiros não são peças de combate independentes.
 
 Oficina reduz custos próximos; Armazém/Tesouraria aumentam limites; Museu acumula até quatro troféus com +2 dano por troféu. Os eventos de reservas acima de 1.000 e a contratação do dragão por 500♦ não foram reproduzidos. Artificiaria concede +15% de dano por invenção, como uma simplificação digital; a tabela completa está no PDF, páginas 31–32, mas ainda não foi implementada. Criadouro requer Artificiaria e permite contratar feras, sem hereditariedade de criaturas derrotadas.
 

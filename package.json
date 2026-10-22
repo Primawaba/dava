@@ -1,6 +1,6 @@
 {
   "name": "conquer-fortaleza",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "private": true,
   "type": "module",
   "description": "CONQUER — estratégia single player de fortaleza subterrânea",
@@ -36,7 +36,8 @@
     "test:lives": "node tests/lives-browser.mjs",
     "test:finishing": "node tests/finishing-browser.mjs",
     "build:room-modules": "node scripts/room-modules-art.mjs",
-    "build:bridge-art": "node scripts/bridge-art.mjs"
+    "build:bridge-art": "node scripts/bridge-art.mjs",
+    "test:rise": "node tests/rise-browser.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1"

@@ -2,6 +2,10 @@
 
 O PDF **RISE: A Game of Spreading Evil**, enviado pelo usuário, integra as referências de regras do **CONQUER.odt**. Consulte o [PDF original](references/RISE.pdf). Esta inclusão documenta regras; não altera o motor nem significa que elas já estejam implementadas.
 
+## Implementação posterior
+
+A versão 1.12.0 usa estas referências para corrigir abrigos, prisioneiros, Informação, Contratação, altares, labirintos e encontros territoriais. Consulte [o que foi implementado e o que permanece aproximado](RISE-IMPLEMENTATION.md). A inclusão inicial do PDF foi apenas documental; esta revisão contém mudanças no motor.
+
 ## Como consultar
 
 Ordem de precedência: **decisões expressas do usuário → CONQUER.odt → referências complementares pertinentes**. DELVE e RISE complementam o texto conforme a origem da mecânica; nenhum deles substitui automaticamente o outro. Em conflitos não resolvidos pelo CONQUER ou pelo usuário, registrar a escolha de adaptação antes de implementar.

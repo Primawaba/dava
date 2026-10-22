@@ -1,5 +1,16 @@
 # Validação da entrega
 
+## Validação 1.13.0 — 22/10/2026
+
+- **285 testes do motor aprovados**, incluindo resolução/salvamento das 39 magias, captura e grades, esgoto, profissionais não combatentes, idle, rios horizontais, raiz de produção, drenagem por origem, projetos gratuitos e separação de portas entre mapas planares.
+- Navegador Chromium: 21 verificações gerais; 7 da colônia; 11 do fluxo de cartas; 9 de acabamento; 7 de RISE; 6 de aparência; malhas de passagens com 3.264 amostras opacas e 200 combinações de material/orientação; fluxo real de seleção/viagem/retorno dos planos.
+- HTML único: 9 verificações, incluindo iniciar/construir/recrutar, salvar/recarregar/exportar/importar, combate, toque a 390px, arte de evento offline e exportação PNG. Nenhuma requisição HTTP/HTTPS de assets e nenhuma exceção JavaScript nos roteiros aprovados.
+- Pacote incorpora 294 imagens de salas, 144 danificadas, 34 sprites de unidades, 36 elementos de colônia, 9 módulos de passagem, 4 cavernas, módulos de continuação e 93 imagens de eventos. Novos atlas permanecem como fontes; builds web usam os recortes.
+- Nesta máquina, a política do navegador bloqueia navegação direta `file://`. O teste usa o **mesmo conteúdo integral** do HTML interceptado em um endereço local sem servidor e sem acesso externo. Não equivale a homologação do Safari/iOS físico.
+
+Resultados de versões anteriores abaixo são históricos. Cobertura e diferenças de regras: [ATUALIZACAO-1.13.md](ATUALIZACAO-1.13.md).
+
+
 ## Edição de teste em arquivo único
 
 `releases/CONQUER-Jogar.html` reúne código, estilos, fontes e todas as imagens em um HTML autônomo, sem módulos externos e sem service worker. `npm run build:standalone` reproduz o arquivo e seu SHA-256.

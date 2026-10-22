@@ -1,3 +1,4 @@
+import {GOOD_MAGIC,BAD_MAGIC} from './rule-catalogue.js';
 // Explicit semantic mapping: illustrations are presentation only; saves store
 // the original effect and choice, so adding art never replays a reward.
 const EVENT_ART={
@@ -5,5 +6,6 @@ const EVENT_ART={
  'Gema do portão destruída':52,'Metal vivo':0,'Sussurros':1,'Fortuna':2,'Guerreiro leal':3,'Banquete de cogumelos':6,'Colheita de cogumelos':7,'Prisão antiga':8,'Fonte termal':9,'Artefato encantado':10,'Invasão planar':11,'Caverna esgotada':12,'Prisioneiro convertido':13,'Motim':14,'Resgate do hospital':15,'Retorno dos mortos':16,'Festival':17,'Dragão desperto':18,'Engenharia extraordinária':19,'Proteção do templo':20,'Perigo ambiental':21,'Explosão de gás':22,'Porta destruída':23,'Criatura perdida':24,'Criatura libertada':25,'Prisioneiro hostil':26,'Água':27,'Rio subterrâneo':27,'Magma':28,'Cratera de magma':28,'Cratera vulcânica':28,'Gás venenoso':29,'Miasma':30,'Gás cegante':31,'Gás inflamável':32,'Descoberta lendária':33,
  'Asas de Ícaro':36,'Escafandro':37,'Placa de Obsidiana':38,'Fábrica de Monstros':39,'Fagulha de Vida':40,'Tomo Maldito':41,'Pensador Perpétuo':42,'Templo das Fadas':43,'Salão de Hidromel':44,'Apiários':45,'Gato Rei':46,'Algemas de Mithrill':47,'O Curador':48,'Ferrugem':49,'Praga':50,'Euforia':51
 };
+for(const [n,e]of GOOD_MAGIC.entries())EVENT_ART[e[0]]=60+n;for(const [n,e]of BAD_MAGIC.entries())EVENT_ART[e[0]]=86+n;
 export function eventArtIndex(card){return EVENT_ART[card.title]??(/miasma/i.test(card.title)?30:/magma|lava/i.test(card.title)?28:/água|inund/i.test(card.title)?27:/gás.*venen/i.test(card.title)?29:card.tone==='bad'?34:35)}
 export function eventArtURL(card){const path=`events/event-${eventArtIndex(card)}.png`;return typeof embeddedAssets!=='undefined'?embeddedAssets[path]:'./assets/'+path}

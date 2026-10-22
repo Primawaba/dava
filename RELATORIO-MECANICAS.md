@@ -1,5 +1,7 @@
 # Auditoria de mecânicas — CONQUER 1.11.0
 
+> Atualização 1.13.0: [cobertura atual, implementação das propostas e limites](ATUALIZACAO-1.13.md). Os diagnósticos e restrições de versões anteriores abaixo são históricos.
+
 Revisão de 21/10/2026, após implementação e testes da versão **1.11.0**, commit **0a55bd2**. Este documento recomenda trabalho futuro; não afirma que as recomendações já estão implementadas.
 
 A base nova permite aproximar bastante o jogo dos documentos sem refazer a apresentação. As maiores oportunidades estão em **identidade das salas de várias casas, resolução de efeitos, coringas, magias e invenções**. A existência de uma sala ilustrada ou de uma carta de evento não significa que todas as suas regras estejam implementadas.

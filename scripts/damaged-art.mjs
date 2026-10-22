@@ -23,3 +23,6 @@ try{
  for(const [name,data]of Object.entries(files))await writeFile(`public/assets/damaged-rooms/${name}.png`,Buffer.from(data,'base64'));
  console.log(`${Object.keys(files).length} damaged PNG sprites: ${DAMAGEABLE_ROOMS.length} constructed room types × 3 variants.`);
 }finally{await browser.close()}
+
+// Dedicated invention rooms retain their own silhouettes in the damaged set.
+await import('./invention-art.mjs');

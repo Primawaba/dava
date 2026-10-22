@@ -19,6 +19,13 @@ export const UNITS={
 };
 // Content is explicit so prices, requirements and tooltips share one source.
 export const ROOMS={
+concert:{name:'Salão de Concertos',r:0,g:0,inventionOnly:2,desc:'Golems musicais atraem invasores para o salão.'},
+brewery:{name:'Cervejaria Secreta',r:0,g:0,inventionOnly:3,desc:'A receita secreta dobra a força de aventureiros.'},
+dragonforge:{name:'Forja de Fogo de Dragão',r:0,g:0,inventionOnly:10,footprint:2,desc:'Oficina de duas casas para armamentos de fogo de dragão.'},
+trapmaster:{name:'Oficina do Mestre de Armadilhas',r:0,g:0,inventionOnly:12,footprint:2,desc:'Oficina de duas casas. Permite armadilhas de nível 4.'},
+endersgate:{name:'Portão de Ender',r:0,g:0,inventionOnly:13,desc:'Permite aniquilar todas as criaturas em combate.'},
+orefinder:{name:'Localizador de Minério',r:0,g:0,inventionOnly:6,desc:'Oferece duas cartas antes de explorar. Coringas são obrigatórios.'},
+
  surface:{name:'Terreno de superfície',icon:'home',desc:'Construa diretamente, sem comprar carta. Acima do térreo, exige uma sala de apoio imediatamente abaixo.'},
  gate:{name:'Portão da Fortaleza',icon:'gate',desc:'Três gemas protegem o último reduto. Cada invasão sem oposição destrói uma gema; a terceira encerra a campanha.'},
  cave:{name:'Caverna vazia',icon:'mountain',desc:'Espaço explorado. Pode receber uma construção.'},
@@ -89,7 +96,7 @@ export const ROOMS={
  vault:{name:'Cofre oculto',icon:'gem',desc:'Uma antiga tesouraria, guardada por um golem.'},
  labyrinth:{name:'Labirinto',icon:'stairs',desc:'Bloqueia aliados e inimigos até ser mapeado. Escolha explorador: num 4 de 1d4 abre toda a área; caso contrário, ele morre.'},
  void:{name:'Cristal do Vazio',icon:'gem',desc:'A relíquia procurada. Derrote seu guardião para conquistar o abismo.'},
- meadhall:{name:'Salão de hidromel',icon:'mug',desc:'Libera até 10 berserkers. Recompensa do plano dos Campeões.'},
+ meadhall:{footprint:2,name:'Salão de hidromel',icon:'mug',desc:'Libera até 10 berserkers. Recompensa do plano dos Campeões.'},
  crater:{name:'Cratera vulcânica',icon:'flame',hazard:true,desc:'Uma abertura vulcânica. Trate como magma: a fonte não pode ser drenada; construa uma ponte.'},
  smalllair:{name:'Covil de criatura pequena',icon:'paw',desc:'Uma criatura territorial vivia aqui. Construível após o combate.'},
  largelair:{name:'Lar de criatura grande',icon:'skull',desc:'Uma criatura grande territorial guarda toda a área. Bloqueia passagem, mas só inicia combate quando provocada.'},
@@ -126,7 +133,7 @@ export const PLANES=[
  {name:'A Jaula',artifact:'Algemas de Mithrill',effect:'loyal',desc:'Carcereiros brutais. Recompensa: recrutados sempre leais.'},
  {name:'Antiquário Cósmico',artifact:'O Curador',effect:'museum',desc:'Guardiões antigos. Recompensa: +5♦ por exploração.'}
 ];
-export const BUILDABLE=Object.keys(ROOMS).filter(k=>ROOMS[k].r!==undefined);
+export const BUILDABLE=Object.keys(ROOMS).filter(k=>ROOMS[k].r!==undefined&&!ROOMS[k].inventionOnly);
 export const BUILD_GROUPS=['Tropas','Fortaleza','Economia','Infraestrutura','Avançadas'];
 export const NATURAL=['forest','gas','fairy','water','cave','crystal','nest','crater','smalllair','largelair','burrow','invincible','wandering','mud','mushrooms','fairy','springs','elemental','hive','hungry'];
 export const REMNANTS=['ruins','crypt','well','sealed','mine','ancienttemple','ruins','ancientlibrary','portal','golemforge','artifact','dragon','desolate','shaft','rivalmine','ritual','city','tomb','labyrinth','chaos','vault','ancientprison','challenge','rivalhold'];

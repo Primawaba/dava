@@ -3,6 +3,12 @@
 Jogo single player de exploração, construção e defesa de uma fortaleza subterrânea. Interface em português, combate em tempo real com IA, partidas reproduzíveis por semente e distribuição web instalável (PWA).
 
 
+## Atualização 1.13.0 — colônia e regras avançadas
+
+Encaixes e cores corrigidos, rios horizontais, caverna de ♥ com quatro painéis, profissionais, tropas passeando, produção ilustrada, armadilhas, captura opcional e grades de prisão. A revisão também adiciona tabelas de magia/invenções, coringas distintos, transporte sobreposto, Wyrd e mapas planares persistentes.
+
+Veja a [cobertura dos pedidos, dos dois relatórios e os limites de fidelidade](ATUALIZACAO-1.13.md). Os registros abaixo descrevem versões anteriores.
+
 ## Atualização 1.12.0 — regras de CONQUER esclarecidas por RISE
 
 Conforto e motim por abrigo, prisioneiros reais, Persuasão/Informação, Contratação negociada, dedicação e sacrifício em altares, encontros territoriais, domesticação, desafios e labirintos agora têm regras próprias e escolhas na interface. Clérigos podem ser instalados nas salas de interação; selar portal exige seu sacrifício. Veja [implementação, fontes e limites](RISE-IMPLEMENTATION.md).
@@ -25,7 +31,7 @@ O texto CONQUER é complementado por DELVE e pelo novo [RISE: A Game of Spreadin
 
 ## Revisão das regras
 
-O [relatório de mecânicas da versão 1.11.0](RELATORIO-MECANICAS.md) compara a implementação com CONQUER e DELVE, preserva as alterações solicitadas e prioriza correções e próximos incrementos. As propostas do relatório ainda não foram implementadas.
+O [relatório de mecânicas da versão 1.11.0](RELATORIO-MECANICAS.md) compara a implementação com CONQUER e DELVE, preserva as alterações solicitadas e prioriza correções e próximos incrementos. A implementação atual e suas adaptações estão relacionadas em [ATUALIZACAO-1.13.md](ATUALIZACAO-1.13.md).
 
 ## Baixar e abrir no computador
 
@@ -124,7 +130,7 @@ O resultado fica em `releases/conquer-web-1.8.0.zip`, com `index.html` na raiz. 
 
 Referências fornecidas pelo usuário: `CONQUER.odt` para regras e `DELVE November 8th Checked Version Pages.pdf`, de Anna Blackwell, para direção visual. O PDF não foi incluído no jogo. A ilustração de abertura foi gerada para este projeto usando a referência de linguagem visual; salas e personagens são pixel art raster original gerada para esta revisão; ícones e efeitos têm desenho próprio. Consulte [ADAPTATION.md](ADAPTATION.md) para as diferenças detalhadas entre o documento e a versão digital.
 
-Consulte também [PDF-RULES.md](PDF-RULES.md) para a revisão de regras a partir das páginas do PDF. O documento CONQUER menciona várias tabelas não anexadas. Esta implementação faz escolhas explícitas para fechar a campanha: objetivo na profundidade 12, magias e invenções condensadas, eventos resolvidos automaticamente, ocupação de uma célula por sala e expedições planares sem mapas separados. **Não é uma transcrição integral de todas as regras do documento.**
+Consulte também [PDF-RULES.md](PDF-RULES.md) para a revisão de regras a partir das páginas do PDF. O documento CONQUER menciona várias tabelas não anexadas. Esta implementação mantém a campanha base na profundidade 12. Desde a versão 1.13, há magias e invenções distintas, eventos com escolhas, salas de várias casas e mapas separados para os planos. Consulte o registro atual para as adaptações restantes. **Não é uma transcrição integral de todas as regras do documento.**
 
 ## Verificação e limites da entrega
 

@@ -1,7 +1,7 @@
 // Deterministic squad allocation on the opened-passage graph. No random draws.
 const tacticalDistance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 export function combatStrength(game,u){
- const health=Math.sqrt(Math.max(0,(u.hp+u.shield)/u.maxHp));
+ const health=Math.max(0,(u.hp+u.shield)/u.maxHp);
  const upgrades=u.team==='ally'?1+game.s.blessings*.06+game.s.inventions*.15:1;
  if(u.type==='siege'&&u.shot)return 0;
  return (u.power*upgrades+(u.team==='ally'?game.s.trophies*1.1:0))*health*(u.stun>0?.65:1);
@@ -12,7 +12,7 @@ export function travelTime(game,u,destination){
  const data=game.unitData(u);if(data.speed<=0)return tacticalDistance(u,destination)<.001?0:Infinity;
  let seconds=tacticalDistance(u,start)/data.speed;
  if(u.team==='enemy'&&u.moveTarget){const origin=game.movementOrigin(u,start),door=origin&&game.barricade(origin,start);if(door&&tacticalDistance(u,origin)<.5)seconds+=door.hp/Math.max(1,u.power*1.8)}
- let previous=start;for(const r of route){const door=game.barricade(previous,r);if(u.team==='enemy'&&door)seconds+=door.hp/Math.max(1,u.power*1.8);previous=r;let speed=data.speed;if(u.team==='ally'&&['elevator','rails','shaft'].includes(r.type))speed*=2;if(r.type==='mud')speed*=.5;if(u.team==='enemy'&&r.type==='puzzle')speed*=.35;if(u.team==='ally'&&game.s.artifacts.includes('speed'))speed*=1.15;seconds+=1/speed}
+ let previous=start;for(const r of route){const door=game.barricade(previous,r);if(u.team==='enemy'&&door)seconds+=door.hp/Math.max(1,u.power*1.8);previous=r;let speed=data.speed;if(u.team==='ally'&&(['elevator','rails','shaft'].includes(r.type)||r.transport==='rails'))speed*=2;if(r.type==='mud')speed*=.5;if(u.team==='enemy'&&r.type==='puzzle')speed*=.35;if(u.team==='ally'&&game.s.artifacts.includes('speed'))speed*=1.15;seconds+=1/speed}
  return seconds;
 }
 export function enemyClusters(game){

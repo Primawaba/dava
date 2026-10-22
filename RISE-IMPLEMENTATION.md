@@ -1,5 +1,7 @@
 # Correções baseadas em RISE — versão 1.12.0
 
+> Atualização 1.13.0: [cobertura atual, implementação das propostas e limites](ATUALIZACAO-1.13.md). Os diagnósticos e restrições de versões anteriores abaixo são históricos.
+
 Implementação das regras de CONQUER esclarecidas por RISE. O texto CONQUER define valores e diferenças próprias; as decisões do usuário continuam prevalecendo. Fontes e páginas estão em [RISE-RULES.md](RISE-RULES.md).
 
 ## Implementado

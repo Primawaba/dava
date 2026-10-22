@@ -1,5 +1,7 @@
 # Revisão de regras — PDF e CONQUER
 
+> Atualização 1.13.0: [cobertura atual, implementação das propostas e limites](ATUALIZACAO-1.13.md). Os diagnósticos e restrições de versões anteriores abaixo são históricos.
+
 > Referência adicional: [RISE — índice de regras e conflitos](RISE-RULES.md). Este arquivo continua documentando DELVE; não representa sozinho todas as fontes do CONQUER.
 
 A tabela da revisão 1.1 abaixo é histórica; as decisões atuais de conexões, IA e barricadas estão em ADAPTATION.md e na atualização 1.11.0 ao final deste documento.

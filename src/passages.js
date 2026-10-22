@@ -5,7 +5,7 @@ const PASSAGE_MATERIALS={
  rock:{wall:[89,84,66],light:[163,153,119],floor:[27,29,24]},
  masonry:{wall:[99,95,78],light:[176,166,134],floor:[30,31,27]},
  mine:{wall:[103,82,55],light:[173,146,99],floor:[33,29,22]},
- water:{wall:[66,91,80],light:[125,164,145],floor:[24,47,43]},
+ water:{wall:[39,95,117],light:[118,183,197],floor:[15,39,49]},
  fire:{wall:[109,71,47],light:[191,135,75],floor:[47,28,22]},
  organic:{wall:[105,97,51],light:[177,159,90],floor:[38,35,21]},
  forest:{wall:[69,86,53],light:[138,157,98],floor:[25,35,23]},
@@ -14,18 +14,18 @@ const PASSAGE_MATERIALS={
  miasma:{wall:[99,71,114],light:[171,141,184],floor:[33,24,39]},
  gas:{wall:[82,96,61],light:[147,165,104],floor:[29,40,25]}
 };
-export function passageArchitecture(room){return ROOMS[room.type]?.r!==undefined||['dragon','golemforge','challenge','desolate','gate','crypt','ancienttemple','ancientlibrary','ancientprison','rivalhold','city','tomb','sealed','vault'].includes(room.type)?'built':'cavern'}
+export function passageArchitecture(room){return room.planarConstruction||ROOMS[room.type]?.r!==undefined||['dragon','golemforge','challenge','desolate','gate','crypt','ancienttemple','ancientlibrary','ancientprison','rivalhold','city','tomb','sealed','vault'].includes(room.type)?'built':'cavern'}
 export function passageMaterial(room){
- const type=room.contaminant||room.type;
+ const type=room.hazards?.[0]||room.contaminant||room.type;
  if(type==='miasma')return 'miasma';
  if(['water','sewer','well','laundry','pump','springs','mud'].includes(type))return 'water';
- if(['lava','crater','forge','golemforge','kitchen','dragon'].includes(type))return 'fire';
+ if(['lava','crater','forge','golemforge','kitchen','dragon','dragonforge'].includes(type))return 'fire';
  if(['gas','flammable','miasma','blindgas'].includes(type))return 'gas';
- if(['hive','nest','breeder'].includes(type))return 'organic';
+ if(['hive','nest','breeder','slime'].includes(type))return 'organic';
  if(['forest','fungus','fungi','mushrooms'].includes(type))return 'forest';
  if(['mine','rivalmine','rails','shaft','elevator','workshop'].includes(type))return 'mine';
  if(['crypt','tomb','ancientprison','desolate'].includes(type))return 'crypt';
- if(['crystal','portal','stabilizer','artifact','ritual','chaos'].includes(type))return 'crystal';
+ if(['crystal','portal','stabilizer','artifact','ritual','chaos','endersgate','orefinder'].includes(type))return 'crystal';
  if(['cave','surface','ruins','chasm'].includes(type))return 'rock';
  return 'masonry';
 }
@@ -43,7 +43,7 @@ export class ProceduralPassages{
   const data=ctx.getImageData(0,0,32,24).data;this.textures.set(image,data);return data;
  }
  get(a,b,vertical,images){
-  const signature=r=>`${r.x},${r.y}:${r.type}:${r.variant}:${r.contaminant||''}:${!!r.damaged}`;
+  const signature=r=>`${r.x},${r.y}:${r.type}:${r.variant}:${r.hazards?.join(',')||r.contaminant||''}:${!!r.damaged}`;
   const id=`${vertical?'v':'h'}|${signature(a)}|${signature(b)}`;
   if(this.cache.has(id)){const entry=this.cache.get(id);this.cache.delete(id);this.cache.set(id,entry);return entry}
   const ma=passageMaterial(a),mb=passageMaterial(b),aa=passageArchitecture(a),ab=passageArchitecture(b),pa=PASSAGE_MATERIALS[ma],pb=PASSAGE_MATERIALS[mb];
@@ -67,7 +67,7 @@ export class ProceduralPassages{
      else if(noise>.8)color=passageMix(color,passageMix(pa.light,pb.light,blend),.45);
      // Grain from the actual room illustrations, dithered across the transition.
      const source=textures[noise<blend?1:0];
-     if(source){const i=((y%24)*32+(x%32))*4,lum=(source[i]+source[i+1]+source[i+2])/3;if(source[i+3]>128&&lum<190&&lum>25)color=passageMix(color,[source[i],source[i+1],source[i+2]],.3)}
+     if(source){const i=((y%24)*32+(x%32))*4,lum=(source[i]+source[i+1]+source[i+2])/3;if(source[i+3]>128&&lum<190&&lum>25)color=passageMix(color,passageMix(pa.wall,pb.wall,blend),lum/255*.3)}
     }
     if((a.damaged&&t<.5||b.damaged&&t>.5)&&((x+y*2)%13===0))color=[39,32,27];
     const index=(y*length+x)*4;pixels.data.set([...color,255],index);
@@ -87,15 +87,15 @@ export class ProceduralPassages{
    }else if(material==='forest'||material==='organic'){
     if(x%3===0){ctx.fillRect(x,5,2,1);ctx.fillRect(x+1,6,1,1)}
     if(material==='organic'&&x%5===0){ctx.fillStyle='#494325';ctx.fillRect(x,14,3,2);ctx.fillStyle='#9c8a4f';ctx.fillRect(x+1,14,1,1)}
-   }else if(material==='fire'&&x%4===0){ctx.fillStyle='#b67d44';ctx.fillRect(x,14,2,1)}
-   else if(material==='water'&&x%5===0){ctx.fillStyle='#709789';ctx.fillRect(x,12,3,1)}
+   }else if(material==='fire'&&x%4===0){ctx.fillStyle=passageRGB(palette.light);ctx.fillRect(x,14,2,1)}
+   else if(material==='water'&&x%5===0){ctx.fillStyle=passageRGB(palette.light);ctx.fillRect(x,12,3,1)}
    else if(material==='crystal'&&x%8===0){ctx.fillRect(x,3,1,3);ctx.fillRect(x-1,4,3,1)}
   }
   // Door jambs belong only to the built endpoint. Cavern mouths retain rough rock.
-  for(const [architecture,x]of [[aa,0],[ab,length-3]])if(architecture==='built'){
-   ctx.fillStyle='#302e25';ctx.fillRect(x,2,3,5);ctx.fillRect(x,13,3,5);
-   ctx.fillStyle='#b3a783';ctx.fillRect(x,2,2,1);ctx.fillRect(x,13,2,1);
-   ctx.fillStyle='#777057';ctx.fillRect(x,3,2,3);ctx.fillRect(x,14,2,3);
+  for(const [architecture,x,palette]of [[aa,0,pa],[ab,length-3,pb]])if(architecture==='built'){
+   ctx.fillStyle=passageRGB(palette.floor);ctx.fillRect(x,2,3,5);ctx.fillRect(x,13,3,5);
+   ctx.fillStyle=passageRGB(palette.light);ctx.fillRect(x,2,2,1);ctx.fillRect(x,13,2,1);
+   ctx.fillStyle=passageRGB(palette.wall);ctx.fillRect(x,3,2,3);ctx.fillRect(x,14,2,3);
   }
   const entry={canvas,ma,mb,aa,ab,seed,length,vertical};this.cache.set(id,entry);this.generated++;
   if(this.cache.size>this.limit)this.cache.delete(this.cache.keys().next().value);
@@ -113,7 +113,7 @@ export class ProceduralPassages{
   for(let x=2;x<length-2;x+=4){
    const t=x/(length-1),material=t<.5?ma:mb;
    if(material==='water'||material==='fire'){
-    ctx.fillStyle=material==='water'?'#80a899':'#c38c50';const y=material==='water'?10:14;
+    ctx.fillStyle=passageRGB(PASSAGE_MATERIALS[material].light);const y=material==='water'?10:14;
     ctx.fillRect((x+(phase+Math.floor(seed%3))%3)*2,(y-10)*2,4,2);
    }else if(material==='gas'){
     ctx.fillStyle='#8c9c6077';const y=6+(x+phase)%7;ctx.fillRect(x*2,(y-10)*2,6,2);

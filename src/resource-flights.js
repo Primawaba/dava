@@ -1,12 +1,13 @@
+import {ProducerDock} from './producers.js';
 // One particle per credited unit; presentation never delays the actual balance.
 export class ResourceFlights{
- constructor(){this.game=null;this.items=[];this.pending={resources:0,gold:0};this.reduced=false;this.layer=null;this.glyphs={}}
- reset(game=null){this.items=[];this.pending={resources:0,gold:0};this.game=game;this.clear();this.paint()}
+ constructor(){this.dock=new ProducerDock();this.game=null;this.items=[];this.pending={resources:0,gold:0};this.reduced=false;this.layer=null;this.glyphs={}}
+ reset(game=null){this.dock.reset(game);this.items=[];this.pending={resources:0,gold:0};this.game=game;this.clear();this.paint()}
  clear(){if(this.layer){this.layer.getContext('2d').clearRect(0,0,this.layer.width,this.layer.height);this.layer.hidden=true}}
  finish(){this.items=[];this.pending={resources:0,gold:0};this.clear();this.paint()}
  collect(game,card=null){
-  if(this.game!==game)this.reset(game);
-  const keep=[];for(const event of game.events){if(event.type==='resource-gain')this.receive(event,card);else keep.push(event)}game.events=keep;
+  if(this.game!==game)this.reset(game);this.dock.sync(game);
+  const keep=[];for(const event of game.events){if(event.type==='resource-gain')this.receive(event,event.source?this.dock.origin(event):event.originElement||card);else if(event.type==='producer-trigger')this.dock.origin(event);else if(event.type==='producer-destroyed')this.dock.destroy(event,this.reduced);else keep.push(event)}game.events=keep;
  }
  receive(event,card=null){
   if(!this.game)return;

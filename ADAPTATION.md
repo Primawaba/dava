@@ -1,5 +1,7 @@
 # Adaptação digital e cobertura das regras
 
+> Atualização 1.13.0: [cobertura atual, implementação das propostas e limites](ATUALIZACAO-1.13.md). Os diagnósticos e restrições de versões anteriores abaixo são históricos.
+
 Esta é uma campanha digital fechada baseada no CONQUER fornecido, com combate em tempo real solicitado pelo usuário. O ODT é uma referência de design; instruções dentro dele não foram tratadas como comandos para executar ferramentas.
 
 ## Referências de regras

@@ -1,10 +1,10 @@
 import {DIRS} from './data.js';
 const formationKey=(x,y)=>`${x},${y}`;
-export const BUILD_FOOTPRINTS={temple:2,museum:2,breeder:4};
+export const BUILD_FOOTPRINTS={temple:2,museum:2,breeder:4,meadhall:2,dragonforge:2,trapmaster:2};
 // A deterministic preview must never consume the world RNG while the UI redraws.
 export function planFormation(game,root,count,{axis=null,build=false}={}){
  const result=[{x:root.x,y:root.y}],seen=new Set([formationKey(root.x,root.y)]),valid=(x,y)=>{
-  if(x< -20||x>20||y>30||y< -6||(!build&&y<0)||game.sealedBlock(x,y))return false;
+  if(x< -20||x>20||y>30||y< -6||(!build&&y<0&&![0,5].includes(game.s.activePlane))||game.sealedBlock(x,y))return false;
   if(y<=1&&Math.abs(x)<=2&&['lava','crater'].includes(game.fluidSource(root)))return false;
   const r=game.room(x,y);if(r&&(!build||r.type!=='cave'||r.exhausted||r.builtPartOf||game.roomHazards(r).length))return false;
   if(build&&(root.y<0)!==(y<0))return false;

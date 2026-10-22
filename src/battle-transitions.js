@@ -3,7 +3,7 @@
 export class BattleTransitions{
  constructor(renderer){this.renderer=renderer;this.white=new WeakMap();this.returns=new Map();this.returnUntil=0;this.game=null;this.banished=[];this.shards=[]}
  returnHome(units,time){
-  const r=this.renderer,g=r.game;this.game=g;this.returns.clear();this.returnUntil=time;const queues=new Map();
+  const r=this.renderer,g=r.game;this.game=g;this.returns.clear();this.returnUntil=time;this.returnStart=time;const queues=new Map();
   for(const u of units){const live=g.s.units.find(v=>v.id===u.id&&v.team==='ally'&&v.hp>0),home=g.s.rooms[u.home];if(!live||!home||g.unitData(u).speed<=0)continue;
    const first=g.s.rooms[u.moveTarget]||g.room(Math.round(u.x),Math.round(u.y));if(!first)continue;const route=g.path(first,home,'ally',u);if(route===null)continue;
    const points=[{x:u.x,y:u.y},first,...route].filter((p,i,a)=>!i||Math.hypot(p.x-a[i-1].x,p.y-a[i-1].y)>.00001);if(points.length<2)continue;

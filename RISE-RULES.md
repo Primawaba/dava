@@ -1,5 +1,7 @@
 # RISE — referência complementar de CONQUER
 
+> Atualização 1.13.0: [cobertura atual, implementação das propostas e limites](ATUALIZACAO-1.13.md). Os diagnósticos e restrições de versões anteriores abaixo são históricos.
+
 O PDF **RISE: A Game of Spreading Evil**, enviado pelo usuário, integra as referências de regras do **CONQUER.odt**. Consulte o [PDF original](references/RISE.pdf). Esta inclusão documenta regras; não altera o motor nem significa que elas já estejam implementadas.
 
 ## Implementação posterior

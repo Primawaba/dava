@@ -1,5 +1,5 @@
 import {passagePalette} from './passages.js';
-const ROOM_HAZARD_COLORS={water:[[15,39,49],[39,95,117],[118,183,197]],lava:[[45,23,17],[143,65,28],[229,143,60]],crater:[[45,23,17],[143,65,28],[229,143,60]],gas:[[24,36,18],[72,106,39],[161,190,92]],miasma:[[33,24,39],[99,71,114],[171,141,184]],blindgas:[[31,34,34],[89,100,103],[168,186,186]],flammable:[[39,34,20],[116,105,49],[195,184,105]]};
+const ROOM_HAZARD_COLORS={slime:[[22,37,15],[74,108,38],[151,180,84]],water:[[15,39,49],[39,95,117],[118,183,197]],lava:[[45,23,17],[143,65,28],[229,143,60]],crater:[[45,23,17],[143,65,28],[229,143,60]],gas:[[24,36,18],[72,106,39],[161,190,92]],miasma:[[33,24,39],[99,71,114],[171,141,184]],blindgas:[[31,34,34],[89,100,103],[168,186,186]],flammable:[[39,34,20],[116,105,49],[195,184,105]]};
 const roomMix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));
 function roomTone(lum,palette){return lum<95?roomMix(palette[0],palette[1],Math.max(0,(lum-20)/75)):roomMix(palette[1],palette[2],Math.min(1,(lum-95)/100))}
 export class RoomAppearance{
@@ -11,7 +11,7 @@ export class RoomAppearance{
   if(this.cache.has(key)){const value=this.cache.get(key);this.cache.delete(key);this.cache.set(key,value);return value}
   const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const c=canvas.getContext('2d');c.drawImage(image,0,0);
   const frame=c.getImageData(0,0,canvas.width,canvas.height),p=frame.data,w=canvas.width,pulse=(1-Math.cos(phase/16*Math.PI*2))*.5;
-  const material=passagePalette({type}),palette=[material.floor,material.wall,material.light];
+  const material=passagePalette({type,hazards:layers}),palette=[material.floor,material.wall,material.light];
   for(let i=0;i<p.length;i+=4){
    const original=[p[i],p[i+1],p[i+2]],paperDistance=Math.abs(p[i]-229)+Math.abs(p[i+1]-221)+Math.abs(p[i+2]-198);
    if(p[i+3]<32||paperDistance<36)continue;const lum=original[0]*.299+original[1]*.587+original[2]*.114,x=i/4%w,y=Math.floor(i/4/w);

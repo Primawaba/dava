@@ -1,3 +1,4 @@
+import {installColonyView} from './colony-view.js';
 import {visualRoom,sharedBossRoom,masonryRoom,sharedFormation,EXTENSION_FAMILIES} from './room-modules.js';
 import {passageArchitecture,passagePalette} from './passages.js';
 import {BattleTransitions} from './battle-transitions.js';
@@ -19,6 +20,7 @@ export class Renderer{
   assets.push(...['horizontal-0','horizontal-1','vertical-0','vertical-1'].map(name=>({id:'built-'+name,src:`./assets/modules/built-${name}.png`})));
   assets.push({id:'extension-liquid-bridge',src:'./assets/modules/liquid-bridge.png'});
   assets.push(...EXTENSION_FAMILIES.flatMap(family=>[0,1,2].map(v=>({id:`extension-${family}-${v}`,src:`./assets/modules/${family}-${v}.png`}))));
+  assets.push(...['mystic-0','mystic-1','mystic-2','mystic-3','mystic-4','mystic-5','long-0','long-1','long-2','long-3','chasm-0','chasm-1',...['smith','mason','scholar','cook','engineer','attendant'].flatMap(job=>[0,1,2].map(v=>`${job}-${v}`)),...['damage','delay'].flatMap(kind=>[1,2,3].map(v=>`trap-${kind}-${v}`))].map(name=>({id:'colony-'+name,src:`./assets/colony/${name}.png`})) );
   assets.push(...PASSAGES.map(name=>({id:`passage-${name}`,src:`./assets/passages/${name}.png`})));
   await Promise.all(assets.map(({id,src})=>new Promise(resolve=>{const i=new Image();i.onload=()=>{(id.startsWith('extension-')?this.extensionImages:id.startsWith('cavern-')||id.startsWith('built-')?this.cavernImages:this.images)[id]=i;resolve()};i.onerror=()=>resolve();i.src=src})));
   this.passages.cache.clear();this.appearance.cache.clear();
@@ -53,19 +55,19 @@ export class Renderer{
  focus(tile){const x=tile.x*CW,y=tile.y*CH;const sx=(x-this.camera.x)*this.zoom+this.width/2,sy=(y-this.camera.y)*this.zoom+this.height/2;if(sx<100||sx>this.width-100)this.camera.x=x;if(sy<90||sy>this.height-90)this.camera.y=y}
  setZoom(factor){this.zoom=Math.max(.35,Math.min(2.2,this.zoom*factor))}
  corridor(r,n){
-  const c=this.ctx,vertical=r.x===n.x;
+  const c=this.ctx,vertical=r.x===n.x;if(vertical&&r.type==='crater'&&n.type==='crater')return;
   if(!vertical&&r.y!==n.y)return;
   if((vertical&&r.y>n.y)||(!vertical&&r.x>n.x))[r,n]=[n,r];
   const x=r.x*CW,y=r.y*CH,nx=n.x*CW,ny=n.y*CH;
-  const door=this.game.s.barricades[this.game.passageKey(r,n)];
-  const boss=sharedBossRoom(this.game,r,n),a=visualRoom(this.game,r),b=visualRoom(this.game,n),built=masonryRoom(a)&&masonryRoom(b),chamber=boss||sharedFormation(r,n)||r.type==='cave'&&n.type==='cave'&&!r.playerBuilt&&!n.playerBuilt&&r.cavernGroup&&r.cavernGroup===n.cavernGroup,wide=(built||chamber)&&!(vertical&&this.shaftLinked(r,n));
-  if(wide){const architecture=built||chamber&&passageArchitecture(a)==='built'&&passageArchitecture(b)==='built'?'built':'cavern';this.caverns.draw(c,{...a,joinArchitecture:architecture},{...b,joinArchitecture:architecture},this.roomImage(r,this.passageTime||0),this.roomImage(n,this.passageTime||0),this.cavernImages);if(!door&&architecture==='built')this.joinTorch((x+nx)/2,(y+ny)/2,vertical)}
+  const door=this.game.barricade(r,n);
+  const boss=sharedBossRoom(this.game,r,n),a={...visualRoom(this.game,r),hazards:this.game.roomHazards(r)},b={...visualRoom(this.game,n),hazards:this.game.roomHazards(n)},built=masonryRoom(a)&&masonryRoom(b),chamber=boss||sharedFormation(r,n)||r.type==='cave'&&n.type==='cave'&&!r.playerBuilt&&!n.playerBuilt&&r.cavernGroup&&r.cavernGroup===n.cavernGroup,wide=(built||chamber)&&!(vertical&&this.shaftLinked(r,n));
+  if(wide){const architecture=built||chamber&&passageArchitecture(a)==='built'&&passageArchitecture(b)==='built'?'built':'cavern';c.save();c.beginPath();if(vertical)c.rect(x-38,y+35,76,CH-75);else c.rect(x+55,y-44,CW-110,78);c.clip();this.caverns.draw(c,{...a,joinArchitecture:architecture},{...b,joinArchitecture:architecture},this.roomImage(r,this.passageTime||0),this.roomImage(n,this.passageTime||0),this.cavernImages);c.restore();if(!door&&architecture==='built')this.joinTorch((x+nx)/2,(y+ny)/2,vertical)}
   if(!wide&&!(vertical&&this.shaftLinked(r,n)))this.passages.draw(c,a,b,vertical,this.images,this.passageTime||0,this.reduced,door,{start:this.framing.ports(this.framedRoomImage(r))[vertical?'south':'east'],end:this.framing.ports(this.framedRoomImage(n))[vertical?'north':'west']});
   if(door){if(wide)this.widePassageDoor((x+nx)/2,(y+ny)/2-5,vertical,door,vertical?75:70,passagePalette(a),passagePalette(b));else this.passageDoor((x+nx)/2,(y+ny)/2,vertical,door);}
   const image=name=>this.images['passage-'+name];
   if((r.closed||n.closed)&&image('grate'))c.drawImage(image('grate'),(x+nx)/2-16,(y+ny)/2-16,32,32);
  }
- roomLabel(r){if(visualRoom(this.game,r).bossExtension||visualRoom(this.game,r).builtExtension||r.discoveryRoot&&r.discoveryRoot!==key(r.x,r.y))return '';if(this.shaftLinked(r,this.game.room(r.x,r.y+1)))return '';return this.continuousShaft(r)?'Elevador':ROOMS[r.type].name}
+ roomLabel(r){if(r.type==='gate'&&this.game.s.activePlane!=null)return 'Portal de Retorno';if(visualRoom(this.game,r).bossExtension||visualRoom(this.game,r).builtExtension||r.discoveryRoot&&r.discoveryRoot!==key(r.x,r.y))return '';if(this.shaftLinked(r,this.game.room(r.x,r.y+1)))return '';return this.continuousShaft(r)?'Elevador':r.displayName||ROOMS[r.type].name}
  shaftLinked(a,b){return !!a&&!!b&&['shaft','elevator'].includes(a.type)&&['shaft','elevator'].includes(b.type)&&a.x===b.x&&Math.abs(a.y-b.y)===1&&this.game.linked(a,b)}
  continuousShaft(r){return ['shaft','elevator'].includes(r.type)&&(this.shaftLinked(r,this.game.room(r.x,r.y-1))||this.shaftLinked(r,this.game.room(r.x,r.y+1)))}
  shaftTile(r,image){if(image)this.ctx.drawImage(image,r.x*CW-80,r.y*CH-62,160,113.33)}
@@ -88,6 +90,7 @@ export class Renderer{
  }
  joinTorch(x,y,vertical){const c=this.ctx,phase=this.reduced?0:Math.floor((this.passageTime||0)/160)%3;c.save();c.translate(x+(vertical?18:0),y-17);c.fillStyle='#c6954528';c.fillRect(-9,-13,20,26);c.fillStyle='#302a20';c.fillRect(-2,0,6,11);c.fillStyle='#8a6238';c.fillRect(0,2,2,7);c.fillStyle='#b87936';c.fillRect(-3,-4,8,6);c.fillStyle='#d7a148';c.fillRect(-1,-8-phase*2,4,8+phase*2);c.fillStyle='#ead9a0';c.fillRect(0,-5-phase*2,2,5);c.restore()}
  widePassageDoor(x,y,vertical,door,height,first,second){
+  if(door.kind==='prison')return this.cageDoor(x,y,vertical,door,height);
   const c=this.ctx,half=height/2,rgb=a=>`rgb(${a.join(',')})`,wall=first.wall.map((v,i)=>Math.round((v+second.wall[i])*.5)),light=first.light.map((v,i)=>Math.round((v+second.light[i])*.5));c.save();c.translate(x,y);if(vertical)c.rotate(Math.PI/2);
   if(door.hp<=0){c.fillStyle=rgb(wall);for(let i=0;i<7;i++)c.fillRect(-8+i%3*4,half-9-i*3,4,3);c.restore();return}
   // Repeat native-size planks and straps to cover the wider opening, never scale a door sprite.
@@ -97,7 +100,8 @@ export class Renderer{
   for(let i=1;i<door.level;i++){c.fillStyle='#a2a490';c.fillRect(-9,-half+i*height/door.level,18,2)}
   if(this.game.s.combat&&!this.exporting){const maximum=(door.kind==='defensive'?400:160)*door.level;c.fillStyle='#252920';c.fillRect(-13,half+3,26,4);c.fillStyle='#c0a667';c.fillRect(-12,half+4,24*Math.min(1,door.hp/maximum),2)}c.restore();
  }
- passageDoor(x,y,vertical,door){
+ cageDoor(x,y,vertical,door,height=40){const c=this.ctx;c.save();c.translate(x,y);if(vertical)c.rotate(Math.PI/2);c.fillStyle='#383f3d';c.fillRect(-11,-height/2,22,height);c.fillStyle='#a0aaa0';for(let dy=-height/2+3;dy<height/2;dy+=7)c.fillRect(-10,dy,20,2);c.fillStyle='#424b48';c.fillRect(-10,-height/2,3,height);c.fillRect(7,-height/2,3,height);c.restore();}
+ passageDoor(x,y,vertical,door){if(door.kind==='prison')return this.cageDoor(x,y,vertical,door);
   const c=this.ctx;c.save();c.translate(x,y);if(vertical)c.rotate(Math.PI/2);c.imageSmoothingEnabled=false;
   if(door.hp<=0){c.fillStyle='#5b4830';for(let i=0;i<5;i++)c.fillRect(-8+i*3,8-i%2*3,4,3);c.restore();return}
   c.fillStyle='#24271f';c.fillRect(-9,-20,18,40);c.fillStyle='#c0b18c';c.fillRect(-9,-20,3,40);c.fillRect(6,-20,3,40);
@@ -117,7 +121,7 @@ export class Renderer{
   c.strokeStyle='#777b5e55';c.setLineDash([4,4]);c.beginPath();c.moveTo(bounds.left,-CH*.5);c.lineTo(bounds.right,-CH*.5);c.stroke();c.setLineDash([]);
   }
   const visible=this.game.rooms.filter(r=>r.x*CW>bounds.left&&r.x*CW<bounds.right&&r.y*CH>bounds.top&&r.y*CH<bounds.bottom);
-  for(const r of visible){const x=r.x*CW,y=r.y*CH;if(r.y<0&&(r.y===-1||this.game.room(r.x,r.y+1))){c.fillStyle='#57594a';const bottom=r.y===-1?CH*.5:CH-54;for(const ox of [-53,47])c.fillRect(x+ox,y+40,6,bottom-40);c.fillStyle='#b1a889';for(const ox of [-51,49])c.fillRect(x+ox,y+40,2,bottom-40);}const image=this.roomImage(r,time);if(this.continuousShaft(r))this.shaftTile(r,image);else if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
+  for(const r of visible){const x=r.x*CW,y=r.y*CH;const image=this.roomImage(r,time);if(this.continuousShaft(r))this.shaftTile(r,image);else if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
   }
   for(const r of visible){const below=this.game.room(r.x,r.y+1);if(this.shaftLinked(r,below))this.shaftSeam(r,below)}
   // Composite every room first, then its doorway aprons; no room PNG can cover a neighbor's connection.
@@ -199,7 +203,7 @@ export class Renderer{
   }
   for(const group of groups.values()){
    group.sort((a,b)=>a.id-b.id);
-   const size=Math.max(...group.map(u=>36*(u.size||1))),columns=Math.min(group.length,5,Math.max(1,Math.floor(140/Math.max(22,size*.65)))),rows=Math.ceil(group.length/columns),step=Math.min(Math.max(24,size*.62),112/(columns-.5)),rise=rows>1?Math.min(10,30/(rows-1)):0;
+   const size=Math.max(...group.map(u=>((u.size||1)<=1?42:36*(u.size||1)))),columns=Math.min(group.length,5,Math.max(1,Math.floor(140/Math.max(22,size*.65)))),rows=Math.ceil(group.length/columns),step=Math.min(Math.max(24,size*.62),112/(columns-.5)),rise=rows>1?Math.min(10,30/(rows-1)):0;
    group.forEach((u,index)=>{
     const row=Math.floor(index/columns),count=Math.min(columns,group.length-row*columns),column=index%columns,weight=Math.max(0,1-Math.max(Math.abs(u.x-Math.round(u.x)),Math.abs(u.y-Math.round(u.y)))/.12);
     // Keep one column grid even for incomplete ranks: alternate half a slot.
@@ -213,7 +217,7 @@ export class Renderer{
  corners(x,y,w,h){const c=this.ctx,l=12;c.beginPath();c.moveTo(x,y+l);c.lineTo(x,y);c.lineTo(x+l,y);c.moveTo(x+w-l,y);c.lineTo(x+w,y);c.lineTo(x+w,y+l);c.moveTo(x+w,y+h-l);c.lineTo(x+w,y+h);c.lineTo(x+w-l,y+h);c.moveTo(x+l,y+h);c.lineTo(x,y+h);c.lineTo(x,y+h-l);c.stroke()}
  unit(u,x,y,time){
   const c=this.ctx,ally=u.team==='ally',image=this.images[`unit-${u.type}`]||this.images['unit-goblin'];
-  const size=36*(u.size||1),bob=this.reduced?0:Math.round(Math.sin(u.walk||0)*1.5),attack=this.reduced?0:Math.round(u.attack*7);
+  const size=((u.size||1)<=1?42:36*(u.size||1)),bob=this.reduced?0:Math.round(Math.sin(u.walk||0)*1.5),attack=this.reduced?0:Math.round(u.attack*7);
   c.save();c.translate(Math.round(x),Math.round(y)+bob);c.imageSmoothingEnabled=false;
   c.fillStyle='#26302138';c.fillRect(-size*.22,13,size*.44,3);
   if(u.facing<0)c.scale(-1,1);
@@ -229,3 +233,5 @@ export class Renderer{
   }}c.restore();
  }
 }
+
+installColonyView(Renderer);

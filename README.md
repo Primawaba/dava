@@ -3,6 +3,16 @@
 Jogo single player de exploração, construção e defesa de uma fortaleza subterrânea. Interface em português, combate em tempo real com IA, partidas reproduzíveis por semente e distribuição web instalável (PWA).
 
 
+## Atualização 1.15.0 — cavernas modulares e tint procedural
+
+Novo autotiling de cavernas por conexões explícitas, máscaras de 47 configurações e peças em pixels sem deformar ilustrações. O tint usa avaliação procedural por pixel com transições de material, iluminação local e brilho pulsante; funciona em Canvas 2D no HTML offline.
+
+Mineiros e lenhadores têm sprites sépia novos, transparência corrigida e grupos de 2–3 por espaço de recurso. Guardiões bloqueiam também as extensões de suas salas. Bônus de área aumentam a tolerância individual, separados da moral global. Tavernas atraem os aventureiros específicos da tabela e oferecem um festival para repor um aventureiro perdido. Tooltips próprias substituem as do navegador.
+
+A expansão de novas crateras para antes de qualquer sala existente, sem substituí-la. Pontes e pontes levadiças também podem atravessar os trechos secos.
+
+Veja [detalhes e validação da versão 1.15](ATUALIZACAO-1.15.md).
+
 ## Atualização 1.14.0 — correções do relatório de teste
 
 NPCs circulam na própria estação e fogem/retornam pelos corredores; mineradores e lenhadores têm sprites próprios. Tropas passeiam mais devagar, priorizam o abrigo e retomam o idle após vencer. Salas grandes usam pinturas completas sem esticar, cavernas vazias voltam às chances 89%/7%/3%/1%, produtores ganham emblemas próprios dentro do mapa e salas de riqueza recebem dourado.

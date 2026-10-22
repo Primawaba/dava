@@ -13,12 +13,14 @@ const PASSAGE_MATERIALS={
  crypt:{wall:[91,89,77],light:[175,169,140],floor:[28,28,25]},
  crystal:CRYSTAL_PALETTE,
  miasma:{wall:[99,71,114],light:[171,141,184],floor:[33,24,39]},
+ blindgas:{wall:[89,100,103],light:[168,186,186],floor:[31,34,34]},
+ flammable:{wall:[116,105,49],light:[195,184,105],floor:[39,34,20]},
  gas:{wall:[82,96,61],light:[147,165,104],floor:[29,40,25]}
 };
 export function passageArchitecture(room){return room.planarConstruction||ROOMS[room.type]?.r!==undefined||['dragon','golemforge','challenge','desolate','gate','crypt','ancienttemple','ancientlibrary','ancientprison','rivalhold','city','tomb','sealed','vault'].includes(room.type)?'built':'cavern'}
 export function passageMaterial(room){
  const type=room.hazards?.[0]||room.contaminant||room.type;
- if(type==='miasma')return 'miasma';
+ if(['miasma','blindgas','flammable'].includes(type))return type;
  if(['water','sewer','well','laundry','pump','springs','mud'].includes(type))return 'water';
  if(['treasury','vault','dragon','city','rivalmine','mine','parlor','gold','games'].includes(type))return 'gold';
  if(['lava','crater','forge','golemforge','kitchen','dragonforge'].includes(type))return 'fire';
@@ -117,8 +119,8 @@ export class ProceduralPassages{
    if(material==='water'||material==='fire'){
     ctx.fillStyle=passageRGB(PASSAGE_MATERIALS[material].light);const y=material==='water'?10:14;
     ctx.fillRect((x+(phase+Math.floor(seed%3))%3)*2,(y-10)*2,4,2);
-   }else if(material==='gas'){
-    ctx.fillStyle='#8c9c6077';const y=6+(x+phase)%7;ctx.fillRect(x*2,(y-10)*2,6,2);
+   }else if(['gas','blindgas','flammable','miasma'].includes(material)){
+    ctx.fillStyle='rgba('+PASSAGE_MATERIALS[material].light.join(',')+',.3)';const y=6+(x+phase)%7;ctx.fillRect(x*2,(y-10)*2,6,2);
    }
   }
   ctx.restore();

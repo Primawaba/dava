@@ -1,3 +1,4 @@
+import {CaveAutotiler} from './terrain-autotile.js';
 import {installWholeRooms,WHOLE_ASSETS} from './whole-rooms.js';
 import {installColonyView} from './colony-view.js';
 import {visualRoom,sharedBossRoom,masonryRoom,sharedFormation,EXTENSION_FAMILIES} from './room-modules.js';
@@ -11,7 +12,7 @@ import {ROOMS,DIRS,SPRITE_FRAMES,PASSAGES,DAMAGEABLE_ROOMS} from './data.js';
 import {key} from './engine.js';
 export const CW=180,CH=144;
 export class Renderer{
- constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.wholeImages={};this.cavernImages={};this.extensionImages={};this.appearance=new RoomAppearance();this.framing=new RoomFraming();this.caverns=new CavernModules();this.transitions=new BattleTransitions(this);this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();if(typeof ResizeObserver!=='undefined'){this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas)}else window.addEventListener('resize',()=>this.resize());this.resize()}
+ constructor(canvas,onSelect,onHover){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.zoom=1;this.camera={x:0,y:80};this.images={};this.wholeImages={};this.cavernImages={};this.extensionImages={};this.appearance=new RoomAppearance();this.framing=new RoomFraming();this.caverns=new CavernModules();this.terrain=new CaveAutotiler(this);this.transitions=new BattleTransitions(this);this.passages=new ProceduralPassages();this.selected={x:0,y:0};this.hover=null;this.game=null;this.reduced=false;this.pointers=new Map();this.directionMarkers=[];this.drag=null;this.pinch=null;this.onSelect=onSelect;this.onHover=onHover;this.setupInput();if(typeof ResizeObserver!=='undefined'){this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(canvas)}else window.addEventListener('resize',()=>this.resize());this.resize()}
  async load(){
   const assets=Object.keys(ROOMS).flatMap(type=>[0,1,2].map(v=>({id:`${type}-${v}`,src:`./assets/rooms/${type}-${v}.png`})));
   assets.push(...[0,1,2].map(v=>({id:`awake-dragon-${v}`,src:`./assets/rooms/awake-dragon-${v}.png`})));
@@ -25,13 +26,13 @@ export class Renderer{
   assets.push(...WHOLE_ASSETS.map(name=>({id:'whole-'+name,src:`./assets/whole/${name}.png`})));
   assets.push(...PASSAGES.map(name=>({id:`passage-${name}`,src:`./assets/passages/${name}.png`})));
   await Promise.all(assets.map(({id,src})=>new Promise(resolve=>{const i=new Image();i.onload=()=>{(id.startsWith('whole-')?this.wholeImages:id.startsWith('extension-')?this.extensionImages:id.startsWith('cavern-')||id.startsWith('built-')?this.cavernImages:this.images)[id.startsWith('whole-')?id.slice(6):id]=i;resolve()};i.onerror=()=>resolve();i.src=src})));
-  this.passages.cache.clear();this.appearance.cache.clear();
+  this.passages.cache.clear();this.appearance.cache.clear();this.terrain.geometry.clear();
   if(this.images['unit-immortal']){const outline=document.createElement('canvas');outline.width=outline.height=64;const c=outline.getContext('2d');c.drawImage(this.images['unit-immortal'],0,0,64,64);c.globalCompositeOperation='source-in';c.fillStyle='#b5a56f';c.fillRect(0,0,64,64);this.immortalOutline=outline}
  }
  bridgeRoomImage(r){const source=this.images[`${r.sourceType}-${r.variant}`],overlay=this.extensionImages['extension-liquid-bridge'];if(!source||!overlay)return source;this.bridgeSprites??=new Map();const id=`${r.sourceType}:${r.variant}:${r.damaged}`;if(this.bridgeSprites.has(id))return this.bridgeSprites.get(id);const tile=document.createElement('canvas');tile.width=128;tile.height=86;const c=tile.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(source,0,0,128,86);c.drawImage(overlay,0,0);if(r.damaged){c.fillStyle='#201f1b';c.fillRect(46,62,2,9);c.fillRect(82,65,2,8)}this.bridgeSprites.set(id,tile);return tile}
  rawRoomImage(r){if(r.sourceType&&['bridge','drawbridge'].includes(r.type))return this.bridgeRoomImage(r);const view=visualRoom(this.game,r);if(view.builtExtension)return this.images[`${view.damaged&&DAMAGEABLE_ROOMS.includes(view.type)?'damaged-':''}${view.type}-${view.variant}`]||this.images[`${view.type}-${view.variant}`];if(view.bossExtension)return this.extensionImages[`extension-${view.bossFamily}-${view.variant}`]||this.images[`${view.type}-${view.variant}`];if(r.type==='dragon'&&r.dragonAwake)return this.images[`awake-dragon-${r.variant}`]||this.images[`dragon-${r.variant}`];return this.images[`${r.damaged&&DAMAGEABLE_ROOMS.includes(r.type)?'damaged-':''}${r.type}-${r.variant}`]||this.images[`${r.type}-${r.variant}`]}
  framedRoomImage(r){const raw=this.rawRoomImage(r);return ROOMS[r.type]?.r===undefined&&!['gate','surface','shaft'].includes(r.type)?this.framing.frame(raw):raw}
- roomImage(r,time=0){return this.appearance.get(this.framedRoomImage(r),visualRoom(this.game,r).type,this.game?.roomHazards(r)||[],time,this.reduced)}
+ roomImage(r,time=0){if(this.game&&this.terrain.eligible(r))return this.terrain.tile(r,time);return this.appearance.get(this.framedRoomImage(r),visualRoom(this.game,r).type,this.game?.roomHazards(r)||[],time,this.reduced,this.game?this.terrain.shaderOptions(r,128,86):{})}
  roomURL(r,time=0){const spec=this.wholeRoom(r);return this.appearance.url(spec?this.wholeImage(spec):this.framedRoomImage(r),spec?(spec.type==='lost'?'artifact':spec.type.startsWith('desolate-')?'desolate':spec.type):visualRoom(this.game,r).type,this.game?.roomHazards(r)||[],time,this.reduced)}
  resize(){const r=this.canvas.getBoundingClientRect();this.width=r.width;this.height=r.height;const dpr=Math.min(devicePixelRatio||1,2);this.canvas.width=Math.round(r.width*dpr);this.canvas.height=Math.round(r.height*dpr);this.dpr=dpr}
  screenToWorld(x,y){return{x:(x-this.width/2)/this.zoom+this.camera.x,y:(y-this.height/2)/this.zoom+this.camera.y}}
@@ -57,12 +58,13 @@ export class Renderer{
  focus(tile){const x=tile.x*CW,y=tile.y*CH;const sx=(x-this.camera.x)*this.zoom+this.width/2,sy=(y-this.camera.y)*this.zoom+this.height/2;if(sx<100||sx>this.width-100)this.camera.x=x;if(sy<90||sy>this.height-90)this.camera.y=y}
  setZoom(factor){this.zoom=Math.max(.35,Math.min(2.2,this.zoom*factor))}
  corridor(r,n){
-  const c=this.ctx,vertical=r.x===n.x;if(vertical&&r.type==='crater'&&n.type==='crater')return;
+  const c=this.ctx,vertical=r.x===n.x;if(vertical&&r.craterRoot&&r.craterRoot===n.craterRoot)return;
   if(!vertical&&r.y!==n.y)return;
   if((vertical&&r.y>n.y)||(!vertical&&r.x>n.x))[r,n]=[n,r];
   const x=r.x*CW,y=r.y*CH,nx=n.x*CW,ny=n.y*CH;
   const door=this.game.barricade(r,n);
   const wa=this.wholeRoom(r),wb=this.wholeRoom(n);if(wa&&wb&&wa.key===wb.key){if(door)this.widePassageDoor((x+nx)/2,(y+ny)/2-5,vertical,door,vertical?75:70,passagePalette(visualRoom(this.game,r)),passagePalette(visualRoom(this.game,n)));return;}
+  if(this.terrain.eligible(r)||this.terrain.eligible(n)){this.terrain.drawConnection(r,n,this.passageTime||0);if(door){const wide=sharedBossRoom(this.game,r,n)||sharedFormation(r,n);if(wide)this.widePassageDoor((x+nx)/2,(y+ny)/2-5,vertical,door,vertical?75:70,passagePalette(visualRoom(this.game,r)),passagePalette(visualRoom(this.game,n)));else this.passageDoor((x+nx)/2,(y+ny)/2,vertical,door);}if(r.closed||n.closed){const grate=this.images['passage-grate'];if(grate)c.drawImage(grate,(x+nx)/2-16,(y+ny)/2-16,32,32);}return;}
   const boss=sharedBossRoom(this.game,r,n),a={...visualRoom(this.game,r),hazards:this.game.roomHazards(r)},b={...visualRoom(this.game,n),hazards:this.game.roomHazards(n)},built=masonryRoom(a)&&masonryRoom(b),chamber=boss||sharedFormation(r,n)||r.type==='cave'&&n.type==='cave'&&!r.playerBuilt&&!n.playerBuilt&&r.cavernGroup&&r.cavernGroup===n.cavernGroup,wide=(built||chamber)&&!(vertical&&this.shaftLinked(r,n));
   if(wide){const architecture=built||chamber&&passageArchitecture(a)==='built'&&passageArchitecture(b)==='built'?'built':'cavern';c.save();c.beginPath();if(vertical)c.rect(x-38,y+35,76,CH-75);else c.rect(x+55,y-44,CW-110,78);c.clip();this.caverns.draw(c,{...a,joinArchitecture:architecture},{...b,joinArchitecture:architecture},this.roomImage(r,this.passageTime||0),this.roomImage(n,this.passageTime||0),this.cavernImages);c.restore();if(!door&&architecture==='built')this.joinTorch((x+nx)/2,(y+ny)/2,vertical)}
   if(!wide&&!(vertical&&this.shaftLinked(r,n)))this.passages.draw(c,a,b,vertical,this.images,this.passageTime||0,this.reduced,door,{start:this.framing.ports(this.framedRoomImage(r))[vertical?'south':'east'],end:this.framing.ports(this.framedRoomImage(n))[vertical?'north':'west']});
@@ -124,7 +126,7 @@ export class Renderer{
   c.strokeStyle='#777b5e55';c.setLineDash([4,4]);c.beginPath();c.moveTo(bounds.left,-CH*.5);c.lineTo(bounds.right,-CH*.5);c.stroke();c.setLineDash([]);
   }
   const visible=this.game.rooms.filter(r=>r.x*CW>bounds.left&&r.x*CW<bounds.right&&r.y*CH>bounds.top&&r.y*CH<bounds.bottom);
-  for(const r of visible){if(this.wholeRoom(r)||r.craterRoot)continue;const x=r.x*CW,y=r.y*CH;const image=this.roomImage(r,time);if(this.continuousShaft(r))this.shaftTile(r,image);else if(image)c.drawImage(image,x-80,y-62,160,113.33);else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
+  for(const r of visible){if(this.wholeRoom(r)||r.craterRoot)continue;const x=r.x*CW,y=r.y*CH;const image=this.roomImage(r,time);if(this.continuousShaft(r))this.shaftTile(r,image);else if(image){if(this.terrain.eligible(r))c.drawImage(image,x-90,y-72,180,144);else c.drawImage(image,x-80,y-62,160,113.33);}else{c.fillStyle='#d9cfb1';c.fillRect(x-72,y-45,144,90)}
   }
   this.drawWholeRooms(visible,time);
   for(const r of visible){const below=this.game.room(r.x,r.y+1);if(this.shaftLinked(r,below))this.shaftSeam(r,below)}

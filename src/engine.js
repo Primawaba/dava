@@ -86,7 +86,7 @@ export class Game {
  damageRoom(r){if(!r)return;if(r.type==='sealed'){this.openSealedRoom(r,true);return}if(this.damageable(r))r.damaged=true}
  directions(origin=null){
   const out=[];if(this.s.status!=='playing'||this.s.combat)return out;
-  for(const r of origin?[origin]:this.rooms){if(!this.active(r))continue;
+  for(const r of origin?[origin]:this.rooms){if(!this.active(r)||this.guardedGolem(r)||this.territorialGuard(r)||this.blockedByImmortal(r))continue;
    for(const [dx,dy]of DIRS){const x=r.x+dx,y=r.y+dy,n=this.room(x,y);
     if(x< -20||x>20||y< -6||y>30||this.linked(r,n))continue;
     // Empty surface cells are built directly; they are never explored.
@@ -130,7 +130,7 @@ export class Game {
  }
  immune(u,h){return u.type==='golem'||u.type==='automaton'||(u.team==='ally'&&h==='water'&&this.s.artifacts.includes('water'))||(u.team==='ally'&&['lava','crater'].includes(h)&&this.s.artifacts.includes('lava'))}
  lethalHazard(r,u){return this.roomHazards(r).some(h=>['water','lava','crater','gas'].includes(h)&&!this.immune(u,h))}
- blockedByImmortal(r){return !!r?.immortalId&&this.s.units.some(u=>u.id===r.immortalId&&u.type==='immortal'&&u.hp>0)}
+ blockedByImmortal(r){r=this.encounterRoot(r);return !!r?.immortalId&&this.s.units.some(u=>u.id===r.immortalId&&u.type==='immortal'&&u.hp>0)}
  placeImmortal(r){
   const existing=this.s.units.find(u=>u.type==='immortal'&&u.home===key(r.x,r.y)&&u.hp>0);if(existing){r.immortalId=existing.id;return existing}
   const u=this.addUnit('immortal',r.x,r.y,true,'neutral',1);r.immortalId=u.id;r.closed=false;return u;
@@ -140,7 +140,7 @@ export class Game {
   const existing=this.s.units.find(u=>u.type==='golem'&&u.home===key(r.x,r.y)&&u.hp>0&&u.team!=='ally');if(existing){r.golemId=existing.id;return existing}
   const power=Math.max(1,Math.round((40+Math.max(0,r.y)*5)*DIFFICULTIES[this.s.difficulty].enemy)),u=this.addUnit('golem',r.x,r.y,true,'neutral',power);u.enemyName=ENEMIES.golem.name;r.golemId=u.id;return u;
  }
- guardedGolem(r){return r?.type==='golemforge'&&this.s.units.some(u=>u.id===r.golemId&&u.hp>0&&u.team!=='ally')}
+ guardedGolem(r){r=this.encounterRoot(r);return r?.type==='golemforge'&&this.s.units.some(u=>u.id===r.golemId&&u.hp>0&&u.team!=='ally')}
  passable(r,team='ally',unit=null){return !!r&&!r.closed&&!this.blockedByImmortal(r)&&!(team==='enemy'&&r.secret)&&!(team==='ally'&&r.trap?.level>=3&&!r.trap?.passable&&!unit?.traits?.includes(7))&&!(unit&&this.lethalHazard(r,unit))}
  neighbors(r,team='ally',unit=null){return DIRS.map(([dx,dy])=>this.room(r.x+dx,r.y+dy)).filter(n=>this.linked(r,n)&&this.passable(n,team,unit))}
  anchor(u){return this.s.rooms[u.moveTarget]||this.room(Math.round(u.x),Math.round(u.y))}
@@ -374,6 +374,7 @@ export class Game {
  buildReason(type,r){
   if(!r)return'Selecione uma sala explorada.';if(r.builtPartOf)return'Este espaço faz parte de uma sala construída.';const d=ROOMS[type];if(!d||d.r===undefined)return'Construção inválida.';
   if(this.s.status!=='playing')return'A campanha terminou.';if(this.s.combat)return'Construção indisponível em combate.';if(this.s.built)return'Uma sala por turno. Explore para iniciar outro turno.';
+  if(r.craterRoot&&!['bridge','drawbridge'].includes(type))return'A cratera só pode receber pontes.';
   if(r.exhausted)return'A caverna esgotada não pode receber construções.';
   if(r.y<0){const reason=this.surfaceReason(r);if(reason)return reason;}
   else if(['bridge','drawbridge'].includes(type)&&this.roomHazards(r).length){if(r.damaged)return'Drene e repare a sala danificada antes de construir.';if(this.path(r,this.target)===null)return'A ponte precisa estar conectada.';}
@@ -497,7 +498,7 @@ export class Game {
   u.moveTarget=key(next.x,next.y);
   if(len<=step+.00001){u.x=next.x;u.y=next.y;u.moveTarget=null;u.cooldown=Math.max(u.cooldown,d.range>.5?.18:0)}
  }
- damage(u,amount,{instant=false}={}){if(u.hp<=0||u.type==='immortal'&&!instant)return;if(instant)amount=u.hp+u.shield;const absorb=Math.min(u.shield,amount);u.shield-=absorb;u.hp-=amount-absorb;this.effects.push({x:u.x,y:u.y,kind:'hit',life:0.35});if(u.hp<=0){this._tacticsDirty=true;u.hp=0;if(u.type==='golem'&&u.team!=='ally'){const forge=this.s.rooms[u.home];if(forge?.type==='golemforge'&&forge.golemId===u.id){forge.golemDefeated=true;forge.golemId=null;}}this.effects.push({x:u.x,y:u.y,kind:'death',life:0.8});if(u.team==='enemy'){this.s.kills++;if(u.type==='guardian'&&this.s.rooms[u.home]?.type==='void')this.s.voidDefeated=true}else if(u.team==='ally')this.dead.push({...u});if(u.type==='immortal'){this.s.units=this.s.units.filter(v=>v.id!==u.id);const r=this.s.rooms[u.home];if(r){r.immortalId=null;if(r.type==='invincible')r.type='cave';r.closed=false;}this._routeCache=null;this.note('A criatura imortal foi eliminada por morte instantânea. A passagem está livre.','good')}this.events.push({type:'death',team:u.team})}}
+ damage(u,amount,{instant=false}={}){if(u.hp<=0||u.type==='immortal'&&!instant)return;if(instant)amount=u.hp+u.shield;const absorb=Math.min(u.shield,amount);u.shield-=absorb;u.hp-=amount-absorb;this.effects.push({x:u.x,y:u.y,kind:'hit',life:0.35});if(u.hp<=0){this._tacticsDirty=true;u.hp=0;if(u.type==='golem'&&u.team!=='ally'){const forge=this.s.rooms[u.home];if(forge?.type==='golemforge'&&forge.golemId===u.id){forge.golemDefeated=true;forge.golemId=null;}if(u.team==='neutral')this.s.units=this.s.units.filter(v=>v.id!==u.id);}this._routeCache=null;this.effects.push({x:u.x,y:u.y,kind:'death',life:0.8});if(u.team==='enemy'){this.s.kills++;if(u.type==='guardian'&&this.s.rooms[u.home]?.type==='void')this.s.voidDefeated=true}else if(u.team==='ally')this.dead.push({...u});if(u.type==='immortal'){this.s.units=this.s.units.filter(v=>v.id!==u.id);const r=this.s.rooms[u.home];if(r){r.immortalId=null;if(r.type==='invincible')r.type='cave';r.closed=false;}this._routeCache=null;this.note('A criatura imortal foi eliminada por morte instantânea. A passagem está livre.','good')}this.events.push({type:'death',team:u.team})}}
  killInstant(u){this.damage(u,u.hp+u.shield,{instant:true})}
  update(dt){
   if(!this.s.combat||this.s.paused||this.s.status!=='playing'||this.presentationEnabled&&this.s.effectCards?.length)return;

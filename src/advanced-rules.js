@@ -58,9 +58,9 @@ export function installAdvancedRules(Game){const previous={};for(const name of [
  });
 }
 export function validRulesInput(i,s){
- if(i?.kind!=='rules'||!['spell','copy-site','temple','shield','invention','foresight','trophy','summon','scout','witch','chaos','tomb','minecart','breed','expedition-squad','invention-site','peek','war-reward','artifact-luck','artifact-revive','artifact-purpose','artifact-create','artifact-banish'].includes(i.action))return false;
+ if(i?.kind!=='rules'||!['spell','copy-site','temple','shield','invention','foresight','trophy','summon','scout','scout-companion','witch','chaos','tomb','minecart','breed','expedition-squad','invention-site','peek','war-reward','artifact-luck','artifact-revive','artifact-purpose','artifact-create','artifact-banish'].includes(i.action))return false;
  if(i.action==='expedition-squad')return Number.isInteger(i.index)&&i.index>=0&&i.index<13&&Array.isArray(i.selected)&&i.selected.length<=10&&i.selected.every(id=>Number.isInteger(id));
- if(['scout','witch'].includes(i.action))return Number.isInteger(i.unit)&&s.units.some(u=>u.id===i.unit);
+ if(['scout','scout-companion','witch'].includes(i.action))return Number.isInteger(i.unit)&&s.units.some(u=>u.id===i.unit);
  if(!Number.isInteger(i.x)||!Number.isInteger(i.y)||Math.abs(i.x)>20||i.y< -6||i.y>30)return false;
  if(i.action!=='foresight'&&!s.rooms[`${i.x},${i.y}`])return false;
  if(i.action==='spell')return typeof i.good==='boolean'&&Number.isInteger(i.id)&&i.id>=1&&i.id<=(i.good?26:13);

@@ -25,7 +25,7 @@ try{
    checked++;
   }
   return{checked,foreground,preserved,families:families.size};
- });assert(materials.checked>=132);assert.equal(materials.families,12);assert(materials.foreground>10000&&materials.preserved>10000);pass('every room type and damaged variant uses its corridor palette, preserves background/alpha and only crystal pulses');
+ });assert(materials.checked>=132);assert.equal(materials.families,14);assert(materials.foreground>10000&&materials.preserved>10000);pass('every room type and damaged variant uses its corridor palette, preserves background/alpha and only crystal pulses');
  const visuals=await page.evaluate(()=>{
   const r=window.__CONQUER__.renderer,raw=r.images['barracks-0'],effect=r.appearance;
   const frame=image=>{const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const c=canvas.getContext('2d');c.drawImage(image,0,0);return c.getImageData(0,0,canvas.width,canvas.height).data};

@@ -63,3 +63,5 @@ try{
 // Preserve the dedicated discovery and dragon-state artwork on a full rebuild.
 await import('./unique-room-art.mjs');
 await import('./dragon-art.mjs');
+
+await import('./cave-terrain-art.mjs');

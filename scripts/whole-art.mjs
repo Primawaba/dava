@@ -8,6 +8,8 @@ const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['-
  for(const[type,n,count]of [['temple',0,2],['dragonforge',1,2],['trapmaster',2,2],['meadhall',3,2],['breeder',4,4]])for(let v=0;v<2;v++){const c=cut(sheets['vertical-rooms'],n,v,5,2,128,Math.round((144*(count-1)+113.33)/1.25));save(`whole/${type}-vertical-${v}`,c);}
  for(let count=2;count<=6;count++)for(let v=0;v<2;v++){const row=Math.max(0,count-3),c=cut(sheets['desolate-rooms'],0,row,1,4,(180*(count-1)+160)/1.25,91,false,!!v);save(`whole/desolate-${count}-horizontal-${v}`,c);}
  const icons=['forest','mine','crystal','hive','city','elemental','games','parlor','prison','lost'];for(let n=0;n<10;n++)save(`producers/${icons[n]}`,cut(sheets['utility-icons'],n%5,Math.floor(n/5),5,4,64,64,true));
- for(let n=10;n<=15;n++){const job=n<13?'miner':'lumberjack',v=n<13?n-10:n-13;save(`colony/${job}-${v}`,cut(sheets['utility-icons'],n%5,Math.floor(n/5),5,4,64,64,true));}
+
  save('colony/deep-portal',cut(sheets['utility-icons'],1,3,5,4,64,64,true));save('producers/dragon',cut(sheets['utility-icons'],2,3,5,4,64,64,true));save('producers/treasury',cut(sheets['utility-icons'],2,3,5,4,64,64,true));save('producers/rivalmine',cut(sheets['utility-icons'],1,0,5,4,64,64,true));
  return files;},sources);for(const[path,data]of Object.entries(files)){await mkdir('public/assets/'+path.split('/')[0],{recursive:true});await writeFile('public/assets/'+path+'.png',Buffer.from(data,'base64'));}console.log(`Exported ${Object.keys(files).length} whole-room paintings, icons and resource workers`);}finally{await browser.close()}
+
+await import('./professional-art.mjs');

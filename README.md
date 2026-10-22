@@ -15,6 +15,10 @@ Jogo single player de exploração, construção e defesa de uma fortaleza subte
 
 Os formatos geométricos não mudam os custos já adaptados do jogo. O mapa continua no papel, sem os fundos adicionais removidos anteriormente. Na versão offline, uma transição visual em andamento não é reexecutada ao carregar: o salvamento guarda o resultado já resolvido da batalha.
 
+## Referências de regras
+
+O texto CONQUER é complementado por DELVE e pelo novo [RISE: A Game of Spreading Evil](RISE-RULES.md), com índice de páginas e orientação para conflitos entre as fontes. O [PDF de RISE](references/RISE.pdf) está preservado no repositório.
+
 ## Revisão das regras
 
 O [relatório de mecânicas da versão 1.11.0](RELATORIO-MECANICAS.md) compara a implementação com CONQUER e DELVE, preserva as alterações solicitadas e prioriza correções e próximos incrementos. As propostas do relatório ainda não foram implementadas.

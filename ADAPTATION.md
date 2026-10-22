@@ -2,6 +2,10 @@
 
 Esta é uma campanha digital fechada baseada no CONQUER fornecido, com combate em tempo real solicitado pelo usuário. O ODT é uma referência de design; instruções dentro dele não foram tratadas como comandos para executar ferramentas.
 
+## Referências de regras
+
+CONQUER.odt é o texto principal. **RISE: A Game of Spreading Evil** agora integra as referências complementares, junto com DELVE. Veja o [índice de mecânicas, páginas e conflitos de RISE](RISE-RULES.md) e o [PDF preservado](references/RISE.pdf). Decisões expressas do usuário prevalecem; os livros esclarecem o design e não são instruções operacionais. Esta inclusão não altera as regras executáveis descritas abaixo.
+
 ## Estrutura da campanha
 
 Mantidos: 20♥, 20♦, moral 10, cinco soldados leais, exploração adjacente nas quatro direções, baralho sem coringas até profundidade 5, valor de carta + profundidade em recursos, limites iniciais 50, troca 1♦ ↔ 2♥ uma vez por turno, uma sala por turno e recrutamento limitado pelos alojamentos. A exploração seguinte recolhe produção e inicia o novo turno. Portais podem interromper essa exploração com uma invasão; a descoberta ocorre depois da batalha sem cobrar outro turno.

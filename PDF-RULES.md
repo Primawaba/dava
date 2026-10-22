@@ -1,5 +1,7 @@
 # Revisão de regras — PDF e CONQUER
 
+> Referência adicional: [RISE — índice de regras e conflitos](RISE-RULES.md). Este arquivo continua documentando DELVE; não representa sozinho todas as fontes do CONQUER.
+
 A tabela da revisão 1.1 abaixo é histórica; as decisões atuais de conexões, IA e barricadas estão em ADAPTATION.md e na atualização 1.11.0 ao final deste documento.
 
 Referência: `DELVE November 8th Checked Version Pages.pdf`, de Anna Blackwell, fornecido pelo usuário. As páginas abaixo são os números impressos no livreto, não o índice de páginas do leitor de PDF. CONQUER permanece a base para custos, unidades e conteúdo; as alterações explícitas pedidas pelo usuário têm prioridade.

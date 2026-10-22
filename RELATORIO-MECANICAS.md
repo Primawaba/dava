@@ -4,6 +4,10 @@ Revisão de 21/10/2026, após implementação e testes da versão **1.11.0**, co
 
 A base nova permite aproximar bastante o jogo dos documentos sem refazer a apresentação. As maiores oportunidades estão em **identidade das salas de várias casas, resolução de efeitos, coringas, magias e invenções**. A existência de uma sala ilustrada ou de uma carta de evento não significa que todas as suas regras estejam implementadas.
 
+## Referência complementar adicionada após a auditoria
+
+RISE: A Game of Spreading Evil também integra agora a base de regras do CONQUER. O [complemento de RISE](RISE-RULES.md) identifica suas tabelas de Informação, magias, conforto, prisioneiros e incursões, além dos conflitos com DELVE. A revisão original abaixo continua sendo o registro da auditoria 1.11.0; esta inclusão não implementa suas propostas.
+
 ## Fontes e critérios
 
 Releitura do **CONQUER.odt** e do **DELVE November 8th Checked Version Pages.pdf**, incluindo tabelas de aventureiros, magias, Wyrd, invenções, artefatos e monstruosidades. As páginas citadas são as **impressas no PDF**; no leitor, correspondem à página física seguinte. Para o ODT, uso os títulos das seções, pois a paginação varia conforme o editor.

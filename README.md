@@ -3,6 +3,10 @@
 Jogo single player de exploração, construção e defesa de uma fortaleza subterrânea. Interface em português, combate em tempo real com IA, partidas reproduzíveis por semente e distribuição web instalável (PWA).
 
 
+## Atualização 1.15.1 — arte anterior restaurada
+
+Cavernas e passagens voltam às ilustrações e aos encaixes usados na versão 1.14. As correções de regras, os novos profissionais, as tooltips e o tint procedural da versão 1.15 foram preservados. O novo autotiling visual deixou de ser usado no mapa.
+
 ## Atualização 1.15.0 — cavernas modulares e tint procedural
 
 Novo autotiling de cavernas por conexões explícitas, máscaras de 47 configurações e peças em pixels sem deformar ilustrações. O tint usa avaliação procedural por pixel com transições de material, iluminação local e brilho pulsante; funciona em Canvas 2D no HTML offline.

@@ -1,6 +1,6 @@
 {
   "name": "conquer-fortaleza",
-  "version": "1.15.0",
+  "version": "1.15.1",
   "private": true,
   "type": "module",
   "description": "CONQUER — estratégia single player de fortaleza subterrânea",

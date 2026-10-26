@@ -44,7 +44,7 @@ function candidate(game,u,group){
  return {goal,eta};
 }
 export function planDefense(game){
- const groups=enemyClusters(game),allies=game.allies.sort((a,b)=>a.id-b.id),assignments=new Map(),available=new Set(allies);
+ const groups=enemyClusters(game),allies=game.defenders.sort((a,b)=>a.id-b.id),assignments=new Map(),available=new Set(allies);
  const choices=new Map();for(const u of allies){const options=new Map();for(const g of groups){const c=candidate(game,u,g);if(c)options.set(g.id,c)}choices.set(u.id,options)}
  const availability=new Map(groups.map(g=>[g.id,allies.filter(u=>choices.get(u.id).has(g.id)).length]));
  function assign(u,g){const c=choices.get(u.id).get(g.id);assignments.set(u.id,{groupId:g.id,targetId:g.threat.id,goal:c.goal,eta:c.eta});g.assigned.push(u.id);g.assignedPower+=combatStrength(game,u);available.delete(u);for(const id of choices.get(u.id).keys())availability.set(id,availability.get(id)-1);u.frontTarget=g.threat.id}

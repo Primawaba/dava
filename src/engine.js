@@ -25,6 +25,7 @@ export class Game {
  }
  get rooms(){return Object.values(this.s.rooms)}
  get allies(){return this.s.units.filter(u=>u.team==='ally'&&u.hp>0)}
+ get defenders(){return this.allies.filter(u=>u.type!=='rat')}
  get enemies(){return this.s.units.filter(u=>u.team==='enemy'&&u.hp>0)}
  get target(){return this.rooms.find(r=>r.type==='throne'&&!r.damaged)||this.room(0,0)}
  random(){let t=this.s.seed+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);this.s.seed>>>=0;return((t^t>>>14)>>>0)/4294967296}
@@ -356,7 +357,7 @@ export class Game {
   for(const r of this.rooms){if(r.discoveryRoot&&r.discoveryRoot!==key(r.x,r.y)||!this.active(r)||r.wyrdId||r.foreignCell)continue;const beforeRes=res,beforeGold=gold,sourceType=r.planarReward==='honey'?'hive':r.type;let productionCard=null;
    res+=r.legendaryForest?20:r.type==='forest'||r.planarReward==='honey'?2:0;gold+=({mine:2,parlor:2,elemental:4,city:3}[r.type]||0);if(r.type==='hive')res+=2;
    if(r.type==='crystal'){const card=this.draw(Math.max(0,r.y));productionCard={...card,bonus:Math.max(0,r.y)};if(card.suit==='♦'&&card.rank===1){for(const part of this.rooms.filter(p=>p===r||r.discoveryRoot&&p.discoveryRoot===r.discoveryRoot)){part.type='cave';part.exhausted=true;}this.events.push({type:'producer-destroyed',source:key(r.x,r.y),sourceType:'crystal',x:r.x,y:r.y,card:productionCard});this.effect('Caverna esgotada','O cristal se esgotou. A sala continua transitável, mas não produz mais riquezas e não pode receber construções.','neutral');this.note('Uma caverna de cristal se esgotou. O espaço continua transitável.','warn')}else gold+=card.rank+Math.max(0,r.y)}
-   if(r.type==='prison'){if(r.prisoners===20)gold+=20;r.prisoners=Math.min(20,r.prisoners+1)}
+   if(r.type==='prison'&&r.prisoners===20)gold+=20;
    if(r.type==='games')gold+=5*this.rooms.filter(n=>this.isHousing(n)&&Math.abs(n.x-r.x)<=2&&Math.abs(n.y-r.y)<=2).length;
    if(res>beforeRes||gold>beforeGold)payouts.push({resources:res-beforeRes,gold:gold-beforeGold,source:key(r.x,r.y),sourceType,x:r.x,y:r.y,card:productionCard});
 
@@ -453,7 +454,7 @@ export class Game {
   const ad=this.unitData(a),bd=this.unitData(b),reach=bd.range<=.5?Math.max(ad.range,bd.range):ad.range;
   return distance(a,b)<=reach+.00001&&(Math.abs(a.x-b.x)<.02||Math.abs(a.y-b.y)<.02)&&this.lineOfSight(a,b,true)&&this.path(a,b,a.team,a)!==null;
  }
- unitData(u){const d=(u.team==='enemy'?ENEMIES[u.type]:UNITS[u.type])||UNITS[u.type]||ENEMIES[u.type]||{range:u.range||.42,speed:.6,power:u.power};return {...d,range:u.range??d.range,speed:u.fixed||u.chainBound||u.regenFrozen?0:u.feral?d.speed*3:d.speed};}
+ unitData(u){if(u.type==='rat')return{...UNITS.rat,range:u.range??UNITS.rat.range,speed:0};const d=(u.team==='enemy'?ENEMIES[u.type]:UNITS[u.type])||UNITS[u.type]||ENEMIES[u.type]||{range:u.range||.42,speed:.6,power:u.power};return {...d,range:u.range??d.range,speed:u.fixed||u.chainBound||u.regenFrozen?0:u.feral?d.speed*3:d.speed};}
  refreshDefensePlan(){
   const roster=this.enemies.map(e=>e.id).join(',')+'|'+this.allies.map(u=>u.id).join(',');
   if(!this._tactics||this._tacticsDirty||this._tacticsRoster!==roster||this.s.seconds-this._tactics.at>=.6){this._tactics=planDefense(this);this._tacticsRoster=roster;this._tacticsDirty=false}
@@ -482,7 +483,7 @@ export class Game {
   }
   return allowed;
  }
- moveUnit(u,next,dt){
+ moveUnit(u,next,dt){if(u.type==='rat')return;
   const at=this.room(Math.round(u.x),Math.round(u.y))||next,d=this.unitData(u);
   let speed=d.speed;if(u.team==='ally'&&(['elevator','rails','shaft'].includes(at.type)||at.transport==='rails'))speed*=2;
   if(at.type==='mud')speed*=.5;if(u.team==='enemy'&&at.type==='puzzle')speed*=.35;
@@ -518,7 +519,7 @@ export class Game {
    if((u.team==='enemy'||this.s.madTraps)&&at.trap?.armed&&!u.traits?.includes(7)){if(at.trap.kind==='damage')this.damage(u,at.trap.level*10*8,{source:'trap'});else u.stun=at.trap.level*2;at.trap.armed=false;if(u.hp<=0)continue}
    if(u.type==='trapper'){for(const r of this.rooms)if(r.trap&&distance(r,u)<1.5)r.trap.armed=true}
    if(u.type==='cleric'&&u.team==='ally'&&u.cooldown<=0){for(const v of this.allies)if(distance(u,v)<=1.5)v.shield=Math.min(16,v.shield+16);u.cooldown=2.5;u.attack=0.3;continue}
-   const opponents=actors.filter(v=>v.team!==u.team&&v.hp>0).sort((a,b)=>distance(u,a)-distance(u,b)||a.id-b.id);
+   const opponents=actors.filter(v=>v.team!==u.team&&v.hp>0&&(u.type!=='rat'||at.type==='sewer'&&Math.round(v.x)===at.x&&Math.round(v.y)===at.y)).sort((a,b)=>distance(u,a)-distance(u,b)||a.id-b.id);
    let target=!u.nonAttacking&&opponents.find(v=>d.range>.5?distance(u,v)<=d.range&&this.lineOfSight(u,v):this.meleeContact(u,v));
    if(target&&!(u.type==='siege'&&u.shot)){
     if(u.cooldown<=0){let damage=u.power*1.8;if(u.team==='ally'){damage*=1+this.s.blessings*0.06+this.s.inventions*0.15;if(this.nearby(at,'kitchen',1).length)damage*=1.5;damage+=this.museumBonus(u,target)*1.8;if(this.s.artifacts.includes('power'))damage*=1.1;if(this.s.artifacts.includes('invention'))damage*=1.2}

@@ -1,3 +1,4 @@
+import {CAPTURE_ROOMS,captiveKind,validCaptive,heldCaptives,clearCaptives} from './captivity.js';
 import {ROOMS,UNITS,ENEMIES,DIRS} from './data.js';
 import {planFormation,BUILD_FOOTPRINTS} from './formations.js';
 export const SUPPORT_JOBS={crystal:'miner',mine:'miner',rivalmine:'miner',forest:'lumberjack',hive:'attendant',elemental:'miner',city:'attendant',games:'attendant',parlor:'attendant',prison:'attendant',concert:'engineer',brewery:'cook',dragonforge:'smith',trapmaster:'engineer',endersgate:'scholar',orefinder:'engineer',forge:'smith',masonry:'mason',library:'scholar',kitchen:'cook',workshop:'engineer',artificer:'engineer',laboratory:'scholar',warehouse:'attendant',treasury:'attendant',museum:'attendant',inspection:'scholar',laundry:'attendant',hospital:'attendant',persuasion:'attendant',hiring:'scholar'};
@@ -7,6 +8,58 @@ const colonyDistance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 export function installColony(Game){
  const original={};for(const name of ['build','buildFootprint','income','endCombat','update','effectTargets','resolveEffect','damageBarricade','barricade','expandFormation','expandEmptyCavern','releaseCaptive','checkPrisonEscapes','lose','morale','unitData','threshold'])original[name]=Game.prototype[name];
  Object.assign(Game.prototype,{
+  captureRooms(){return this.rooms.filter(r=>CAPTURE_ROOMS.includes(r.type)&&!r.builtPartOf&&this.active(r));},
+  captureRoomAvailable(r){
+   if(!r||!CAPTURE_ROOMS.includes(r.type)||!this.active(r))return false;
+   if(r.type==='kennel')return !this.allies.some(u=>u.home===colonyKey(r)&&u.kennelMonster)&&this.allies.filter(u=>u.home===colonyKey(r)).length<this.capacity(r);
+   return r.type==='prison'?(r.prisoners||0)<20:!r.captive;
+  },
+  captureAccepts(r,c){return this.captureRoomAvailable(r)&&captiveKind(c)===(r.type==='kennel'?'monster':'person');},
+  captureSlots(card){return (card.input.slots||this.captureRooms().map(colonyKey)).map(id=>this.s.rooms[id]).filter(r=>r&&CAPTURE_ROOMS.includes(r.type));},
+  captureChoices(card){
+   const i=card.input,a=i.assignments||{},out=[];
+   for(const r of this.captureSlots(card)){
+    const id=colonyKey(r);out.push({value:id+'#none',label:'Não usar '+ROOMS[r.type].name});
+    for(const [n,c]of i.captives.entries())if(this.captureAccepts(r,c)&&!Object.entries(a).some(([other,index])=>other!==id&&index===n))out.push({value:id+'#'+n,label:c.name+' → '+ROOMS[r.type].name});
+   }
+   out.push({value:'confirm',label:'Confirmar capturas'});
+   if(!i.slots)for(const [index,c]of i.captives.entries())if(this.captureSlots(card).some(r=>this.captureAccepts(r,c)))out.push({value:String(index),label:'Capturar '+c.name});
+   return out;
+  },
+  resolveCapture(card,selection){
+   const i=card.input;i.assignments??={};
+   if(selection==='cancel'){this.s.effectCards.shift();return{ok:true};}
+   if(!this.captureChoices(card).some(o=>o.value===String(selection)))return{ok:false,reason:'Escolha uma combinação válida de criatura e estrutura.'};
+   if(/^\d+$/.test(String(selection))&&!i.slots){const index=Number(selection),r=this.captureSlots(card).find(r=>this.captureAccepts(r,i.captives[index]));i.assignments[colonyKey(r)]=index;selection='confirm';}
+   if(selection!=='confirm'){
+    const [id,index]=String(selection).split('#');if(index==='none')delete i.assignments[id];else i.assignments[id]=Number(index);
+    return{ok:true,pending:true};
+   }
+   const chosen=Object.entries(i.assignments),used=new Set(),slots=new Set(this.captureSlots(card).map(colonyKey));
+   for(const [id,index]of chosen){if(!slots.has(id)||!Number.isInteger(index)||!i.captives[index]||used.has(index)||!this.captureAccepts(this.s.rooms[id],i.captives[index]))return{ok:false,reason:'Uma das capturas ficou indisponível. Revise as escolhas antes de confirmar.'};used.add(index);}
+   for(const [id,index]of chosen){
+    const r=this.s.rooms[id],record={...i.captives[index],...(i.captives[index].traits?{traits:[...i.captives[index].traits]}:{})};
+    if(r.type==='kennel'){
+     const u=this.addUnit(record.type,r.x,r.y,true,'ally',record.power);u.range=record.range;u.size=record.size;u.enemyName=record.name;u.kennelMonster=true;u.capturedSource=record.sourceId;u.traits=[...(record.traits||[])];if(record.monstrosity)u.monstrosity=true;
+     this.effect('Monstro capturado',`${record.name}, de ${Math.round(record.power)} STR, juntou-se à fortaleza e passou a morar no Canil.`,'good');
+    }else{
+     if(r.type==='prison'){
+      const records=[...heldCaptives(r)];while(records.length<(r.prisoners||0))records.push({type:'raider',power:1,name:'Prisioneiro de uma jornada anterior',range:.42,size:1,mutiny:12});
+      r.captives=[...records,record];r.captive=r.captives[0];r.prisoners=r.captives.length;
+     }else {r.captive=record;r.prisoners=1;}
+     this.effect('Prisioneiro capturado',`${record.name} foi levado a ${ROOMS[r.type].name}.`,'neutral');
+    }
+   }
+   this.s.effectCards.shift();this.syncPrisonBars();this._tacticsDirty=true;return{ok:true};
+  },
+  confineRats(){
+   for(const u of this.s.units.filter(u=>u.type==='rat'&&u.hp>0)){
+    const home=this.s.rooms[u.home],sewer=home?.type==='sewer'?home:this.rooms.find(r=>r.type==='sewer');
+    if(!sewer){u.hp=0;this.effect('Colônia dispersa','Sem um esgoto, os ratos deixaram a fortaleza.','neutral');continue;}
+    u.home=colonyKey(sewer);u.x=sewer.x;u.y=sewer.y;u.moveTarget=null;u.walk=0;delete u.frontTarget;delete u.casualPlan;
+   }
+  },
+
   auraCells(r){if(!r)return[];const root=r.builtPartOf?this.s.rooms[r.builtPartOf]:r;if(!root)return[];const radius=ROOM_AURAS[root.type];if(!radius)return[];const members=(root.footprint||[colonyKey(root)]).map(id=>this.s.rooms[id]).filter(Boolean),cx=members.reduce((sum,p)=>sum+p.x,0)/members.length,cy=members.reduce((sum,p)=>sum+p.y,0)/members.length,width=['museum','temple'].includes(root.type)?6:radius[0]*2+1,height=radius[1]*2+1,left=Math.ceil(cx-(width-1)/2),top=Math.ceil(cy-(height-1)/2);return Array.from({length:width*height},(_,i)=>({x:left+i%width,y:top+Math.floor(i/width)}));},
   inAura(r,target){return this.auraCells(r).some(p=>p.x===Math.round(target.x)&&p.y===Math.round(target.y));},
   morale(){let value=original.morale.call(this);for(const r of this.rooms)if(this.active(r)){value-=({games:10,tavern:5,sewer:20}[r.type]||0);if(r.type==='laundry')value-=2*this.rooms.filter(n=>this.isHousing(n)&&Math.abs(n.x-r.x)<=2&&Math.abs(n.y-r.y)<=2&&this.active(n)).length;}return value;},
@@ -22,11 +75,15 @@ export function installColony(Game){
   expandFormation(root,count,options={}){if(['water','lava'].includes(root.type))options={...options,axis:'horizontal'};const members=original.expandFormation.call(this,root,count,options);this.varyFormation(members);return members},
   expandEmptyCavern(root,count){const members=original.expandEmptyCavern.call(this,root,count);this.varyFormation(members);return members},
   varyFormation(members){if(!members?.length)return;const offset=members[0].variant;members.forEach((p,i)=>{p.variant=(offset+i)%3;p.artPanel=i;});},
-  colonyChoices(card){const i=card.input;if(i.action==='placement')return this.placementOptions(i.type,this.site(i.x,i.y));if(i.action==='capture'){const cells=this.rooms.filter(r=>['solitary','prison'].includes(r.type)&&!r.captive&&(r.type==='solitary'||r.prisoners<20)&&this.active(r));return cells.length?(i.captives||[]).map((c,index)=>({value:String(index),label:`Capturar ${c.name} · ${Math.round(c.power)} STR`})):[];}return[]},
-  resolveEffect(id,selection){const c=this.s.effectCards?.[0];if(c?.id!==id||c.input?.kind!=='colony')return original.resolveEffect.call(this,id,selection);if(selection==='cancel'){this.s.effectCards.shift();return{ok:true}}if(!this.colonyChoices(c).some(o=>o.value===String(selection)))return{ok:false,reason:'Escolha uma opção válida.'};let result={ok:true};if(c.input.action==='placement')result=this.build(c.input.type,c.input.x,c.input.y,String(selection));if(c.input.action==='capture'){const cell=this.rooms.find(r=>['solitary','prison'].includes(r.type)&&!r.captive&&(r.type==='solitary'||r.prisoners<20)&&this.active(r));cell.captive={...c.input.captives[Number(selection)]};cell.prisoners=Math.min(20,(cell.prisoners||0)+1);this.syncPrisonBars();this.effect('Prisioneiro capturado',`${cell.captive.name} foi levado à solitária ${colonyKey(cell)}.`,'neutral');}if(result.ok)this.s.effectCards.shift();return result},
-  releaseCaptive(r){const extra=r.type==='prison'?Math.max(0,r.prisoners-1):0;original.releaseCaptive.call(this,r);if(extra)this.spawnEnemies(r,extra,'raider');},
-  checkPrisonEscapes(){for(const r of this.rooms)if(r.type==='prison'&&r.captive&&!this.active(r))this.releaseCaptive(r);return original.checkPrisonEscapes.call(this);},
-  syncPrisonBars(){this.s.cellBars??={};for(const r of this.rooms){if(!(['solitary','prison'].includes(r.type)&&(r.captive||r.prisoners>0)))continue;for(const [dx,dy]of DIRS){const n=this.room(r.x+dx,r.y+dy);if(!this.linked(r,n))continue;const edge=this.passageKey(r,n),old=this.s.cellBars[edge];if(!old)this.s.cellBars[edge]={kind:'prison',hp:200,level:1,cells:[colonyKey(r)]};else if(!old.cells.includes(colonyKey(r)))old.cells.push(colonyKey(r));}}for(const [edge,d]of Object.entries(this.s.cellBars)){d.cells=d.cells.filter(id=>{const r=this.s.rooms[id];return r&&(r.captive||r.prisoners>0)});if(!d.cells.length)delete this.s.cellBars[edge];}},
+  colonyChoices(card){const i=card.input;if(i.action==='placement')return this.placementOptions(i.type,this.site(i.x,i.y));if(i.action==='capture')return this.captureChoices(card);return[]},
+  resolveEffect(id,selection){const c=this.s.effectCards?.[0];if(c?.id!==id||c.input?.kind!=='colony')return original.resolveEffect.call(this,id,selection);if(c.input.action==='capture')return this.resolveCapture(c,String(selection));if(selection==='cancel'){this.s.effectCards.shift();return{ok:true}}if(!this.colonyChoices(c).some(o=>o.value===String(selection)))return{ok:false,reason:'Escolha uma opção válida.'};let result={ok:true};if(c.input.action==='placement')result=this.build(c.input.type,c.input.x,c.input.y,String(selection));if(result.ok)this.s.effectCards.shift();return result},
+  releaseCaptive(r){
+   const records=[...heldCaptives(r)],anonymous=Math.max(0,(r.prisoners||0)-records.length);if(!records.length&&!anonymous)return;
+   clearCaptives(r);for(const c of records){const u=this.addUnit(c.type,r.x,r.y,true,'enemy',c.power);u.enemyName=c.name;u.range=c.range;u.size=c.size;u.traits=[...(c.traits||[])];if(c.monstrosity)u.monstrosity=true;}
+   if(anonymous)this.spawnEnemies(r,anonymous,'raider');this.effect('Fuga de prisioneiros','Os ocupantes escaparam de '+ROOMS[r.type].name+' e se tornaram hostis.','bad');this._tacticsDirty=true;this.syncPrisonBars();if(this.enemies.length)this.beginCombat();
+  },
+  checkPrisonEscapes(){for(const r of this.rooms)if((r.captive||r.prisoners>0)&&(!CAPTURE_ROOMS.includes(r.type)||r.damaged||!this.active(r)))this.releaseCaptive(r);},
+  syncPrisonBars(){this.s.cellBars??={};for(const r of this.rooms){if(!(CAPTURE_ROOMS.includes(r.type)&&(r.captive||r.prisoners>0)))continue;for(const [dx,dy]of DIRS){const n=this.room(r.x+dx,r.y+dy);if(!this.linked(r,n))continue;const edge=this.passageKey(r,n),old=this.s.cellBars[edge];if(!old)this.s.cellBars[edge]={kind:'prison',hp:200,level:1,cells:[colonyKey(r)]};else if(!old.cells.includes(colonyKey(r)))old.cells.push(colonyKey(r));}}for(const [edge,d]of Object.entries(this.s.cellBars)){d.cells=d.cells.filter(id=>{const r=this.s.rooms[id];return r&&(r.captive||r.prisoners>0)});if(!d.cells.length)delete this.s.cellBars[edge];}},
   barricade(a,b){const built=original.barricade.call(this,a,b);if(built)return built;const bar=this.s.cellBars?.[this.passageKey(a,b)];return bar?.hp>0?bar:null},
   damageBarricade(a,b,amount){const edge=this.passageKey(a,b),built=this.s.barricades[edge];if(built?.hp>0)return original.damageBarricade.call(this,a,b,amount);const bar=this.s.cellBars?.[edge];if(!bar)return;bar.hp=Math.max(0,bar.hp-amount);if(!bar.hp){for(const id of bar.cells){const r=this.s.rooms[id];if(r?.captive)this.releaseCaptive(r);else if(r?.prisoners){const count=r.prisoners;r.prisoners=0;this.spawnEnemies(r,count,'raider');}}delete this.s.cellBars[edge];this.syncPrisonBars();this._routeCache=null;this.effect('Grades rompidas','A cela foi violada. Seus prisioneiros estão livres e hostis.','bad');if(this.enemies.length)this.beginCombat();}},
   unitData(u){const d=original.unitData.call(this,u);if(u.worker)return{...d,speed:u.fleeing ? .95 : .45,range:0};return d;},
@@ -51,10 +108,16 @@ export function installColony(Game){
     if(w.hp<=0)w.alive=false;
   }},
   income(){const before=this.events.length;original.income.call(this);for(const r of this.rooms.filter(r=>r.type==='sewer'&&this.active(r))){if(this.roll(100)>5)continue;const count=this.roll(3);for(let j=0;j<count;j++)this.addUnit('rat',r.x,r.y,false);this.effect('Ninhada no esgoto',`${count} rato(s) saíram da galeria. Eles não custaram recursos e afetam a moral normalmente.`,'neutral');}this.syncPrisonBars();this.checkMutiny();},
-  endCombat(){const captures=[...(this.s.capturePool||[])];this.s.capturePool=[];original.endCombat.call(this);delete this.s.returnPhase;if(captures.length&&this.rooms.some(r=>['solitary','prison'].includes(r.type)&&!r.captive&&(r.type==='solitary'||r.prisoners<20)&&this.active(r)))this.queueColony('capture','Capturar sobrevivente?','Deseja aprisionar um dos inimigos derrotados? Recusar não concede prisioneiros.',{captives:captures.slice(0,30)});for(const w of this.s.workers||[]){const r=this.s.rooms[w.home];if(r){if(!w.alive){w.variant=(w.variant+1)%3;w.alive=true;w.x=r.x;w.y=r.y;w.moveTarget=null;w.localX=0;}}}this.syncPrisonBars();},
+  endCombat(){const captures=[...(this.s.capturePool||[])];this.s.capturePool=[];original.endCombat.call(this);delete this.s.returnPhase;
+   const slots=this.captureRooms();if(captures.length&&slots.length)this.queueColony('capture','Escolher capturas','Distribua os inimigos derrotados entre as estruturas. Cada inimigo só pode ser escolhido uma vez; cada estrutura recebe no máximo uma captura nesta batalha.',{captives:captures.slice(0,3000),slots:slots.map(colonyKey),assignments:{}});
+   for(const w of this.s.workers||[]){const r=this.s.rooms[w.home];if(r){if(!w.alive){w.variant=(w.variant+1)%3;w.alive=true;w.x=r.x;w.y=r.y;w.moveTarget=null;w.localX=0;}}}this.syncPrisonBars();},
   lose(){const result=original.lose.call(this);for(const w of this.s.workers||[]){const r=this.s.rooms[w.home];if(r){if(!w.alive){w.variant=(w.variant+1)%3;w.alive=true;w.x=r.x;w.y=r.y;w.moveTarget=null;w.localX=0;}}}return result;},
-  update(dt){if(this.s.status!=='playing'||this.s.paused||this.presentationEnabled&&this.s.effectCards?.length)return;dt=Math.min(.1,dt);this.syncPrisonBars();if(!this.s.combat)this.idleUpdate(dt);this.workerUpdate(dt);return original.update.call(this,dt)}
+  update(dt){if(this.s.status!=='playing'||this.s.paused||this.presentationEnabled&&this.s.effectCards?.length)return;dt=Math.min(.1,dt);this.confineRats();this.syncPrisonBars();if(!this.s.combat)this.idleUpdate(dt);this.workerUpdate(dt);return original.update.call(this,dt)}
  });
 }
 export function validateColony(s){if(s.workers!==undefined&&(!Array.isArray(s.workers)||s.workers.length>2000||s.workers.some(w=>!s.rooms[w.home]||!Object.values(SUPPORT_JOBS).includes(w.job)||![0,1,2].includes(w.variant)||!Number.isFinite(w.x)||!Number.isFinite(w.y)||typeof w.alive!=='boolean')))throw Error('Profissionais inválidos.');if(s.cellBars!==undefined)for(const [edge,d]of Object.entries(s.cellBars)){if(!s.passages[edge]||d.kind!=='prison'||!Number.isFinite(d.hp)||d.hp<0||d.hp>200||!Array.isArray(d.cells)||d.cells.some(id=>!s.rooms[id]))throw Error('Grades inválidas.');}}
-export function validColonyInput(i,s){if(i?.kind!=='colony')return false;if(i.action==='engineering')return ['defense','infrastructure'].includes(i.mode)&&(i.mode==='infrastructure'?['rails','columns','bridge','drawbridge','elevator']:['defensive','offensive','secret','damage','delay']).includes(i.tool)&&Number.isInteger(i.x)&&Number.isInteger(i.y)&&Math.abs(i.x)<=20&&i.y>=-6&&i.y<=30;if(i.action==='placement')return !!BUILD_FOOTPRINTS[i.type]&&Number.isInteger(i.x)&&Number.isInteger(i.y)&&Math.abs(i.x)<=20&&i.y>=-6&&i.y<=30&&(!!s.rooms[`${i.x},${i.y}`]||i.y<0);if(i.action!=='capture'||!Array.isArray(i.captives)||i.captives.length>30)return false;return i.captives.every(c=>Object.prototype.hasOwnProperty.call(ENEMIES,c.type)&&typeof c.name==='string'&&c.name.length<=200&&Number.isFinite(c.power)&&c.power>0&&c.power<=1e7&&Number.isFinite(c.range)&&c.range>=0&&c.range<=5&&Number.isFinite(c.size)&&c.size>0&&c.size<=5&&Number.isInteger(c.mutiny)&&c.mutiny>=0&&c.mutiny<=100);}
+export function validColonyInput(i,s){if(i?.kind!=='colony')return false;if(i.action==='engineering')return ['defense','infrastructure'].includes(i.mode)&&(i.mode==='infrastructure'?['rails','columns','bridge','drawbridge','elevator']:['defensive','offensive','secret','damage','delay']).includes(i.tool)&&Number.isInteger(i.x)&&Number.isInteger(i.y)&&Math.abs(i.x)<=20&&i.y>=-6&&i.y<=30;if(i.action==='placement')return !!BUILD_FOOTPRINTS[i.type]&&Number.isInteger(i.x)&&Number.isInteger(i.y)&&Math.abs(i.x)<=20&&i.y>=-6&&i.y<=30&&(!!s.rooms[`${i.x},${i.y}`]||i.y<0);if(i.action!=='capture'||!Array.isArray(i.captives)||i.captives.length>3000||i.captives.some(c=>!validCaptive(c)))return false;
+ if(i.slots!==undefined&&(!Array.isArray(i.slots)||i.slots.length>2000||new Set(i.slots).size!==i.slots.length||i.slots.some(id=>typeof id!=='string'||!s.rooms[id])))return false;
+ if(i.assignments!==undefined){if(!i.assignments||typeof i.assignments!=='object'||Array.isArray(i.assignments))return false;const entries=Object.entries(i.assignments),values=entries.map(([,n])=>n);if(new Set(values).size!==values.length||entries.some(([id,n])=>!s.rooms[id]||i.slots&&!i.slots.includes(id)||!Number.isInteger(n)||n<0||n>=i.captives.length||captiveKind(i.captives[n])!==(s.rooms[id].type==='kennel'?'monster':'person')))return false;}
+ return true;
+}

@@ -3,6 +3,18 @@
 Jogo single player de exploração, construção e defesa de uma fortaleza subterrânea. Interface em português, combate em tempo real com IA, partidas reproduzíveis por semente e distribuição web instalável (PWA).
 
 
+## Atualização 1.16.0 — captura e guarnições locais
+
+- Tela de captura após a vitória, com sprites dos derrotados e atribuição por estrutura. Um inimigo não pode ser duplicado; cada estrutura recebe até uma nova captura por batalha. Escolhas são aplicadas juntas ao confirmar e podem ser salvas ainda pendentes.
+- Persuasão captura e interroga seu próprio ocupante, sem exigir Solitária. Solitária mantém candidatos para Contratação. A tentativa de recrutamento esvazia a cela em sucesso, falha ou negociação; recusar pagamento não devolve o candidato.
+- Canil recruta cães e captura monstros específicos como aliados imediatos, preservando espécie e força. “Fera” genérica saiu das opções de recrutamento. Criadouro reproduz a espécie da matriz pela ação da sala.
+- Ratos permanecem nos esgotos, combatem apenas oponentes que entram neles e não participam das frentes móveis nem das expedições. A força móvel do HUD os exclui.
+- Prisões guardam capturas reais, sem produzir ocupantes automaticamente. Contenção rompida libera as espécies efetivamente presas.
+
+[Grupos de desbloqueio, com tiers preservados](reports/GRUPOS-DE-DESBLOQUEIO.md) · [Relatório de balanceamento](reports/BALANCEAMENTO-CONSTRUCOES-1.15.1.md). A árvore de pesquisa ainda é uma especificação; os bloqueios por informação não foram implementados nesta atualização.
+
+Validação: 334 testes de regras, 21 verificações gerais de navegador e um fluxo específico de captura em desktop, toque 390 px, salvar/carregar e HTML offline. `npm run test:captivity` executa esse fluxo.
+
 ## Atualização 1.15.1 — arte anterior restaurada
 
 Cavernas e passagens voltam às ilustrações e aos encaixes usados na versão 1.14. As correções de regras, os novos profissionais, as tooltips e o tint procedural da versão 1.15 foram preservados. O novo autotiling visual deixou de ser usado no mapa.

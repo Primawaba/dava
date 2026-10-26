@@ -3,6 +3,12 @@
 Jogo single player de exploração, construção e defesa de uma fortaleza subterrânea. Interface em português, combate em tempo real com IA, partidas reproduzíveis por semente e distribuição web instalável (PWA).
 
 
+## Correção 1.17.1 — retorno do Cemitério e captura
+
+O Cemitério recriava inimigos antes da decisão de captura, deixando uma cópia hostil mesmo quando o jogador capturava o original. A decisão agora é resolvida antes do retorno: capturados não ressurgem como inimigos. Os não capturados podem retornar uma única vez com metade da força, arredondada para baixo; a segunda derrota encerra esse retorno. Essa limitação é uma adaptação digital explícita para evitar uma sequência repetitiva de combates com a mesma criatura. O retorno tem carta de evento própria, e escolhas pendentes continuam válidas ao salvar/carregar.
+
+Validação: 356 testes de regras; reprodução do Lar de criatura grande no Cemitério, com captura e recusa, em desktop, toque e HTML offline. Execute `npm run test:graveyard` para repetir o fluxo. Nenhuma alteração nas artes das salas nem no mecanismo de descoberta das camadas.
+
 ## Atualização 1.17.0 — desempenho, pesquisa e crônica
 
 - Pesquisa em **Construções → Pesquisas**: sete projetos básicos de Tier 0 desde o início. Cada Informação obtida com um interrogatório bem-sucedido concede 1 ponto, além do efeito original da carta de RISE. Projetos de Tier 1/2/3 custam 1/2/3 informações. Um projeto do tier anterior abre acesso ao próximo; requisitos específicos continuam valendo. Engenharia militar, alvenaria e recrutamento de prisioneiros são pacotes. Solitária mantém Tier 1, mas seu pacote com Contratação tem acesso Tier 3.

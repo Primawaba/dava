@@ -1,6 +1,6 @@
 {
   "name": "conquer-fortaleza",
-  "version": "1.17.0",
+  "version": "1.17.1",
   "private": true,
   "type": "module",
   "description": "CONQUER — estratégia single player de fortaleza subterrânea",
@@ -50,7 +50,8 @@
     "test:autotile": "node tests/autotile-browser.mjs",
     "test:captivity": "node tests/captivity-browser.mjs",
     "test:progression": "node tests/progression-browser.mjs",
-    "test:performance": "node tests/performance-browser.mjs"
+    "test:performance": "node tests/performance-browser.mjs",
+    "test:graveyard": "node tests/graveyard-browser.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1"

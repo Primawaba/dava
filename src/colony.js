@@ -1,4 +1,4 @@
-import {CAPTURE_ROOMS,captiveKind,validCaptive,heldCaptives,clearCaptives} from './captivity.js';
+import {CAPTURE_ROOMS,captiveKind,validCaptive,heldCaptives,clearCaptives,validGraveyardReturn} from './captivity.js';
 import {ROOMS,UNITS,ENEMIES,DIRS} from './data.js';
 import {planFormation,BUILD_FOOTPRINTS} from './formations.js';
 export const SUPPORT_JOBS={crystal:'miner',mine:'miner',rivalmine:'miner',forest:'lumberjack',hive:'attendant',elemental:'miner',city:'attendant',games:'attendant',parlor:'attendant',prison:'attendant',concert:'engineer',brewery:'cook',dragonforge:'smith',trapmaster:'engineer',endersgate:'scholar',orefinder:'engineer',forge:'smith',masonry:'mason',library:'scholar',kitchen:'cook',workshop:'engineer',artificer:'engineer',laboratory:'scholar',warehouse:'attendant',treasury:'attendant',museum:'attendant',inspection:'scholar',laundry:'attendant',hospital:'attendant',persuasion:'attendant',hiring:'scholar'};
@@ -30,7 +30,7 @@ export function installColony(Game){
   },
   resolveCapture(card,selection){
    const i=card.input;i.assignments??={};
-   if(selection==='cancel'){this.s.effectCards.shift();return{ok:true};}
+   if(selection==='cancel'){this.s.effectCards.shift();this.resolveGraveyardReturns?.(i.graveyardReturns);return{ok:true};}
    if(!this.captureChoices(card).some(o=>o.value===String(selection)))return{ok:false,reason:'Escolha uma combinação válida de criatura e estrutura.'};
    if(/^\d+$/.test(String(selection))&&!i.slots){const index=Number(selection),r=this.captureSlots(card).find(r=>this.captureAccepts(r,i.captives[index]));i.assignments[colonyKey(r)]=index;selection='confirm';}
    if(selection!=='confirm'){
@@ -43,7 +43,7 @@ export function installColony(Game){
     const r=this.s.rooms[id],previous=this.captureReplacement(r,i.replacements?.[id]||0),record={...i.captives[index],...(i.captives[index].traits?{traits:[...i.captives[index].traits]}:{})};
     if(previous){if(r.type==='kennel')this.s.units=this.s.units.filter(u=>u.id!==previous.id);else if(r.type==='prison'){r.captives=heldCaptives(r).filter((_,n)=>n!==(i.replacements?.[id]||0));r.prisoners=Math.max(0,r.prisoners-1);r.captive=r.captives[0]||null;}else clearCaptives(r);this.effect('Captura substituída',`${previous.enemyName||previous.name||'O ocupante anterior'} foi dispensado para dar lugar a ${record.name}.`,'neutral');}
     if(r.type==='kennel'){
-     const u=this.addUnit(record.type,r.x,r.y,true,'ally',record.power);u.range=record.range;u.size=record.size;u.enemyName=record.name;u.kennelMonster=true;u.capturedSource=record.sourceId;u.traits=[...(record.traits||[])];if(record.monstrosity)u.monstrosity=true;
+     const u=this.addUnit(record.type,r.x,r.y,true,'ally',record.power);u.range=record.range;u.size=record.size;u.enemyName=record.name;u.kennelMonster=true;if(record.graveyardRevived)u.graveyardRevived=true;u.capturedSource=record.sourceId;u.traits=[...(record.traits||[])];if(record.monstrosity)u.monstrosity=true;
      this.effect('Monstro capturado',`${record.name}, de ${Math.round(record.power)} STR, juntou-se à fortaleza e passou a morar no Canil.`,'good');
     }else{
      if(r.type==='prison'){
@@ -53,7 +53,7 @@ export function installColony(Game){
      this.effect('Prisioneiro capturado',`${record.name} foi levado a ${ROOMS[r.type].name}.`,'neutral');
     }
    }
-   this.s.effectCards.shift();this.syncPrisonBars();this._tacticsDirty=true;return{ok:true};
+   this.s.effectCards.shift();this.syncPrisonBars();this._tacticsDirty=true;this.resolveGraveyardReturns?.(i.graveyardReturns,chosen.map(([,index])=>i.captives[index].sourceId));return{ok:true};
   },
   confineRats(){
    for(const u of this.s.units.filter(u=>u.type==='rat'&&u.hp>0)){
@@ -82,7 +82,7 @@ export function installColony(Game){
   resolveEffect(id,selection){const c=this.s.effectCards?.[0];if(c?.id!==id||c.input?.kind!=='colony')return original.resolveEffect.call(this,id,selection);if(c.input.action==='capture')return this.resolveCapture(c,String(selection));if(selection==='cancel'){this.s.effectCards.shift();return{ok:true}}if(!this.colonyChoices(c).some(o=>o.value===String(selection)))return{ok:false,reason:'Escolha uma opção válida.'};let result={ok:true};if(c.input.action==='placement')result=this.build(c.input.type,c.input.x,c.input.y,String(selection));if(result.ok)this.s.effectCards.shift();return result},
   releaseCaptive(r){
    const records=[...heldCaptives(r)],anonymous=Math.max(0,(r.prisoners||0)-records.length);if(!records.length&&!anonymous)return;
-   clearCaptives(r);for(const c of records){const u=this.addUnit(c.type,r.x,r.y,true,'enemy',c.power);u.enemyName=c.name;u.range=c.range;u.size=c.size;u.traits=[...(c.traits||[])];if(c.monstrosity)u.monstrosity=true;}
+   clearCaptives(r);for(const c of records){const u=this.addUnit(c.type,r.x,r.y,true,'enemy',c.power);u.enemyName=c.name;if(c.graveyardRevived)u.graveyardRevived=true;u.range=c.range;u.size=c.size;u.traits=[...(c.traits||[])];if(c.monstrosity)u.monstrosity=true;}
    if(anonymous)this.spawnEnemies(r,anonymous,'raider');this.effect('Fuga de prisioneiros','Os ocupantes escaparam de '+ROOMS[r.type].name+' e se tornaram hostis.','bad');this._tacticsDirty=true;this.syncPrisonBars();if(this.enemies.length)this.beginCombat();
   },
   checkPrisonEscapes(){for(const r of this.rooms)if((r.captive||r.prisoners>0)&&(!CAPTURE_ROOMS.includes(r.type)||r.damaged||!this.active(r)))this.releaseCaptive(r);},
@@ -120,6 +120,7 @@ export function installColony(Game){
 }
 export function validateColony(s){if(s.workers!==undefined&&(!Array.isArray(s.workers)||s.workers.length>2000||s.workers.some(w=>!s.rooms[w.home]||!Object.values(SUPPORT_JOBS).includes(w.job)||![0,1,2].includes(w.variant)||!Number.isFinite(w.x)||!Number.isFinite(w.y)||typeof w.alive!=='boolean')))throw Error('Profissionais inválidos.');if(s.cellBars!==undefined)for(const [edge,d]of Object.entries(s.cellBars)){if(!s.passages[edge]||d.kind!=='prison'||!Number.isFinite(d.hp)||d.hp<0||d.hp>200||!Array.isArray(d.cells)||d.cells.some(id=>!s.rooms[id]))throw Error('Grades inválidas.');}}
 export function validColonyInput(i,s){if(i?.kind!=='colony')return false;if(i.action==='engineering')return ['defense','infrastructure'].includes(i.mode)&&(i.mode==='infrastructure'?['rails','columns','bridge','drawbridge','elevator']:['defensive','offensive','secret','damage','delay']).includes(i.tool)&&Number.isInteger(i.x)&&Number.isInteger(i.y)&&Math.abs(i.x)<=20&&i.y>=-6&&i.y<=30;if(i.action==='placement')return !!BUILD_FOOTPRINTS[i.type]&&Number.isInteger(i.x)&&Number.isInteger(i.y)&&Math.abs(i.x)<=20&&i.y>=-6&&i.y<=30&&(!!s.rooms[`${i.x},${i.y}`]||i.y<0);if(i.action!=='capture'||!Array.isArray(i.captives)||i.captives.length>3000||i.captives.some(c=>!validCaptive(c)))return false;
+ if(i.graveyardReturns!==undefined&&(!Array.isArray(i.graveyardReturns)||i.graveyardReturns.length>3000||i.graveyardReturns.some(c=>!validGraveyardReturn(c,s))||new Set(i.graveyardReturns.map(c=>c.sourceId)).size!==i.graveyardReturns.length))return false;
  if(i.slots!==undefined&&(!Array.isArray(i.slots)||i.slots.length>2000||new Set(i.slots).size!==i.slots.length||i.slots.some(id=>typeof id!=='string'||!s.rooms[id])))return false;
  if(i.replacements!==undefined&&(!i.replacements||typeof i.replacements!=='object'||Array.isArray(i.replacements)||Object.entries(i.replacements).some(([id,n])=>i.slots&&!i.slots.includes(id)||s.rooms[id]?.type!=='prison'||!Number.isInteger(n)||n<0||n>=heldCaptives(s.rooms[id]).length)))return false;
  if(i.assignments!==undefined){if(!i.assignments||typeof i.assignments!=='object'||Array.isArray(i.assignments))return false;const entries=Object.entries(i.assignments),values=entries.map(([,n])=>n);if(new Set(values).size!==values.length||entries.some(([id,n])=>!s.rooms[id]||i.slots&&!i.slots.includes(id)||!Number.isInteger(n)||n<0||n>=i.captives.length||captiveKind(i.captives[n])!==(s.rooms[id].type==='kennel'?'monster':'person')))return false;}

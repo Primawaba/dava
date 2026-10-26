@@ -14,3 +14,48 @@ export function installChronicle(Game){const old={};for(const n of ['damage','be
   endCombat(){old.endCombat.call(this);this.checkAchievements();},
   explore(x,y,from){const result=old.explore.call(this,x,y,from);if(result.ok&&result.card?.suit==='♣'&&result.card.rank===11){if(this.s.resources>1000){if(this.roll(4)===1)this.s.resources=Math.floor(this.s.resources/2);else{const r=this.rooms.filter(r=>r.type==='warehouse').sort((a,b)=>b.y-a.y)[0];if(r)this.spawnEnemies(r,260,'elemental');}this.effect('J♣ · Reservas ameaçadas','O acúmulo de recursos atraiu uma praga ou um elemental.','bad');}if(this.s.gold>1000){if(this.roll(4)===1&&!this.s.discoveredInventions?.includes(7))this.s.gold=Math.floor(this.s.gold/2);else{const r=this.rooms.filter(r=>r.type==='treasury').sort((a,b)=>b.y-a.y)[0];if(r)this.spawnEnemies(r,240,'raider');}this.effect('J♣ · Guilda de Ladrões','A riqueza da fortaleza atraiu ladrões.','bad');}if(this.enemies.length)this.beginCombat();}this.checkAchievements();return result;}
 });}
+
+// Reading preserves the stored event order, including ties within a turn.
+export function chronicleEntries(state){return [...state.log].reverse().map(e=>({...e,text:narrativeEntry(e.text)}));}
+export function narrativeEntry(text){
+ const exact={
+ 'Os portões se abrem. Cinco guerreiros leais aguardam suas ordens.':'Cinco guerreiros cruzaram o portão e juraram guardar a nova fortaleza. À frente deles, a montanha ainda escondia todos os seus segredos.',
+ 'Um novo turno começa. Prepare a fortaleza antes de explorar.':'A vida seguiu entre as muralhas. Enquanto os habitantes cuidavam de seus afazeres, a próxima incursão nas profundezas era preparada.',
+ 'Às armas! Os defensores se dividem entre os núcleos inimigos por força, distância e urgência.':'O alarme ecoou pelos túneis. Os defensores deixaram seus postos e correram para conter os invasores, repartindo suas forças entre as frentes ameaçadas.',
+ 'Vitória! Os sobreviventes se recuperam. +1 moral e espólios de guerra.':'Quando o último invasor caiu, o silêncio voltou aos corredores. Os sobreviventes recolheram os espólios e regressaram aos seus afazeres com o ânimo renovado.',
+ 'Porta reforçada instalada no corredor. Bloqueia invasores, tiros, líquidos e gases.':'Uma porta reforçada foi erguida no túnel. Atrás de suas traves, a fortaleza ganhou um novo refúgio contra os perigos da montanha.',
+ 'Uma porta reforçada foi destruída. O corredor ficou desprotegido.':'As traves cederam, e a porta reforçada desabou. O túnel estava aberto outra vez, deixando os habitantes expostos ao que viesse do outro lado.',
+ 'Profundidade 5. Os coringas despertam no baralho.':'Os exploradores desceram além dos primeiros estratos. Naquela escuridão mais antiga, maravilhas e horrores começaram a disputar o destino da fortaleza.',
+ 'Um artefato encantado concede +6% de dano permanente.':'Um artefato despertou em meio à pedra. Sua bênção acompanharia os defensores nas batalhas que ainda estavam por vir.',
+ 'Um festival aquece os corações. +5 moral.':'As preocupações deram lugar à música e às conversas do festival. Por algumas horas, os habitantes puderam esquecer o peso da montanha.',
+ '20♦ roubadas. O dragão continua dormindo.':'Mãos cautelosas retiraram ouro da pilha de tesouros. O dragão não despertou, e os ladrões voltaram em silêncio, carregando sua pequena fortuna.',
+ 'Engenharia extraordinária: +15% de dano permanente.':'Das oficinas saiu uma descoberta que mudaria o modo de lutar da fortaleza. Os defensores receberam os novos engenhos com esperança renovada.',
+ 'O Hospital trouxe um defensor de volta.':'No hospital, um defensor que parecia perdido abriu os olhos novamente. Seus companheiros voltariam a vê-lo entre eles.',
+ 'A criatura imortal foi eliminada por morte instantânea. A passagem está livre.':'A criatura que resistira a tantos golpes enfim foi vencida por um poder capaz de encerrar sua existência. A passagem antes proibida ficou em silêncio.',
+ 'Defesa instalada.':'Novas defesas foram preparadas na pedra. Os habitantes esperavam que elas detivessem os próximos intrusos.',
+ 'A terceira gema do portão se partiu. Sua fortaleza caiu.':'A última gema se desfez sobre o portão. Sem sua proteção, a fortaleza caiu, e as vozes dos habitantes se perderam no abismo.'
+ };
+ if(exact[text])return exact[text];let m;
+ if((m=text.match(/^(.+) construída\. /)))return `Onde antes havia apenas rocha, tomou forma ${m[1]}. O trabalho dos construtores acrescentou um novo lugar à vida da fortaleza.`;
+ if((m=text.match(/^(.+) recrutado em (.+)\.$/)))return `${m[1]} apresentou-se em ${m[2]} e passou a integrar a guarnição. Mais um habitante assumia seu lugar na defesa da fortaleza.`;
+ if((m=text.match(/^Passagem aberta entre (.+) e (.+)\.$/)))return `Os golpes das ferramentas abriram caminho entre ${m[1]} e ${m[2]}. Pela primeira vez, os habitantes puderam atravessar de uma sala à outra.`;
+ if(text.startsWith('Produção da fortaleza:'))return 'O trabalho dos habitantes rendeu novos materiais e riquezas. As reservas receberam o fruto de mais uma jornada sob a montanha.';
+ if(text.startsWith('Troca concluída:'))return 'As reservas mudaram de mãos. Os mercadores levaram parte dos estoques e deixaram aquilo de que a fortaleza precisava naquele momento.';
+ if((m=text.match(/^(.+) se amotinou!/)))return `O descontentamento de ${m[1]} tornou-se rebelião. Quem antes defendia a fortaleza voltou-se contra seus antigos companheiros.`;
+ if((m=text.match(/^Exploração: (.+?) \(/)))return `À luz das lanternas, os exploradores encontraram ${m[1]}. Um novo segredo da montanha passava a fazer parte de sua história.`;
+ if((m=text.match(/^[♥♦♣♠] \d+ · Você encontrou (\d+) (recursos|riquezas)\.$/)))return `Os exploradores voltaram com ${m[1]} ${m[2]}, encontrados entre os segredos da montanha. A descoberta alimentou os planos da fortaleza.`;
+ if((m=text.match(/^[♥♦♣♠] \d+ · (.+)\.$/)))return `Ao romper a última camada de pedra, os exploradores encontraram ${m[1]}. As lanternas iluminaram mais um lugar até então oculto sob a montanha.`;
+ if(text.startsWith('Invasão pelo portal'))return 'A superfície do portal se agitou. Invasores vindos de outro mundo atravessaram a passagem, levando uma nova ameaça aos corredores da fortaleza.';
+ if(text.startsWith('Portal em '))return 'Os guardas vigiaram o portal, atentos a qualquer movimento. Dessa vez, nada atravessou a passagem.';
+ if(text.startsWith('Masmorra rival revelada'))return 'Além da primeira câmara, os exploradores descobriram novas salas de uma masmorra rival. A presença de vizinhos hostis tornava a montanha ainda mais perigosa.';
+ if(text.startsWith('Masmorra rival conquistada'))return 'Os últimos redutos da masmorra rival cederam. Seus tesouros foram levados à fortaleza, e seus corredores deixaram de abrigar uma ameaça.';
+ if((m=text.match(/^Uma caverna ampla se estende por (\d+)/)))return 'A luz das lanternas não alcançou a outra extremidade da caverna. O salão natural abria-se muito além do que a entrada fazia imaginar.';
+ if((m=text.match(/^(.+): \d+ espaços contínuos\./)))return `${m[1]} revelou-se maior do que parecia. Sua extensão continuava para além da primeira câmara, formando um único lugar sob a montanha.`;
+ if(text.startsWith('Uma gema do portão se partiu'))return 'Uma das gemas se rompeu sobre o portão. Os invasores desapareceram em clarões de magia, e cinco guardiões retomaram a vigília. A fortaleza sobrevivera, mas sua proteção estava mais frágil.';
+ if(text.startsWith('Gás inflamável alcançou'))return 'Um clarão correu pelos túneis tomados pelo gás. A explosão sacudiu a fortaleza e deixou um rastro de construções danificadas.';
+ if((m=text.match(/^(\d+) unidade\(s\) foram derrotadas imediatamente por fluidos/)))return `A água, o magma ou os vapores venenosos alcançaram os habitantes antes que pudessem escapar. A fortaleza perdeu ${m[1]} de seus defensores para os perigos da montanha.`;
+ if(text.startsWith('Defesa aprimorada.'))return 'Os artífices voltaram às defesas e aperfeiçoaram seu trabalho. Os próximos invasores encontrariam uma resistência ainda maior.';
+ if(text.startsWith('Magia boa ·'))return text.replace('Magia boa ·','Uma bênção alcançou a fortaleza —');
+ if(text.startsWith('Magia ruim ·'))return text.replace('Magia ruim ·','Uma maldição caiu sobre a fortaleza —');
+ return text;
+}

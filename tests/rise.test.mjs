@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Game} from '../src/engine.js';
+import {Game} from './unlocked-game.mjs';
 const k=r=>`${r.x},${r.y}`;
 function setup(){const g=new Game({seed:82});g.s.baseMorale=30;g.s.resources=500;g.s.gold=500;return g}
 function room(g,x,y,type){const r=g.addRoom(x,y,type);for(const n of g.rooms)if(n!==r&&Math.abs(n.x-x)+Math.abs(n.y-y)===1)g.connectRooms(n,r);return r}

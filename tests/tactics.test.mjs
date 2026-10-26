@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Game} from '../src/engine.js';
+import {Game} from './unlocked-game.mjs';
 import {planDefense,combatStrength,travelTime,enemyClusters} from '../src/tactics.js';
 function branches(count=8){const g=new Game({seed:3});g.s.units=[];for(const sign of [-1,1])for(let x=1;x<=5;x++){const r=g.addRoom(x*sign,0,'cave');g.connectRooms(r,g.room((x-1)*sign,0))}for(let i=0;i<count;i++)g.addUnit('soldier',0,0,true);return g}
 const front=(p,sign)=>p.groups.find(g=>Math.sign(g.threat.x)===sign);

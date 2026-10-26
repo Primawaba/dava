@@ -10,7 +10,7 @@ Quando uma estrutura já tem utilidade própria, ela continua tendo um desbloque
 
 Para o caso excepcional de um pacote com estruturas de tiers diferentes, o acesso do pacote usa o **maior tier**, sem reclassificar seus componentes. Assim, juntar uma estrutura de Tier 1 a outra de Tier 3 não antecipa o Tier 3.
 
-Esta é a organização recomendada para o futuro sistema de pesquisa. Não foram aplicados bloqueios de tier ao menu atual.
+Esta organização foi implementada na versão 1.17.0. Em campanhas novas, apenas Tier 0 começa liberado; projetos de acesso Tier 1/2/3 custam 1/2/3 informações e exigem um projeto pesquisado do tier anterior. Requisitos do ramo e do mapa continuam valendo. Salvamentos antigos preservam o acesso anterior.
 
 ## Pacotes que evitam compras sem função
 
@@ -69,7 +69,7 @@ A Mansão facilita contratar candidatos muito fortes, mas não é obrigatória p
 | Prisão | Inimigos inteligentes | Acumula capturas reais até a capacidade. Não cria prisioneiros automaticamente a cada produção. |
 | Canil | Monstros elegíveis | Um por Canil, ocupando uma vaga. Torna-se aliado leal imediatamente; mantém espécie e força. Cães continuam disponíveis para recrutamento. |
 
-Após uma vitória, a tela mostra os sprites dos inimigos derrotados e os destinos. O jogador distribui no máximo uma nova captura para cada estrutura nessa batalha. O mesmo inimigo não pode ser atribuído a dois destinos. Escolhas incompatíveis ou sem vaga ficam indisponíveis; a confirmação aplica as atribuições juntas. Cancelar não captura ninguém.
+Após uma vitória, a tela mostra os sprites dos inimigos derrotados e os destinos. O jogador distribui no máximo uma nova captura para cada estrutura nessa batalha. O mesmo inimigo não pode ser atribuído a dois destinos. Escolhas incompatíveis ficam indisponíveis; destinos ocupados permitem substituir a captura anterior, que será descartada apenas ao confirmar. Uma Prisão cheia permite escolher qual ocupante sai. a confirmação aplica as atribuições juntas. Cancelar não captura ninguém.
 
 Criaturas incompatíveis, como o Imortal e o guardião final do Cristal do Vazio, não viram prisioneiros domesticáveis. A interface indica quando o tipo não é elegível. Prisioneiros reais mantêm seus registros ao salvar/carregar. Romper a contenção libera os ocupantes preservando espécies e forças.
 
@@ -83,4 +83,4 @@ A captura real também muda o retorno da Prisão: sem a geração automática de
 
 ## Limite do trabalho
 
-Foram implementadas captura, separação de funções, descarte do candidato após tentativa, monstros específicos do Canil e ratos locais. O agrupamento é uma especificação de desbloqueios para o relatório: **a árvore de pesquisa por informações ainda não foi implementada**, e nenhum tier foi antecipado pelo código.
+Foram implementadas captura, separação de funções, descarte após tentativa, monstros específicos do Canil e ratos locais. A versão 1.17 implementa também os grupos e a pesquisa por informações, preservando os tiers individuais e aplicando o maior tier ao acesso de cada pacote. Instalações de invenção e recompensas planares acompanham suas descobertas, sem uma segunda pesquisa.

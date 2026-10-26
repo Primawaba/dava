@@ -9,7 +9,7 @@ for(const dir of ['rooms','sprites','passages','damaged-rooms','events','caverns
 let css=await readFile('style.css','utf8');
 for(const name of ['serif.ttf','fortress.png'])css=css.replaceAll(`./assets/${name}`,await dataUrl(name));
 let bundle=`(()=>{'use strict';\nconst embeddedAssets=${JSON.stringify(embeddedAssets)};\n`;
-for(const name of ['data','captivity','icons','tactics','formations','rise','colony','rule-catalogue','advanced-rules','encounters','worlds','wyrd','monsters','challenges','artifacts','chronicle','interactions','engine','passages','material-shader','room-appearance','room-framing','room-modules','cavern-modules','battle-transitions','colony-view','whole-rooms','terrain-autotile','render','audio','producers','resource-flights','event-art','event-cards','hover','app']){
+for(const name of ['data','research','captivity','icons','tactics','formations','rise','colony','rule-catalogue','advanced-rules','encounters','worlds','wyrd','monsters','challenges','artifacts','chronicle','interactions','engine','passages','material-shader','room-appearance','room-framing','room-modules','cavern-modules','battle-transitions','colony-view','whole-rooms','terrain-autotile','render','audio','producers','resource-flights','event-art','event-cards','hover','app']){
  let source=await readFile(`src/${name}.js`,'utf8');
  source=source.replace(/^import[^\n]*\n/gm,'').replace(/^export /gm,'');
  if(name==='render'){

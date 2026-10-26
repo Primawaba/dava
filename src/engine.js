@@ -1,3 +1,4 @@
+import {installResearch,newResearch,validateResearch} from './research.js';
 import {installInteractions,validateInteractions} from './interactions.js';
 import {installChronicle} from './chronicle.js';
 import {installArtifacts} from './artifacts.js';
@@ -17,12 +18,15 @@ export const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export class Game {
  constructor({seed=Date.now(),name='A Última Fortaleza',difficulty='normal',challengeOptions={layers:false,runes:[]}}={}){
-  this.s={challengeOptions:{layers:challengeOptions.layers===true,runes:Array.isArray(challengeOptions.runes)?challengeOptions.runes:[]},version:1,riseVersion:1,lives:3,rulesVersion:2,immortalVersion:1,barricadeVersion:1,barricades:{},rivalDungeons:[],effectCards:[],nextEffectId:1,passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
+  this.s={research:newResearch(),challengeOptions:{layers:challengeOptions.layers===true,runes:Array.isArray(challengeOptions.runes)?challengeOptions.runes:[]},version:1,riseVersion:1,lives:3,rulesVersion:2,immortalVersion:1,barricadeVersion:1,barricades:{},rivalDungeons:[],effectCards:[],nextEffectId:1,passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
   this.projectiles=[];this.effects=[];this.dead=[];this.events=[];this.tickBudget=0;
   this.addRoom(0,0,'gate');for(let i=0;i<5;i++)this.addUnit('soldier',0,0,true);
   this.shuffleDeck();
   this.note('Os portões se abrem. Cinco guerreiros leais aguardam suas ordens.','good');
  }
+ // Reuse paths across frames only while every graph input is unchanged.
+ // Mutating operations still clear _routeCache immediately inside a scope.
+ withQueryCache(fn,reuse=true){if(this._queryDepth){this._queryDepth++;try{return fn()}finally{this._queryDepth--}}const signature=JSON.stringify([this.s.rooms,this.s.passages,this.s.barricades,this.s.cellBars,this.s.secretPassages,this.s.artifacts,this.s.magicFlags,this.s.discoveredInventions,this.s.activePlane,this.s.units.filter(u=>u.team==='neutral'||u.type==='immortal'||u.type==='golem').map(u=>[u.id,u.type,u.team,u.hp>0,u.territory])]);if(this._queryRooms!==this.s.rooms||this._querySignature!==signature){this._queryPaths=new Map();this._querySignature=signature;this._queryRooms=this.s.rooms;}this._routeCache=reuse?this._queryPaths:new Map();this._queryDepth=1;try{return fn()}finally{this._queryDepth=0;if(reuse&&this._routeCache!==this._queryPaths){this._querySignature=null;this._queryPaths=null;}this._routeCache=null;}}
  get rooms(){return Object.values(this.s.rooms)}
  get allies(){return this.s.units.filter(u=>u.team==='ally'&&u.hp>0)}
  get defenders(){return this.allies.filter(u=>u.type!=='rat')}
@@ -148,8 +152,8 @@ export class Game {
  path(start,end,team='ally',unit=null){
   const sk=typeof start==='string'?start:key(Math.round(start.x),Math.round(start.y));
   const ek=typeof end==='string'?end:key(Math.round(end.x),Math.round(end.y));
-  const ck=`${sk}|${ek}|${team}|${unit?.type||'-'}|${unit?.team||'-'}|${unit?.power||'-'}`;if(this._routeCache?.has(ck))return this._routeCache.get(ck);
-  const finish=result=>{this._routeCache?.set(ck,result);return result};
+  const ck=`${sk}|${ek}|${team}|${unit?.type||'-'}|${unit?.team||'-'}|${unit?.power||'-'}|${(unit?.traits||[]).join(',')}|${!!unit?.flying}|${!!unit?.cosmic}|${team==='enemy'&&unit?this.unitData(unit).speed:'-'}`;if(this._routeCache?.has(ck))return this._routeCache.get(ck);
+  const finish=result=>{if(this._routeCache?.size>=4096)this._routeCache.delete(this._routeCache.keys().next().value);this._routeCache?.set(ck,result);return result};
   if(!this.s.rooms[sk]||!this.s.rooms[ek])return finish(null);
   if(sk===ek)return finish([]);
   if(!this.passable(this.s.rooms[ek],team,unit))return finish(null);
@@ -506,7 +510,7 @@ export class Game {
   dt=Math.min(dt,0.1)*this.s.speed;this.s.seconds+=dt;
   for(const e of this.effects)e.life-=dt;this.effects=this.effects.filter(e=>e.life>0);
   for(const p of this.projectiles){p.t+=dt/p.duration;if(p.t>=1){const t=this.s.units.find(u=>u.id===p.target);if(t&&t.hp>0&&this.lineOfSight({x:p.x,y:p.y},t)&&Math.hypot(t.x-p.tx,t.y-p.ty)<.6)this.damage(t,p.damage,{attacker:p.attacker})}}this.projectiles=this.projectiles.filter(p=>p.t<1);
-  this._routeCache=new Map();this.refreshDefensePlan();const actors=[...this.s.units].filter(u=>u.hp>0&&u.team!=='neutral');const hits=[];
+  this._routeCache??=new Map();this.refreshDefensePlan();const actors=[...this.s.units].filter(u=>u.hp>0&&u.team!=='neutral');const hits=[];
   for(const u of actors){
    if(this.presentationEnabled&&this.s.effectCards?.length)break;
    u.attack=Math.max(0,u.attack-dt);u.cooldown-=dt;u.stun=Math.max(0,u.stun-dt);if(u.stun>0)continue;
@@ -541,7 +545,6 @@ export class Game {
   for(const h of hits)this.damage(h.target,h.damage,{attacker:h.attacker});
   this.s.units=this.s.units.filter(u=>u.hp>0);
   if(this.s.status==='playing'&&!this.enemies.length)this.endCombat();
-  this._routeCache=null;
  }
  endCombat(){this.s.combat=false;this.s.paused=false;this.s.battles++;this.projectiles=[];this.effects=[];
   const revived=new Set();for(const h of this.rooms.filter(r=>r.type==='hospital'&&this.active(r))){const u=this.dead.find(u=>!revived.has(u.id)&&(this.s.magicFlags?.hospitalGlobal||Math.abs(u.x-h.x)<=2&&Math.abs(u.y-h.y)<=2));if(u){revived.add(u.id);u.hp=u.maxHp;if(!u.loyal)u.hospitalMutinyPending=true;this.s.units.push(u);this.note('O Hospital trouxe um defensor de volta.','good');this.effect('Resgate do hospital','Um defensor caído foi recuperado pelo hospital e voltou à fortaleza.','good')}}
@@ -729,7 +732,7 @@ export class Game {
   }
   for(const r of Object.values(s.rooms))if(r.type!=='sealed'&&!r.builtPartOf&&!DAMAGEABLE_ROOMS.includes(r.type))r.damaged=false;
   for(const r of Object.values(s.rooms))if(r.cavernGroup===key(r.x,r.y)&&r.type!=='cave'&&!r.playerBuilt&&ROOMS[r.type]?.r===undefined){r.bossRoot=r.cavernGroup;for(const member of Object.values(s.rooms))if(member.cavernGroup===r.cavernGroup&&member.type==='cave')member.bossRoot=r.cavernGroup;}
-  if(s.returnPhase&&(!Number.isFinite(s.returnPhase.elapsed)||s.returnPhase.elapsed<0||s.returnPhase.elapsed>300000||!Array.isArray(s.returnPhase.units)||s.returnPhase.units.length>3000||s.returnPhase.units.some(u=>!validUnit(u))))throw Error('Retorno inválido.');validateRiseState(s,data.dead);validateColony(s);validateInteractions(s);validateAdvanced(s);validateWorlds(s);validateChallenges(s);for(const r of Object.values(s.rooms)){delete r.longCave;delete r.longPanel;if(r.type==='altar'&&!r.dedication)r.dedication='fortune';if(!s.riseVersion&&r.type==='solitary'&&r.prisoners&&!r.captive)r.captive={type:'raider',power:1,name:'Prisioneiro antigo',range:.42,size:1,mutiny:12};}s.riseVersion=1;const g=new Game();g.s=s;g.s.name=s.name.slice(0,40);g.s.paused=s.combat;for(const u of s.units){u.order='defend';if(u.frontTarget&&!s.units.some(e=>e.id===u.frontTarget&&e.team==='enemy'&&e.hp>0))u.frontTarget=null;if(u.team==='ally'&&['golem','siege'].includes(u.type))u.size=UNITS[u.type].size;else u.size??=(u.team!=='ally'?ENEMIES[u.type]?.size:UNITS[u.type]?.size)||1;u.facing??=1;if(u.moveTarget&&!s.rooms[u.moveTarget])u.moveTarget=null;}g.projectiles=data.projectiles;g.dead=data.dead;
+  if(s.returnPhase&&(!Number.isFinite(s.returnPhase.elapsed)||s.returnPhase.elapsed<0||s.returnPhase.elapsed>300000||!Array.isArray(s.returnPhase.units)||s.returnPhase.units.length>3000||s.returnPhase.units.some(u=>!validUnit(u))))throw Error('Retorno inválido.');validateResearch(s);validateRiseState(s,data.dead);validateColony(s);validateInteractions(s);validateAdvanced(s);validateWorlds(s);validateChallenges(s);for(const r of Object.values(s.rooms)){delete r.longCave;delete r.longPanel;if(r.type==='altar'&&!r.dedication)r.dedication='fortune';if(!s.riseVersion&&r.type==='solitary'&&r.prisoners&&!r.captive)r.captive={type:'raider',power:1,name:'Prisioneiro antigo',range:.42,size:1,mutiny:12};}s.riseVersion=1;const g=new Game();g.s=s;g.s.name=s.name.slice(0,40);g.s.paused=s.combat;for(const u of s.units){u.order='defend';if(u.frontTarget&&!s.units.some(e=>e.id===u.frontTarget&&e.team==='enemy'&&e.hp>0))u.frontTarget=null;if(u.team==='ally'&&['golem','siege'].includes(u.type))u.size=UNITS[u.type].size;else u.size??=(u.team!=='ally'?ENEMIES[u.type]?.size:UNITS[u.type]?.size)||1;u.facing??=1;if(u.moveTarget&&!s.rooms[u.moveTarget])u.moveTarget=null;}g.projectiles=data.projectiles;g.dead=data.dead;
   if(s.immortalVersion!==undefined&&s.immortalVersion!==1)throw Error('Versão de criatura imortal inválida.');
   for(const r of g.rooms){if(r.type==='invincible'){
    if(s.immortalVersion===undefined){r.closed=false;g.placeImmortal(r)}
@@ -737,7 +740,7 @@ export class Game {
   }else if(r.immortalId)throw Error('Criatura imortal fora da câmara.');}
   for(const u of g.s.units)if(u.type==='immortal'&&(u.hp<=0||u.team!=='neutral'||g.s.rooms[u.home]?.type!=='invincible'||g.s.rooms[u.home].immortalId!==u.id||u.x!==g.s.rooms[u.home].x||u.y!==g.s.rooms[u.home].y))throw Error('Criatura imortal inválida.');
   for(const r of g.rooms)if(r.type==='sealed'&&r.damaged)g.openSealedRoom(r,true);
-  g.s.immortalVersion=1;g.events=[];delete g.s.returnPhase;return g;
+  g.s.research??=newResearch(true);g.s.immortalVersion=1;g.events=[];delete g.s.returnPhase;return g;
  }
 }
 
@@ -762,3 +765,8 @@ installArtifacts(Game);
 installChronicle(Game);
 
 installInteractions(Game);
+
+installResearch(Game);
+
+const uncachedUpdate=Game.prototype.update;
+Game.prototype.update=function(dt){return this.withQueryCache(()=>uncachedUpdate.call(this,dt),false);};

@@ -3,6 +3,16 @@
 Jogo single player de exploração, construção e defesa de uma fortaleza subterrânea. Interface em português, combate em tempo real com IA, partidas reproduzíveis por semente e distribuição web instalável (PWA).
 
 
+## Atualização 1.17.0 — desempenho, pesquisa e crônica
+
+- Pesquisa em **Construções → Pesquisas**: sete projetos básicos de Tier 0 desde o início. Cada Informação obtida com um interrogatório bem-sucedido concede 1 ponto, além do efeito original da carta de RISE. Projetos de Tier 1/2/3 custam 1/2/3 informações. Um projeto do tier anterior abre acesso ao próximo; requisitos específicos continuam valendo. Engenharia militar, alvenaria e recrutamento de prisioneiros são pacotes. Solitária mantém Tier 1, mas seu pacote com Contratação tem acesso Tier 3.
+- Salvamentos anteriores à pesquisa mantêm todos os projetos já disponíveis. Uma campanha nova usa a progressão desde o começo. Inventos e recompensas especiais continuam ligados às suas descobertas.
+- Capturas ocupadas podem ser substituídas na tela após a vitória. O ocupante anterior só é descartado ao confirmar. Prisão cheia permite escolher qual prisioneiro sai; Canil preserva espécie e força do novo aliado. Cancelar conserva os anteriores.
+- Crônica narrativa, incluindo releitura dos registros antigos, em ordem cronológica no diário e na exportação.
+- Iluminação com máscaras reutilizáveis, orçamento por quadro e caches limitados; caminhos reutilizados com invalidação de mapa/perigos/imunidades; NPCs sincronizados uma vez por atualização. Artes aprovadas preservadas.
+
+`npm run test:progression` verifica pesquisa, substituição, diário e HTML offline em desktop e toque. `npm run test:performance` exercita 64 salas e 96 rodadas de produção. Detalhes em [notas da versão](reports/ATUALIZACAO-1.17.md).
+
 ## Atualização 1.16.0 — captura e guarnições locais
 
 - Tela de captura após a vitória, com sprites dos derrotados e atribuição por estrutura. Um inimigo não pode ser duplicado; cada estrutura recebe até uma nova captura por batalha. Escolhas são aplicadas juntas ao confirmar e podem ser salvas ainda pendentes.
@@ -11,7 +21,7 @@ Jogo single player de exploração, construção e defesa de uma fortaleza subte
 - Ratos permanecem nos esgotos, combatem apenas oponentes que entram neles e não participam das frentes móveis nem das expedições. A força móvel do HUD os exclui.
 - Prisões guardam capturas reais, sem produzir ocupantes automaticamente. Contenção rompida libera as espécies efetivamente presas.
 
-[Grupos de desbloqueio, com tiers preservados](reports/GRUPOS-DE-DESBLOQUEIO.md) · [Relatório de balanceamento](reports/BALANCEAMENTO-CONSTRUCOES-1.15.1.md). A árvore de pesquisa ainda é uma especificação; os bloqueios por informação não foram implementados nesta atualização.
+[Grupos de desbloqueio, com tiers preservados](reports/GRUPOS-DE-DESBLOQUEIO.md) · [Relatório de balanceamento](reports/BALANCEAMENTO-CONSTRUCOES-1.15.1.md). O relatório descreve a especificação original, implementada na versão 1.17.0.
 
 Validação: 335 testes de regras, 21 verificações gerais de navegador e um fluxo específico de captura em desktop, toque 390 px, salvar/carregar e HTML offline. `npm run test:captivity` executa esse fluxo.
 

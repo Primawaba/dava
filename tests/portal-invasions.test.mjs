@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Game} from '../src/engine.js';
+import {Game} from './unlocked-game.mjs';
 function scene(type='portal',connected=true){const g=new Game({seed:52}),r=g.addRoom(1,0,type);if(connected)g.connectRooms(g.room(0,0),r);g.roll=()=>1;return{g,r}}
 test('portal and stabilized portal both check every turn, even when disconnected from the base',()=>{for(const type of ['portal','stabilizer'])for(const connected of [true,false]){const {g,r}=scene(type,connected);assert(g.advanceTurn().ok);assert(g.enemies.length>0,`${type}, ${connected}`);assert(g.s.combat);assert.equal(r.portalRoll,1);assert(g.events.some(e=>e.type==='portal-invasion'))}});
 test('each portal rolls exactly once per turn, with visible no-invasion results',()=>{const {g,r}=scene();let checks=0;g.roll=()=>{checks++;return 3};g.income();assert.equal(checks,1);assert.equal(g.enemies.length,0);g.income();assert.equal(checks,1);assert(g.s.log.some(e=>e.text.includes('rolagem 3/4')));g.advanceTurn();assert.equal(checks,2);assert.equal(r.portalCheckedTurn,g.s.turn)});

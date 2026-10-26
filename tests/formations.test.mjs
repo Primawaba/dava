@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Game,key} from '../src/engine.js';
+import {Game,key} from './unlocked-game.mjs';
 import {visualRoom,sharedBossRoom} from '../src/room-modules.js';
 const scene=()=>{const g=new Game({seed:8});g.s.resources=500;g.s.gold=500;g.s.baseMorale=100;const r=g.addRoom(0,1,'cave');g.connectRooms(g.room(0,0),r);return g};
 test('water, magma and crater sources are never drainable; flooded ordinary rooms remain drainable',()=>{for(const type of ['water','lava','crater']){const g=scene(),source=g.addRoom(1,1,type),target=g.room(0,1);g.connectRooms(source,target);g.spreadHazards();const gold=g.s.gold;assert(!g.action('drain',1,1).ok);assert.equal(g.s.gold,gold);assert.equal(source.type,type);assert(g.action('drain',0,1).ok);assert.deepEqual(g.roomHazards(target),[]);assert.equal(source.type,type);g.spreadHazards();assert.deepEqual(g.roomHazards(target),[])}});

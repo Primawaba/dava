@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Game} from '../src/engine.js';
+import {Game} from './unlocked-game.mjs';
 function fort(){const g=new Game({seed:82}),a=g.room(0,0),b=g.addRoom(1,0,'barracks'),c=g.addRoom(0,1,'masonry');g.connectRooms(a,b);g.connectRooms(a,c);g.s.gold=500;g.s.resources=500;return{g,a,b,c}}
 test('barricades belong to a selected open edge, can coexist with traps, and cannot be built inside a room',()=>{const{g,a,b,c}=fort();a.trap={kind:'damage',level:1,armed:true};assert(g.fortifyPassage(a,b,'defensive').ok);assert(g.barricade(b,a));assert(!g.barricade(a,c));assert(!a.barricade);assert(!b.barricade);assert(!g.action('defense',1,0,'defensive').ok);assert(!g.fortifyPassage(a,b,'offensive').ok);assert(!g.fortifyPassage(b,c,'defensive').ok)});
 test('every barricade kind blocks liquids and gases on that edge only',()=>{for(const kind of ['defensive','offensive'])for(const hazard of ['water','lava','crater','gas','miasma','blindgas','flammable']){const{g,a,b}=fort();assert(g.fortifyPassage(a,b,kind).ok);b.type=hazard;g.spreadHazards();assert.equal(a.contaminant,null,kind+hazard);assert(!a.damaged);assert(g.allies.every(u=>u.hp>0))}});

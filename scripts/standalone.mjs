@@ -1,5 +1,7 @@
-import {readFile,readdir,mkdir,writeFile} from 'node:fs/promises';
+import {readFile,readdir,mkdir,writeFile,rm,copyFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {resolve} from 'node:path';
 
 // Self-contained build for opening directly with file://, without a server.
 const mime={svg:'image/svg+xml',png:'image/png',ttf:'font/ttf'};
@@ -35,7 +37,29 @@ html=html.replace('<link rel="manifest" href="./manifest.webmanifest">','')
 if(/(?:src|href)=["']\.\//.test(html)||/url\(['"]?\.\/assets\//.test(html))throw Error('Unembedded external asset remains.');
 await mkdir('releases',{recursive:true});
 await writeFile('releases/CONQUER-Jogar.html',html);
-await writeFile('JOGAR-CONQUER.html',html);
+// The player-facing entry is small; keep the large single-file edition optional.
+const portable='releases/portable';
+await rm(portable,{recursive:true,force:true});await mkdir(portable+'/jogo',{recursive:true});
+const assetDeclaration=`const embeddedAssets=${JSON.stringify(embeddedAssets)};`;
+const motor=bundle.replace(assetDeclaration,'const embeddedAssets=window.CONQUER_ART;');
+await writeFile(portable+'/jogo/arte.js',`window.CONQUER_ART=${JSON.stringify(embeddedAssets)};`);
+await writeFile(portable+'/jogo/motor.js',motor+`\nif(window.conquerBoot)window.conquerBoot(true);`);
+await writeFile(portable+'/jogo/visual.css',css);
+let entry=await readFile('index.html','utf8');
+entry=entry.replace('<link rel="manifest" href="./manifest.webmanifest">','')
+ .replace('href="./assets/icon.svg"',`href="${await dataUrl('icon.svg')}"`)
+ .replace('href="./style.css"','href="./jogo/visual.css"')
+ .replace('<script type="module" src="./src/app.js"></script>',`<script defer src="./jogo/arte.js" onerror="conquerBoot(false)"></script><script defer src="./jogo/motor.js" onerror="conquerBoot(false)"></script>`)
+ .replace('<body>',`<body><div id="boot-status" role="status" style="position:fixed;top:0;left:0;right:0;z-index:99999;padding:12px;background:#17201c;color:#e7e1ce;font:14px Arial;text-align:center">Carregando o jogo…</div><script>window.conquerBoot=function(ok){var e=document.getElementById('boot-status');if(ok)e.hidden=true;else{e.hidden=false;e.textContent='Não foi possível abrir o jogo. Extraia o ZIP inteiro e mantenha a pasta jogo junto deste HTML. Depois abra o HTML no Chrome ou Edge.';}};</script>`);
+const instructions='CONQUER — COMO ABRIR\r\n\r\n1. Clique com o botão direito no ZIP e escolha Extrair tudo.\r\n2. Abra a pasta extraída.\r\n3. Abra JOGAR-CONQUER.html no Chrome ou Edge.\r\n\r\nMantenha a pasta jogo junto do HTML. Não abra o HTML dentro do ZIP.\r\nNão é necessário instalar programas nem iniciar servidor.\r\nPara usar uma partida exportada, escolha Carregar e importe o JSON.\r\n';
+await writeFile(portable+'/JOGAR-CONQUER.html',entry);
+await writeFile(portable+'/COMO-ABRIR.txt',instructions);
+await writeFile('JOGAR-CONQUER.html',entry);
+await mkdir('jogo',{recursive:true});
+for(const file of ['arte.js','motor.js','visual.css'])await copyFile(portable+'/jogo/'+file,'jogo/'+file);
+await rm('CONQUER-PC.zip',{force:true});
+execFileSync('zip',['-q','-9',resolve('CONQUER-PC.zip'),'JOGAR-CONQUER.html','COMO-ABRIR.txt','jogo/arte.js','jogo/motor.js','jogo/visual.css'],{cwd:portable});
+console.log(`PC package ready: CONQUER-PC.zip; entry HTML ${(Buffer.byteLength(entry)/1024).toFixed(1)} KiB.`);
 const checksum=createHash('sha256').update(html).digest('hex');
 await writeFile('releases/CONQUER-Jogar.sha256',`${checksum}  CONQUER-Jogar.html\n`);
 console.log(`Standalone ready: releases/CONQUER-Jogar.html (${(Buffer.byteLength(html)/1024/1024).toFixed(2)} MiB). No server or installation required.`);

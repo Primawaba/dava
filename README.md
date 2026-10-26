@@ -103,13 +103,13 @@ O [relatório de mecânicas da versão 1.11.0](RELATORIO-MECANICAS.md) compara a
 
 ## Baixar e abrir no computador
 
-1. Na página do repositório no GitHub, clique em **Code → Download ZIP**.
-2. Extraia o ZIP baixado.
-3. Na pasta extraída, abra **JOGAR-CONQUER.html** com Chrome ou Edge.
-4. Clique em **Nova fortaleza**.
+[Baixar o pacote de jogo para PC (ZIP)](https://raw.githubusercontent.com/Primawaba/dava/main/CONQUER-PC.zip).
 
-Esse HTML contém o jogo inteiro e não precisa de instalação ou servidor. No GitHub, clicar no nome do HTML mostra seu código; baixe o ZIP antes de abri-lo no computador.
+1. No ZIP baixado, escolha **Extrair tudo**.
+2. Abra **JOGAR-CONQUER.html** na pasta extraída, com Chrome ou Edge.
+3. Mantenha a pasta **jogo** junto do HTML.
 
+O pacote contém apenas cinco arquivos de execução, sem fontes de desenvolvimento, PDFs ou atlas de produção. Não abra o HTML dentro do ZIP. Não exige instalação nem servidor. O HTML de entrada tem aproximadamente 9 KiB; código e arte ficam em arquivos separados, evitando o documento de 31 MiB da entrega anterior. O tamanho total do jogo permanece semelhante: esta mudança reduz o documento processado pela prévia do Explorador, sem remover artes.
 
 ## Exploração por setas — versão 1.3.0
 
@@ -126,18 +126,17 @@ Execute `npm run test:directions` para verificar a interação por mouse, toque,
 
 ## Testar sem instalar nada
 
-O arquivo `JOGAR-CONQUER.html` na raiz do repositório é a edição pronta para abrir. Também é gerado como `releases/CONQUER-Jogar.html`; abra esse arquivo com Chrome ou Edge no computador. Ele contém o código, as fontes, a ilustração de abertura e as 273 artes de salas e 34 sprites. Não precisa descompactar, instalar Node, acessar a internet ou iniciar servidor. Clique em **Nova fortaleza** para começar. Use **Salvar** e, para preservar uma cópia independente do navegador, **Exportar jogo**.
+A distribuição recomendada é **CONQUER-PC.zip**. Extraia todo o conteúdo e abra **JOGAR-CONQUER.html**; a pasta **jogo** deve permanecer ao lado dele. O JavaScript é clássico, compatível com abertura local sem servidor. Todos os recursos gráficos do canvas usam data URLs, preservando exportação PNG sem bloqueio de origem.
 
-Essa edição reúne todos os recursos no próprio HTML e usa JavaScript clássico para permitir abertura por `file://`. A execução com a rede desativada é validada pelo teste autônomo. A política administrativa do Chromium desta máquina bloqueia a navegação por `file://`; nesse ambiente, o teste renderiza o mesmo HTML em um documento de loopback interceptado, sem servidor e sem buscar recursos externos. As restrições de pré-visualização de arquivos no Android/iOS dependem do aplicativo usado para abrir o HTML; a versão web hospedada continua sendo o caminho indicado para testar em aparelhos móveis reais.
-
-Para gerar e verificar novamente essa edição:
+A edição monolítica opcional continua sendo gerada em `releases/CONQUER-Jogar.html`, mas não é mais o HTML da raiz nem o download recomendado. Ela tem cerca de 31 MiB.
 
 ```sh
 npm run build:standalone
+npm run test:portable
 npm run test:standalone
 ```
 
-O checksum fica em `releases/CONQUER-Jogar.sha256`. As instruções HTTP abaixo se referem à edição web com arquivos separados; a edição `CONQUER-Jogar.html` já possui tudo embutido.
+O teste portátil extrai o ZIP gerado e verifica os arquivos extraídos. A política administrativa do Chromium deste ambiente bloqueia navegação `file://`; nessa situação, cada arquivo extraído é servido por interceptação de requisições com a rede desativada. Isso verifica a execução no navegador, mas não reproduz o Explorador do Windows. Pré-visualizadores de arquivos em celulares podem bloquear JavaScript; a versão hospedada é indicada nesse caso.
 
 ## Jogar e desenvolver
 

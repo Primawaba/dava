@@ -18,7 +18,7 @@ export const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export class Game {
  constructor({seed=Date.now(),name='A Última Fortaleza',difficulty='normal',challengeOptions={layers:false,runes:[]}}={}){
-  this.s={research:newResearch(),challengeOptions:{layers:challengeOptions.layers===true,runes:Array.isArray(challengeOptions.runes)?challengeOptions.runes:[]},version:1,riseVersion:1,lives:3,rulesVersion:2,immortalVersion:1,barricadeVersion:1,barricades:{},rivalDungeons:[],effectCards:[],nextEffectId:1,passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
+  this.s={layerVersion:2,layerHistory:{base:{current:challengeOptions.runes?.includes('nightmares')?7:0,transitions:[]}},research:newResearch(),challengeOptions:{layers:challengeOptions.layers===true,runes:Array.isArray(challengeOptions.runes)?challengeOptions.runes:[]},version:1,riseVersion:1,lives:3,rulesVersion:2,immortalVersion:1,barricadeVersion:1,barricades:{},rivalDungeons:[],effectCards:[],nextEffectId:1,passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
   this.projectiles=[];this.effects=[];this.dead=[];this.events=[];this.tickBudget=0;
   this.addRoom(0,0,'gate');for(let i=0;i<5;i++)this.addUnit('soldier',0,0,true);
   this.shuffleDeck();
@@ -205,18 +205,18 @@ export class Game {
   const approach=this.room(choice.from.x,choice.from.y),depth=[0,5].includes(this.s.activePlane)?Math.abs(x)+Math.abs(y):Math.max(0,y);
   if(!this.explorationTurn())return{ok:false,reason:'Um portal iniciou uma invasão antes da exploração.'};
   if(this.fluidSource(approach)&&(x!==approach.x||y>approach.y))approach.flowActive=true;
-  this.s.maxDepth=Math.max(this.s.maxDepth,depth);let c=this.draw(depth);if(this.s.activePlane===3&&c.suit==='♠')c={...c,originalSuit:c.suit,suit:'♣'};if(this.s.activePlane===6&&c.suit==='♣')c={...c,originalSuit:c.suit,suit:'♠'};if([4,12].includes(this.s.activePlane)&&c.suit==='♦')c={...c,originalSuit:c.suit,suit:'♥'};if(this.s.activePlane===11&&c.suit==='♦')c={...c,alternative:'foreign-prison'};
-  while(depth<=1&&c.suit==='♠')c=this.draw(y);
+  this.s.maxDepth=Math.max(this.s.maxDepth,depth);let c=this.drawDiscovery(depth);if(this.s.activePlane===3&&c.suit==='♠')c={...c,originalSuit:c.suit,suit:'♣'};if(this.s.activePlane===6&&c.suit==='♣')c={...c,originalSuit:c.suit,suit:'♠'};if([4,12].includes(this.s.activePlane)&&c.suit==='♦')c={...c,originalSuit:c.suit,suit:'♥'};if(this.s.activePlane===11&&c.suit==='♦')c={...c,alternative:'foreign-prison'};
+  while(depth<=1&&c.suit==='♠')c=this.drawDiscovery(y);
   if(this.hasRune('war')&&c.rank>=11&&['♥','♦'].includes(c.suit))c={...c,alternative:'siege'};this.s.card=c;let type='cave',enemy=0,enemyType='raider';let msg='',formation=null,wyrdId=0;
   if(this.s.activePlane==null&&y>=12&&!this.rooms.some(r=>r.type==='void')&&!this.s.artifacts.includes('void')){type='void';enemy=110;enemyType='guardian';msg='O Cristal do Vazio! Seu guardião ancestral desperta.'}
   else if(this.s.activePlane!=null&&depth>=6&&!this.s.planeWon){type='void';enemy=100+this.s.activePlane*15;enemyType='guardian';msg='O guardião deste plano defende um artefato.';}
   else if(c.alternative==='foreign-prison'){type='prison';msg='Uma cela de prisioneiros foi encontrada.';}
   else if(c.alternative==='siege'){type='desolate';enemy=40;enemyType='raider';msg='Um acampamento de cerco foi revelado.';}
   else if(c.suit==='♥'||c.suit==='♦'){
-   let value=c.rank+depth;if(c.suit==='♥'&&this.hasRune('drought'))value=Math.floor(value/2);if(c.suit==='♦'&&(this.hasRune('greed')||this.layer()===5))value*=2;if(c.suit==='♦'&&this.layer()===3)value=0;
+   let value=c.rank+depth;if(c.suit==='♥'&&this.hasRune('drought'))value=Math.floor(value/2);if(c.suit==='♦'&&(this.hasRune('greed')||this.layerForDiscovery(x,y)===5))value*=2;if(c.suit==='♦'&&this.layerForDiscovery(x,y)===3)value=0;
    if(c.suit==='♦'&&this.rooms.some(r=>r.type==='inspection'&&Math.abs(r.x-x)<=2&&Math.abs(r.y-y)<=2&&this.active(r)))value*=2;
    if(c.suit==='♦'&&this.rooms.some(r=>r.type==='altar'&&(r.dedication||'fortune')==='fortune'&&this.active(r)&&Math.abs(r.x-x)<=3&&Math.abs(r.y-y)<=3&&this.allies.some(u=>u.type==='cleric'&&u.home===key(r.x,r.y))))value+=3*this.shrineMultiplier(this.rooms.find(r=>r.type==='altar'&&(r.dedication||'fortune')==='fortune'&&this.active(r)&&Math.abs(r.x-x)<=3&&Math.abs(r.y-y)<=3));
-   if(c.suit==='♦'&&this.s.magicFlags?.diamondDust){value=0;this.s.magicFlags.diamondDust=false;}c.bonus=value-c.rank;this.gain(c.suit==='♥'?value:0,c.suit==='♦'?value:0);msg=`${c.suit} ${c.rank} · Você encontrou ${value} ${c.suit==='♥'?'recursos':'riquezas'}.`;
+   if(c.suit==='♦'&&this.s.magicFlags?.diamondDust){value=0;this.s.magicFlags.diamondDust=false;}if(c.suit==='♦'&&this.layerForDiscovery(x,y)===3)value=0;c.bonus=value-c.rank;this.gain(c.suit==='♥'?value:0,c.suit==='♦'?value:0);msg=`${c.suit} ${c.rank} · Você encontrou ${value} ${c.suit==='♥'?'recursos':'riquezas'}.`;
    if(c.rank===13&&c.suit==='♦'&&this.has('games')){this.s.gold=Math.floor(this.s.gold/2);this.note('A banca quebrou: a Sala de Jogos perdeu metade das riquezas.','warn')}
   }else if(c.suit==='♣'){
    let n=c.rank;if(n===1&&depth>=5){wyrdId=this.tableCard().rank;n=0;type=WYRD[wyrdId-1][1];}else type=NATURAL[n-1];
@@ -360,7 +360,7 @@ export class Game {
   let res=0,gold=0;const payouts=[];
   for(const r of this.rooms){if(r.discoveryRoot&&r.discoveryRoot!==key(r.x,r.y)||!this.active(r)||r.wyrdId||r.foreignCell)continue;const beforeRes=res,beforeGold=gold,sourceType=r.planarReward==='honey'?'hive':r.type;let productionCard=null;
    res+=r.legendaryForest?20:r.type==='forest'||r.planarReward==='honey'?2:0;gold+=({mine:2,parlor:2,elemental:4,city:3}[r.type]||0);if(r.type==='hive')res+=2;
-   if(r.type==='crystal'){const card=this.draw(Math.max(0,r.y));productionCard={...card,bonus:Math.max(0,r.y)};if(card.suit==='♦'&&card.rank===1){for(const part of this.rooms.filter(p=>p===r||r.discoveryRoot&&p.discoveryRoot===r.discoveryRoot)){part.type='cave';part.exhausted=true;}this.events.push({type:'producer-destroyed',source:key(r.x,r.y),sourceType:'crystal',x:r.x,y:r.y,card:productionCard});this.effect('Caverna esgotada','O cristal se esgotou. A sala continua transitável, mas não produz mais riquezas e não pode receber construções.','neutral');this.note('Uma caverna de cristal se esgotou. O espaço continua transitável.','warn')}else gold+=card.rank+Math.max(0,r.y)}
+   if(r.type==='crystal'){const card=this.draw(Math.max(0,r.y));productionCard={...card,bonus:this.layerReward(card,card.rank+Math.max(0,r.y),r)-card.rank};if(card.suit==='♦'&&card.rank===1&&this.layer(r)!==3){for(const part of this.rooms.filter(p=>p===r||r.discoveryRoot&&p.discoveryRoot===r.discoveryRoot)){part.type='cave';part.exhausted=true;}this.events.push({type:'producer-destroyed',source:key(r.x,r.y),sourceType:'crystal',x:r.x,y:r.y,card:productionCard});this.effect('Caverna esgotada','O cristal se esgotou. A sala continua transitável, mas não produz mais riquezas e não pode receber construções.','neutral');this.note('Uma caverna de cristal se esgotou. O espaço continua transitável.','warn')}else gold+=this.layerReward(card,card.rank+Math.max(0,r.y),r)}
    if(r.type==='prison'&&r.prisoners===20)gold+=20;
    if(r.type==='games')gold+=5*this.rooms.filter(n=>this.isHousing(n)&&Math.abs(n.x-r.x)<=2&&Math.abs(n.y-r.y)<=2).length;
    if(res>beforeRes||gold>beforeGold)payouts.push({resources:res-beforeRes,gold:gold-beforeGold,source:key(r.x,r.y),sourceType,x:r.x,y:r.y,card:productionCard});
@@ -645,8 +645,8 @@ export class Game {
    for(let i=0;i<queue.length;i++){
     const {r,lateral}=queue[i],rk=key(r.x,r.y);if((seen.get(rk)??Infinity)<=lateral)continue;seen.set(rk,lateral);
     if(r!==source&&(r.closed||!gas&&(['bridge','drawbridge'].includes(r.type)||r.type==='pump'&&!r.pumpOpen)||r.drainedSources?.includes(sourceKey)))continue;
-    r.hazardOrigins??=[];if(!r.hazardOrigins.includes(sourceKey))r.hazardOrigins.push(sourceKey);if(gas)r.gas=sourceType;else r.fluid=sourceType;
-    if(!gas&&['lava','crater'].includes(sourceType)&&!(this.s.artifacts.includes('lava')&&this.damageable(r))&&!(['bridge','drawbridge'].includes(r.type)||r.type==='pump'&&!r.pumpOpen))this.damageRoom(r);
+    r.hazardOrigins??=[];if(!r.hazardOrigins.includes(sourceKey))r.hazardOrigins.push(sourceKey);const localFluid=!gas&&sourceType==='water'&&this.layer(r)===1?'lava':sourceType;if(gas)r.gas=sourceType;else r.fluid=localFluid;
+    if(!gas&&['lava','crater'].includes(localFluid)&&!(this.s.artifacts.includes('lava')&&this.damageable(r))&&!(['bridge','drawbridge'].includes(r.type)||r.type==='pump'&&!r.pumpOpen))this.damageRoom(r);
     if(!gas&&source.flowActive===false)continue;
     for(const[dx,dy]of DIRS){if((this.s.activePlane!==5&&(gas&&dy===1||!gas&&dy===-1))||dx&&lateral>=2)continue;const n=this.room(r.x+dx,r.y+dy);if(n&&this.linked(r,n)&&!this.barricade(r,n))queue.push({r:n,lateral:lateral+(dx?1:0)})}
    }
@@ -740,7 +740,7 @@ export class Game {
   }else if(r.immortalId)throw Error('Criatura imortal fora da câmara.');}
   for(const u of g.s.units)if(u.type==='immortal'&&(u.hp<=0||u.team!=='neutral'||g.s.rooms[u.home]?.type!=='invincible'||g.s.rooms[u.home].immortalId!==u.id||u.x!==g.s.rooms[u.home].x||u.y!==g.s.rooms[u.home].y))throw Error('Criatura imortal inválida.');
   for(const r of g.rooms)if(r.type==='sealed'&&r.damaged)g.openSealedRoom(r,true);
-  g.s.research??=newResearch(true);g.s.immortalVersion=1;g.events=[];delete g.s.returnPhase;return g;
+  g.s.research??=newResearch(true);g.migrateRoomLayers();g.s.paused=g.s.combat;g.s.immortalVersion=1;g.events=[];delete g.s.returnPhase;return g;
  }
 }
 

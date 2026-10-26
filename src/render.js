@@ -17,6 +17,7 @@ export class Renderer{
   const assets=Object.keys(ROOMS).flatMap(type=>[0,1,2].map(v=>({id:`${type}-${v}`,src:`./assets/rooms/${type}-${v}.png`})));
   assets.push(...[0,1,2].map(v=>({id:`awake-dragon-${v}`,src:`./assets/rooms/awake-dragon-${v}.png`})));
   assets.push(...Object.keys(SPRITE_FRAMES).map(type=>({id:`unit-${type}`,src:`./assets/sprites/${type}.png`})));
+  assets.push(...Array.from({length:7},(_,i)=>i+1).flatMap(layer=>Object.keys(SPRITE_FRAMES).map(type=>({id:`layer-${layer}-${type}`,src:`./assets/layer-enemies/${layer}-${type}.png`}))));
   assets.push(...DAMAGEABLE_ROOMS.flatMap(type=>[0,1,2].map(v=>({id:`damaged-${type}-${v}`,src:`./assets/damaged-rooms/${type}-${v}.png`}))));
   assets.push(...['horizontal-0','horizontal-1','vertical-0','vertical-1'].map(name=>({id:'cavern-'+name,src:`./assets/caverns/${name}.png`})));
   assets.push(...['horizontal-0','horizontal-1','vertical-0','vertical-1'].map(name=>({id:'built-'+name,src:`./assets/modules/built-${name}.png`})));
@@ -33,7 +34,7 @@ export class Renderer{
  rawRoomImage(r){if(r.sourceType&&['bridge','drawbridge'].includes(r.type))return this.bridgeRoomImage(r);const view=visualRoom(this.game,r);if(view.builtExtension)return this.images[`${view.damaged&&DAMAGEABLE_ROOMS.includes(view.type)?'damaged-':''}${view.type}-${view.variant}`]||this.images[`${view.type}-${view.variant}`];if(view.bossExtension)return this.extensionImages[`extension-${view.bossFamily}-${view.variant}`]||this.images[`${view.type}-${view.variant}`];if(r.type==='dragon'&&r.dragonAwake)return this.images[`awake-dragon-${r.variant}`]||this.images[`dragon-${r.variant}`];return this.images[`${r.damaged&&DAMAGEABLE_ROOMS.includes(r.type)?'damaged-':''}${r.type}-${r.variant}`]||this.images[`${r.type}-${r.variant}`]}
  framedRoomImage(r){const raw=this.rawRoomImage(r);return ROOMS[r.type]?.r===undefined&&!['gate','surface','shaft'].includes(r.type)?this.framing.frame(raw):raw}
  roomImage(r,time=0){return this.appearance.get(this.framedRoomImage(r),visualRoom(this.game,r).type,this.game?.roomHazards(r)||[],time,this.reduced,this.game?this.terrain.shaderOptions(r,128,86):{})}
- roomURL(r,time=0){const spec=this.wholeRoom(r);return this.appearance.url(spec?this.wholeImage(spec):this.framedRoomImage(r),spec?(spec.type==='lost'?'artifact':spec.type.startsWith('desolate-')?'desolate':spec.type):visualRoom(this.game,r).type,this.game?.roomHazards(r)||[],time,this.reduced)}
+ roomURL(r,time=0){const spec=this.wholeRoom(r);return this.appearance.url(spec?this.wholeImage(spec):this.framedRoomImage(r),spec?(spec.type==='lost'?'artifact':spec.type.startsWith('desolate-')?'desolate':spec.type):visualRoom(this.game,r).type,this.game?.roomHazards(r)||[],time,this.reduced,{worldLayer:r.worldLayer||0})}
  resize(){const r=this.canvas.getBoundingClientRect();this.width=r.width;this.height=r.height;const dpr=Math.min(devicePixelRatio||1,2);this.canvas.width=Math.round(r.width*dpr);this.canvas.height=Math.round(r.height*dpr);this.dpr=dpr}
  screenToWorld(x,y){return{x:(x-this.width/2)/this.zoom+this.camera.x,y:(y-this.height/2)/this.zoom+this.camera.y}}
  point(event){const r=this.canvas.getBoundingClientRect();return{x:event.clientX-r.left,y:event.clientY-r.top}}
@@ -225,8 +226,9 @@ export class Renderer{
   return positions.sort((a,b)=>a.y-b.y||a.u.id-b.u.id);
  }
  corners(x,y,w,h){const c=this.ctx,l=12;c.beginPath();c.moveTo(x,y+l);c.lineTo(x,y);c.lineTo(x+l,y);c.moveTo(x+w-l,y);c.lineTo(x+w,y);c.lineTo(x+w,y+l);c.moveTo(x+w,y+h-l);c.lineTo(x+w,y+h);c.lineTo(x+w-l,y+h);c.moveTo(x+l,y+h);c.lineTo(x,y+h);c.lineTo(x,y+h-l);c.stroke()}
+ unitImage(u){const undead=u.isUndead||u.uncapturable,layer=undead?2:(u.spawnLayer??(u.team!=='ally'?this.game?.layer(this.game.room(Math.round(u.x),Math.round(u.y))):0))||0;return this.images[`layer-${layer}-${u.type}`]||this.images[`unit-${u.type}`]||this.images['unit-goblin'];}
  unit(u,x,y,time){
-  const c=this.ctx,ally=u.team==='ally',image=this.images[`unit-${u.type}`]||this.images['unit-goblin'];
+  const c=this.ctx,ally=u.team==='ally',image=this.unitImage(u);
   const size=((u.size||1)<=1?42:36*(u.size||1)),bob=this.reduced?0:Math.round(Math.sin(u.walk||0)*1.5),attack=this.reduced?0:Math.round(u.attack*7);
   c.save();c.translate(Math.round(x),Math.round(y)+bob);c.imageSmoothingEnabled=false;
   c.fillStyle='#26302138';c.fillRect(-size*.22,13,size*.44,3);

@@ -1,3 +1,4 @@
+import {layerMaterialPalette} from './layer-data.js';
 import {ROOMS,CRYSTAL_PALETTE} from './data.js';
 // Software pixel shader: evaluate a mask, material transition and lighting once
 // per connection. Canvas 2D keeps the same result offline and on mobile GPUs.
@@ -33,7 +34,7 @@ export function passageMaterial(room){
  if(['cave','surface','ruins','chasm'].includes(type))return 'rock';
  return 'masonry';
 }
-export function passagePalette(room){return PASSAGE_MATERIALS[passageMaterial(room)]}
+export function passagePalette(room){return layerMaterialPalette(room.worldLayer||0,PASSAGE_MATERIALS[passageMaterial(room)])}
 function passageNoise(x,y,seed){let n=Math.imul(x+seed,374761393)^Math.imul(y+seed,668265263);n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967296}
 function passageHash(text){let n=2166136261;for(const char of text)n=Math.imul(n^char.charCodeAt(0),16777619);return n>>>0}
 function passageMix(a,b,t){return a.map((v,i)=>Math.round(v+(b[i]-v)*t))}
@@ -47,10 +48,10 @@ export class ProceduralPassages{
   const data=ctx.getImageData(0,0,32,24).data;this.textures.set(image,data);return data;
  }
  get(a,b,vertical,images){
-  const signature=r=>`${r.x},${r.y}:${r.type}:${r.variant}:${r.hazards?.join(',')||r.contaminant||''}:${!!r.damaged}`;
+  const signature=r=>`${r.x},${r.y}:${r.type}:${r.variant}:${r.hazards?.join(',')||r.contaminant||''}:${!!r.damaged}:${r.worldLayer||0}`;
   const id=`${vertical?'v':'h'}|${signature(a)}|${signature(b)}`;
   if(this.cache.has(id)){const entry=this.cache.get(id);this.cache.delete(id);this.cache.set(id,entry);return entry}
-  const ma=passageMaterial(a),mb=passageMaterial(b),aa=passageArchitecture(a),ab=passageArchitecture(b),pa=PASSAGE_MATERIALS[ma],pb=PASSAGE_MATERIALS[mb];
+  const ma=passageMaterial(a),mb=passageMaterial(b),aa=passageArchitecture(a),ab=passageArchitecture(b),pa=passagePalette(a),pb=passagePalette(b);
   const seed=passageHash(id),length=vertical?27:26,height=20,canvas=document.createElement('canvas');canvas.width=length;canvas.height=height;
   const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(length,height);
   const textures=[this.texture(images[`${a.type}-${a.variant}`]),this.texture(images[`${b.type}-${b.variant}`])];
@@ -101,12 +102,12 @@ export class ProceduralPassages{
    ctx.fillStyle=passageRGB(palette.light);ctx.fillRect(x,2,2,1);ctx.fillRect(x,13,2,1);
    ctx.fillStyle=passageRGB(palette.wall);ctx.fillRect(x,3,2,3);ctx.fillRect(x,14,2,3);
   }
-  const entry={canvas,ma,mb,aa,ab,seed,length,vertical};this.cache.set(id,entry);this.generated++;
+  const entry={canvas,ma,mb,aa,ab,pa,pb,seed,length,vertical};this.cache.set(id,entry);this.generated++;
   if(this.cache.size>this.limit)this.cache.delete(this.cache.keys().next().value);
   return entry;
  }
  draw(ctx,a,b,vertical,images,time,reduced,fortification=null,mouths=null){
-  const entry=this.get(a,b,vertical,images),{canvas,length,ma,mb,seed}=entry;
+  const entry=this.get(a,b,vertical,images),{canvas,length,ma,mb,seed,pa,pb}=entry;
   ctx.save();ctx.imageSmoothingEnabled=false;
   // Local X always follows the connection, so the same mask joins all 4 ports.
   ctx.translate(a.x*180+(vertical?0:64),a.y*144+(vertical?42:0));if(vertical)ctx.rotate(Math.PI/2);
@@ -117,7 +118,7 @@ export class ProceduralPassages{
   for(let x=2;x<length-2;x+=4){
    const t=x/(length-1),material=t<.5?ma:mb;
    if(material==='water'||material==='fire'){
-    ctx.fillStyle=passageRGB(PASSAGE_MATERIALS[material].light);const y=material==='water'?10:14;
+    ctx.fillStyle=passageRGB((t<.5?pa:pb).light);const y=material==='water'?10:14;
     ctx.fillRect((x+(phase+Math.floor(seed%3))%3)*2,(y-10)*2,4,2);
    }else if(['gas','blindgas','flammable','miasma'].includes(material)){
     ctx.fillStyle='rgba('+PASSAGE_MATERIALS[material].light.join(',')+',.3)';const y=6+(x+phase)%7;ctx.fillRect(x*2,(y-10)*2,6,2);

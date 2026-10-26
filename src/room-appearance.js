@@ -11,10 +11,10 @@ export class RoomAppearance{
   if(!image)return null;
   // Cache visual inputs only: production counters, captives and other gameplay
   // fields must never create a different shader texture.
-  options={...options,neighbors:(options.neighbors||[]).map(e=>({dx:e.dx,dy:e.dy,room:{type:e.room.type,hazards:e.room.hazards||[],contaminant:e.room.contaminant}}))};
+  options={...options,neighbors:(options.neighbors||[]).map(e=>({dx:e.dx,dy:e.dy,room:{type:e.room.type,worldLayer:e.room.worldLayer||0,hazards:e.room.hazards||[],contaminant:e.room.contaminant}}))};
   const origin=options.origin||{x:0,y:0},scale=options.scale||1;
   options.lights=(options.lights||[]).filter(l=>l.x+(l.radius||100)>=origin.x&&l.x-(l.radius||100)<=origin.x+image.width*scale&&l.y+(l.radius||100)>=origin.y&&l.y-(l.radius||100)<=origin.y+image.height*scale);
-  const shadeRoom={type,hazards:hazards.filter(h=>ROOM_HAZARD_COLORS[h])};shadeRoom.palette=passagePalette(shadeRoom);for(const e of options.neighbors)e.palette=passagePalette(e.room);
+  const shadeRoom={type,worldLayer:options.worldLayer||0,hazards:hazards.filter(h=>ROOM_HAZARD_COLORS[h])};shadeRoom.palette=passagePalette(shadeRoom);for(const e of options.neighbors)e.palette=passagePalette(e.room);
   const crystal=type==='crystal',layers=hazards.filter(h=>ROOM_HAZARD_COLORS[h]);
   if(!this.identities.has(image))this.identities.set(image,this.nextId++);
   const phase=(crystal||options.lights?.length)&&!reduced?Math.floor((time+((origin.x*7+origin.y*11)%500+500)%500)/500)%16:0,key=`${this.identities.get(image)}|${type}|${layers.join(',')}|${phase}|${JSON.stringify(options)}`;
@@ -23,11 +23,11 @@ export class RoomAppearance{
    const spec=`${this.identities.get(image)}|${type}|${layers.join(',')}|${JSON.stringify(options)}`;
    // Spread animated re-shading across frames instead of updating every
    // illuminated room at the same phase boundary. Static changes never wait.
-   if(this.frameWork>=3)return this.latest.get(spec)||this.get(image,type,layers,0,true,{neighbors:options.neighbors,staticTint:true});
+   if(this.frameWork>=3)return this.latest.get(spec)||this.get(image,type,layers,0,true,{neighbors:options.neighbors,staticTint:true,worldLayer:options.worldLayer||0});
    if(this.frameWork!==undefined)this.frameWork++;
    let prepared=this.prepared.get(spec);
    if(!prepared){
-    const base=this.get(image,type,layers,0,true,{neighbors:options.neighbors,staticTint:true});
+    const base=this.get(image,type,layers,0,true,{neighbors:options.neighbors,staticTint:true,worldLayer:options.worldLayer||0});
     const bc=base.getContext('2d'),frame=bc.getImageData(0,0,base.width,base.height),data=frame.data,targets=new Uint8ClampedArray(data.length),lum=new Float32Array(data.length/4),masks=options.lights.map(()=>new Uint8Array(data.length/4));
     const rc=document.createElement('canvas');rc.width=image.width;rc.height=image.height;rc.getContext('2d').drawImage(image,0,0);const raw=rc.getContext('2d').getImageData(0,0,rc.width,rc.height).data;
     for(let n=0;n<lum.length;n++){const i=n*4;if(raw[i+3]<32||Math.abs(raw[i]-229)+Math.abs(raw[i+1]-221)+Math.abs(raw[i+2]-198)<36)continue;lum[n]=raw[i]*.299+raw[i+1]*.587+raw[i+2]*.114;const x=n%image.width,y=Math.floor(n/image.width),palette=materialPaletteAt(shadeRoom,x,y,image.width,image.height,options.neighbors);targets[i]=palette.light[0];targets[i+1]=palette.light[1];targets[i+2]=palette.light[2];for(let k=0;k<options.lights.length;k++){const l=options.lights[k],d=Math.hypot(origin.x+x*scale-l.x,origin.y+y*scale-l.y),f=1-shaderSmooth(0,l.radius||100,d);masks[k][n]=Math.round(f*f*255);}}
@@ -39,13 +39,13 @@ export class RoomAppearance{
   }
   const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const c=canvas.getContext('2d');c.drawImage(image,0,0);
   const frame=c.getImageData(0,0,canvas.width,canvas.height),p=frame.data,w=canvas.width,pulse=(1-Math.cos(phase/16*Math.PI*2))*.5;
-  const material=passagePalette({type,hazards:layers}),palette=[material.floor,material.wall,material.light];
+  const material=passagePalette(shadeRoom),palette=[material.floor,material.wall,material.light];
   for(let i=0;i<p.length;i+=4){
    const original=[p[i],p[i+1],p[i+2]],paperDistance=Math.abs(p[i]-229)+Math.abs(p[i+1]-221)+Math.abs(p[i+2]-198);
    if(p[i+3]<32||paperDistance<36)continue;const lum=original[0]*.299+original[1]*.587+original[2]*.114,x=i/4%w,y=Math.floor(i/4/w);
    const surface=options.neighbors?.length?materialPaletteAt(shadeRoom,x,y,canvas.width,canvas.height,options.neighbors):null;let color=roomTone(lum,surface?[surface.floor,surface.wall,surface.light]:palette);
    if(crystal&&lum>95)color=roomMix(color,[176,220,247],pulse*.22*Math.min(1,(lum-95)/90));
-   for(const hazard of layers){const hMaterial=passagePalette({type:hazard}),palette=surface&&hazard===layers[0]?[surface.floor,surface.wall,surface.light]:[hMaterial.floor,hMaterial.wall,hMaterial.light],liquid=['water','lava','crater'].includes(hazard),depth=y/canvas.height;
+   for(const hazard of layers){const hMaterial=passagePalette({type:hazard,worldLayer:options.worldLayer||0}),palette=surface&&hazard===layers[0]?[surface.floor,surface.wall,surface.light]:[hMaterial.floor,hMaterial.wall,hMaterial.light],liquid=['water','lava','crater'].includes(hazard),depth=y/canvas.height;
     color=roomMix(color,roomTone(lum,palette),liquid?(.4+.52*shaderSmooth(.38,.70,depth)):.72);
     // Wet glints and wisps modify only existing foreground pixels, never a box.
     if(liquid&&depth>.52&&(y%9===2&&x%13<7))color=roomMix(color,palette[2],.5);
@@ -56,5 +56,5 @@ export class RoomAppearance{
   }
   c.putImageData(frame,0,0);this.cache.set(key,canvas);if(this.cache.size>this.limit)this.cache.delete(this.cache.keys().next().value);return canvas;
  }
- url(image,type,hazards,time,reduced){const result=this.get(image,type,hazards,time,reduced);if(!result)return null;if(result instanceof HTMLCanvasElement){result.roomDataURL??=result.toDataURL('image/png');return result.roomDataURL}return result.src}
+ url(image,type,hazards,time,reduced,options={}){const result=this.get(image,type,hazards,time,reduced,options);if(!result)return null;if(result instanceof HTMLCanvasElement){result.roomDataURL??=result.toDataURL('image/png');return result.roomDataURL}return result.src}
 }

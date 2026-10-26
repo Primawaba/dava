@@ -3,6 +3,16 @@
 Jogo single player de exploração, construção e defesa de uma fortaleza subterrânea. Interface em português, combate em tempo real com IA, partidas reproduzíveis por semente e distribuição web instalável (PWA).
 
 
+## Atualização 1.18.0 — camadas por sala e mortos-vivos em combate
+
+- Apenas o K♣ usado numa descoberta real avança a camada. A nova fronteira vale para salas ainda não descobertas na mesma profundidade ou abaixo. Salas anteriores, inclusive construções, conservam seu próprio identificador. Históricos dos planos ficam separados do mapa base.
+- Efeitos e recompensas consultam a sala de origem. Magma aquece líquidos localmente; Cemitério avalia o local da morte; Linhas Arcanas avalia a sala que lançou a magia; Riquezas/Rastejantes avaliam o produtor ou a nova descoberta. A Masmorra resolve uma segunda carta de espadas numa sala adjacente disponível.
+- Tint base de cada camada combinado com o material da sala, líquidos, gases e corredores. As ilustrações das salas foram preservadas.
+- 238 novos sprites transparentes: 34 tipos em cada uma das sete camadas especiais, incluindo espécies que podem se amotinar. Normal mantém os sprites anteriores. Fontes geradas e recortes reproduzíveis em `art/layers` e `npm run build:layer-art`.
+- Cemitério, Lápide e gêmeos reanimam inimigos imediatamente, na posição exata em que morreram, durante o mesmo combate. São mortos-vivos da espécie original e não podem ser capturados. Cada corpo só retorna uma vez; efeitos simultâneos não criam cópias. Isso substitui o retorno após a escolha de captura da versão 1.17.1.
+
+[Regras, cores, migração e validação](reports/CAMADAS-1.18.md). `npm run test:layers` cobre o fluxo em desktop, toque e HTML offline. Salvamentos existentes continuam suportados; novas fronteiras são guardadas por mundo e por profundidade.
+
 ## Correção 1.17.1 — retorno do Cemitério e captura
 
 O Cemitério recriava inimigos antes da decisão de captura, deixando uma cópia hostil mesmo quando o jogador capturava o original. A decisão agora é resolvida antes do retorno: capturados não ressurgem como inimigos. Os não capturados podem retornar uma única vez com metade da força, arredondada para baixo; a segunda derrota encerra esse retorno. Essa limitação é uma adaptação digital explícita para evitar uma sequência repetitiva de combates com a mesma criatura. O retorno tem carta de evento própria, e escolhas pendentes continuam válidas ao salvar/carregar.

@@ -43,7 +43,7 @@ export function installColony(Game){
     const r=this.s.rooms[id],previous=this.captureReplacement(r,i.replacements?.[id]||0),record={...i.captives[index],...(i.captives[index].traits?{traits:[...i.captives[index].traits]}:{})};
     if(previous){if(r.type==='kennel')this.s.units=this.s.units.filter(u=>u.id!==previous.id);else if(r.type==='prison'){r.captives=heldCaptives(r).filter((_,n)=>n!==(i.replacements?.[id]||0));r.prisoners=Math.max(0,r.prisoners-1);r.captive=r.captives[0]||null;}else clearCaptives(r);this.effect('Captura substituída',`${previous.enemyName||previous.name||'O ocupante anterior'} foi dispensado para dar lugar a ${record.name}.`,'neutral');}
     if(r.type==='kennel'){
-     const u=this.addUnit(record.type,r.x,r.y,true,'ally',record.power);u.range=record.range;u.size=record.size;u.enemyName=record.name;u.kennelMonster=true;if(record.graveyardRevived)u.graveyardRevived=true;u.capturedSource=record.sourceId;u.traits=[...(record.traits||[])];if(record.monstrosity)u.monstrosity=true;
+     const u=this.addUnit(record.type,r.x,r.y,true,'ally',record.power);u.range=record.range;u.size=record.size;u.enemyName=record.name;u.kennelMonster=true;u.spawnLayer=record.spawnLayer||0;if(record.graveyardRevived)u.graveyardRevived=true;u.capturedSource=record.sourceId;u.traits=[...(record.traits||[])];if(record.monstrosity)u.monstrosity=true;
      this.effect('Monstro capturado',`${record.name}, de ${Math.round(record.power)} STR, juntou-se à fortaleza e passou a morar no Canil.`,'good');
     }else{
      if(r.type==='prison'){
@@ -82,7 +82,7 @@ export function installColony(Game){
   resolveEffect(id,selection){const c=this.s.effectCards?.[0];if(c?.id!==id||c.input?.kind!=='colony')return original.resolveEffect.call(this,id,selection);if(c.input.action==='capture')return this.resolveCapture(c,String(selection));if(selection==='cancel'){this.s.effectCards.shift();return{ok:true}}if(!this.colonyChoices(c).some(o=>o.value===String(selection)))return{ok:false,reason:'Escolha uma opção válida.'};let result={ok:true};if(c.input.action==='placement')result=this.build(c.input.type,c.input.x,c.input.y,String(selection));if(result.ok)this.s.effectCards.shift();return result},
   releaseCaptive(r){
    const records=[...heldCaptives(r)],anonymous=Math.max(0,(r.prisoners||0)-records.length);if(!records.length&&!anonymous)return;
-   clearCaptives(r);for(const c of records){const u=this.addUnit(c.type,r.x,r.y,true,'enemy',c.power);u.enemyName=c.name;if(c.graveyardRevived)u.graveyardRevived=true;u.range=c.range;u.size=c.size;u.traits=[...(c.traits||[])];if(c.monstrosity)u.monstrosity=true;}
+   clearCaptives(r);for(const c of records){const u=this.addUnit(c.type,r.x,r.y,true,'enemy',c.power);u.enemyName=c.name;u.spawnLayer=c.spawnLayer||0;if(c.graveyardRevived)u.graveyardRevived=true;u.range=c.range;u.size=c.size;u.traits=[...(c.traits||[])];if(c.monstrosity)u.monstrosity=true;}
    if(anonymous)this.spawnEnemies(r,anonymous,'raider');this.effect('Fuga de prisioneiros','Os ocupantes escaparam de '+ROOMS[r.type].name+' e se tornaram hostis.','bad');this._tacticsDirty=true;this.syncPrisonBars();if(this.enemies.length)this.beginCombat();
   },
   checkPrisonEscapes(){for(const r of this.rooms)if((r.captive||r.prisoners>0)&&(!CAPTURE_ROOMS.includes(r.type)||r.damaged||!this.active(r)))this.releaseCaptive(r);},

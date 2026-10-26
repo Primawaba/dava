@@ -1,10 +1,11 @@
+import {RENDER_ASSET_COUNT} from './render-assets.mjs';
 import {chromium,expect} from '@playwright/test';
 import {spawn} from 'node:child_process';
 import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const manifest=JSON.parse(await readFile('scripts/unique-room-manifest.json','utf8')).flat().map(r=>r.type);
 const server=spawn(process.execPath,['scripts/serve.mjs','dist'],{env:{...process.env,PORT:'4189'},stdio:'pipe'});await new Promise((resolve,reject)=>{server.stdout.once('data',resolve);server.once('error',reject)});const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const errors=[];let checks=0;const pass=s=>{checks++;console.log('PASS',s)};
-try{const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:4189/?test=1');await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:52})});await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(524);
+try{const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:4189/?test=1');await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:52})});await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(RENDER_ASSET_COUNT);
 const result=await page.evaluate(types=>{
  const {Game,renderer:r}=window.__CONQUER__,originalCtx=r.ctx,originalGame=r.game;let framed=0,pairs=0,samples=0;const bounds=image=>{const c=document.createElement('canvas');c.width=image.width;c.height=image.height;const ctx=c.getContext('2d');ctx.drawImage(image,0,0);const p=ctx.getImageData(0,0,c.width,c.height).data;let l=c.width,t=c.height,rr=-1,b=-1;for(let y=0;y<c.height;y++)for(let x=0;x<c.width;x++){const i=(y*c.width+x)*4;if(p[i+3]>=32&&p[i]<200){l=Math.min(l,x);rr=Math.max(rr,x);t=Math.min(t,y);b=Math.max(b,y)}}return{l,t,r:rr,b,w:rr-l+1,h:b-t+1}};
  try{for(const state of [...types.map(type=>({type,awake:false})),{type:'dragon',awake:false},{type:'dragon',awake:true}])for(let variant=0;variant<3;variant++){

@@ -1,3 +1,4 @@
+import {RENDER_ASSET_COUNT} from './render-assets.mjs';
 import {chromium,expect} from '@playwright/test';
 import {spawn} from 'node:child_process';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -6,7 +7,7 @@ const server=spawn(process.execPath,['scripts/serve.mjs','dist'],{env:{...proces
 const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});let checks=0;const errors=[],pass=s=>{checks++;console.log('PASS',s)};
 try{
  await mkdir('artifacts',{recursive:true});const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:4180/?test=1');
- await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:73});window.__CONQUER__.game.s.deck=[{suit:'♣',rank:12}]});await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(524);
+ await page.evaluate(()=>{localStorage.setItem('conquer-tutorial-seen','1');window.__CONQUER__.startGame({seed:73});window.__CONQUER__.game.s.deck=[{suit:'♣',rank:12}]});await expect.poll(()=>page.evaluate(()=>Object.keys(window.__CONQUER__.renderer.images).length)).toBe(RENDER_ASSET_COUNT);
  await page.click('#end-turn');await expect(page.locator('.room-title')).toHaveText('Câmara do Imortal');await expect(page.locator('[data-arg=sealImmortal]')).toHaveCount(0);await expect(page.locator('#panel-content')).toContainText('Bloqueada · criatura imortal');assert.equal(await page.evaluate(()=>window.__CONQUER__.game.s.combat),false);pass('discovery places a visible neutral blocker without combat or the invented payment action');
  await page.waitForTimeout(2500);await page.screenshot({path:'artifacts/immortal-passive-blocker.png'});
  const saved=await page.evaluate(()=>window.__CONQUER__.game.serialize());await page.evaluate(raw=>window.__CONQUER__.loadRaw(raw),saved);assert.equal(await page.evaluate(()=>window.__CONQUER__.game.s.units.filter(u=>u.type==='immortal').length),1);pass('passive creature persists as one occupant on save/load');

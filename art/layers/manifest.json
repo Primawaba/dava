@@ -1,0 +1,4163 @@
+{
+  "size": 64,
+  "primary": [
+    "immortal",
+    "goblin",
+    "skeleton",
+    "insect",
+    "insectqueen",
+    "cultist",
+    "miner",
+    "automaton",
+    "cavewolf",
+    "worm",
+    "dragon",
+    "guardian",
+    "troll",
+    "elemental",
+    "fairy",
+    "champion",
+    "lich",
+    "spider",
+    "beast",
+    "golem",
+    "undead",
+    "raider"
+  ],
+  "auxiliary": [
+    "soldier",
+    "archer",
+    "mage",
+    "cleric",
+    "dog",
+    "rat",
+    "thug",
+    "alchemist",
+    "trapper",
+    "siege",
+    "hero",
+    "berserker"
+  ],
+  "layers": [
+    {
+      "id": "normal",
+      "name": "Normal",
+      "color": [
+        105,
+        99,
+        78
+      ]
+    },
+    {
+      "id": "magma",
+      "name": "Magma",
+      "color": [
+        173,
+        76,
+        40
+      ]
+    },
+    {
+      "id": "graveyard",
+      "name": "Cemitério",
+      "color": [
+        91,
+        137,
+        132
+      ]
+    },
+    {
+      "id": "skitter",
+      "name": "Rastejantes",
+      "color": [
+        116,
+        133,
+        62
+      ]
+    },
+    {
+      "id": "leylines",
+      "name": "Linhas Arcanas",
+      "color": [
+        118,
+        87,
+        166
+      ]
+    },
+    {
+      "id": "riches",
+      "name": "Riquezas",
+      "color": [
+        192,
+        148,
+        55
+      ]
+    },
+    {
+      "id": "dungeon",
+      "name": "Masmorra",
+      "color": [
+        118,
+        88,
+        99
+      ]
+    },
+    {
+      "id": "nightmare",
+      "name": "Pesadelo",
+      "color": [
+        92,
+        54,
+        116
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "type": "immortal",
+      "layer": 1,
+      "bounds": [
+        14,
+        17,
+        254,
+        256
+      ],
+      "alpha": {
+        "solid": 2252,
+        "transparent": 1748,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-immortal.png",
+      "sha256": "5feb886a42022a4366171b966ac333571cbdbf3053d2dbd9f4b3d38980d819e1"
+    },
+    {
+      "type": "goblin",
+      "layer": 1,
+      "bounds": [
+        319,
+        123,
+        184,
+        150
+      ],
+      "alpha": {
+        "solid": 1300,
+        "transparent": 2643,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-goblin.png",
+      "sha256": "23cf72fdf76881ac1953398cfd8839c3e40f598076db1c369917b3a3a85b49b3"
+    },
+    {
+      "type": "skeleton",
+      "layer": 1,
+      "bounds": [
+        567,
+        86,
+        193,
+        187
+      ],
+      "alpha": {
+        "solid": 1338,
+        "transparent": 2581,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-skeleton.png",
+      "sha256": "84a8b45a267f1dd7822565e13b80ca017e434747a4a079c9d97cbad02dd92885"
+    },
+    {
+      "type": "insect",
+      "layer": 1,
+      "bounds": [
+        781,
+        118,
+        211,
+        155
+      ],
+      "alpha": {
+        "solid": 1232,
+        "transparent": 2725,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-insect.png",
+      "sha256": "bc503579eaa048e5e9558f7417a18581e76c060b38955935793fd2295f89f565"
+    },
+    {
+      "type": "insectqueen",
+      "layer": 1,
+      "bounds": [
+        1035,
+        15,
+        268,
+        258
+      ],
+      "alpha": {
+        "solid": 1819,
+        "transparent": 2123,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-insectqueen.png",
+      "sha256": "bc9a22a5cfb84fcc26e4e3588db62a7711b903930c8d332bb7f05b9b73c3c716"
+    },
+    {
+      "type": "cultist",
+      "layer": 1,
+      "bounds": [
+        1336,
+        74,
+        163,
+        198
+      ],
+      "alpha": {
+        "solid": 1397,
+        "transparent": 2559,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-cultist.png",
+      "sha256": "22403228c5f33baa13deb86865ccecb8de6d8046e4211a5e2c4479b83570c7b1"
+    },
+    {
+      "type": "miner",
+      "layer": 1,
+      "bounds": [
+        58,
+        346,
+        189,
+        166
+      ],
+      "alpha": {
+        "solid": 1741,
+        "transparent": 2232,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-miner.png",
+      "sha256": "98f056002d3f746f57455b7c22cb873f4f7ff834c54ffd0393e0761ce87c27d3"
+    },
+    {
+      "type": "automaton",
+      "layer": 1,
+      "bounds": [
+        313,
+        305,
+        176,
+        208
+      ],
+      "alpha": {
+        "solid": 1600,
+        "transparent": 2337,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-automaton.png",
+      "sha256": "9efddf0d36ef0c63b02cea21d0663394763bdb90c2897539dc70f954d1e7a737"
+    },
+    {
+      "type": "cavewolf",
+      "layer": 1,
+      "bounds": [
+        503,
+        357,
+        259,
+        156
+      ],
+      "alpha": {
+        "solid": 1113,
+        "transparent": 2901,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-cavewolf.png",
+      "sha256": "30eb6b4eb7fdd352a57fb121da209bdd59ef7f7f9fc2cc27671c9a3b603f36cd"
+    },
+    {
+      "type": "worm",
+      "layer": 1,
+      "bounds": [
+        787,
+        302,
+        195,
+        210
+      ],
+      "alpha": {
+        "solid": 2025,
+        "transparent": 1981,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-worm.png",
+      "sha256": "265ae18714086895e7516ff93894a4d3aebb99d260177e18f69f1e4c5135782d"
+    },
+    {
+      "type": "dragon",
+      "layer": 1,
+      "bounds": [
+        982,
+        282,
+        336,
+        231
+      ],
+      "alpha": {
+        "solid": 1291,
+        "transparent": 2693,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-dragon.png",
+      "sha256": "c4c772b6a6e1280e09e68403ec7b0036823eb9bc465ea28edd653d88ab67ae72"
+    },
+    {
+      "type": "guardian",
+      "layer": 1,
+      "bounds": [
+        1321,
+        290,
+        213,
+        223
+      ],
+      "alpha": {
+        "solid": 2015,
+        "transparent": 1942,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-guardian.png",
+      "sha256": "d0f2727a2b8c511a919e267c2dd23182e4c7bd30262b33624e68afe4404e7836"
+    },
+    {
+      "type": "troll",
+      "layer": 1,
+      "bounds": [
+        16,
+        547,
+        248,
+        214
+      ],
+      "alpha": {
+        "solid": 1892,
+        "transparent": 2107,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-troll.png",
+      "sha256": "603f6e2f73a8b581403b2509820662db5c0a58021d5f19c4800f054485ec9e40"
+    },
+    {
+      "type": "elemental",
+      "layer": 1,
+      "bounds": [
+        304,
+        542,
+        192,
+        223
+      ],
+      "alpha": {
+        "solid": 1541,
+        "transparent": 2327,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-elemental.png",
+      "sha256": "3985afb7476a65083b535f4c994a67981db3254f102e1877052ae5b98f397abd"
+    },
+    {
+      "type": "fairy",
+      "layer": 1,
+      "bounds": [
+        577,
+        573,
+        126,
+        190
+      ],
+      "alpha": {
+        "solid": 987,
+        "transparent": 2974,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-fairy.png",
+      "sha256": "157698dd979eaedb3c53ba25f4be4c3428a3cdbc13386ed63da407a08eb984c3"
+    },
+    {
+      "type": "champion",
+      "layer": 1,
+      "bounds": [
+        765,
+        529,
+        225,
+        236
+      ],
+      "alpha": {
+        "solid": 1632,
+        "transparent": 2346,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-champion.png",
+      "sha256": "eac380be2c54fd4a1f0fb52480acaad44c8bf49268c84528a2a9f9918d1a310b"
+    },
+    {
+      "type": "lich",
+      "layer": 1,
+      "bounds": [
+        1037,
+        532,
+        207,
+        235
+      ],
+      "alpha": {
+        "solid": 1475,
+        "transparent": 2484,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-lich.png",
+      "sha256": "2b0547624a6442a5933b7f0df9b36142ab339c932fc37bc3f96edd071752f825"
+    },
+    {
+      "type": "spider",
+      "layer": 1,
+      "bounds": [
+        1278,
+        590,
+        240,
+        178
+      ],
+      "alpha": {
+        "solid": 1288,
+        "transparent": 2666,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-spider.png",
+      "sha256": "6fd525fcc592d8b9f20a1ad763c1b0f7e0d4fda927adf15d074e8d474bd1a56b"
+    },
+    {
+      "type": "beast",
+      "layer": 1,
+      "bounds": [
+        17,
+        823,
+        265,
+        170
+      ],
+      "alpha": {
+        "solid": 1204,
+        "transparent": 2791,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-beast.png",
+      "sha256": "b90f97cf5ae5fa81d6dd9467d97de070669c619a3fb091d8846313cea5a8d519"
+    },
+    {
+      "type": "golem",
+      "layer": 1,
+      "bounds": [
+        297,
+        786,
+        230,
+        205
+      ],
+      "alpha": {
+        "solid": 2054,
+        "transparent": 1936,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-golem.png",
+      "sha256": "1b5eff2fd61598eb62924c7c6d5c1c3693af7e1126a5250e42d97cc34536b4da"
+    },
+    {
+      "type": "undead",
+      "layer": 1,
+      "bounds": [
+        574,
+        817,
+        167,
+        179
+      ],
+      "alpha": {
+        "solid": 1818,
+        "transparent": 2147,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-undead.png",
+      "sha256": "fe4c7fbac2d0f693fbc4e61764765ee68d6ad3961a445833e0a420d52ad9ae1b"
+    },
+    {
+      "type": "raider",
+      "layer": 1,
+      "bounds": [
+        795,
+        811,
+        206,
+        188
+      ],
+      "alpha": {
+        "solid": 1651,
+        "transparent": 2316,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-raider.png",
+      "sha256": "6174fb6c36aecf943e985c27cc82118b9c3565e2d1d09be9a6e8ea3c85107428"
+    },
+    {
+      "type": "immortal",
+      "layer": 2,
+      "bounds": [
+        27,
+        17,
+        230,
+        241
+      ],
+      "alpha": {
+        "solid": 2121,
+        "transparent": 1879,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-immortal.png",
+      "sha256": "62ef43701fa5949dc63a8910a9f87cfd5cd64afe50e29e672cb836af5c64423f"
+    },
+    {
+      "type": "goblin",
+      "layer": 2,
+      "bounds": [
+        306,
+        108,
+        187,
+        150
+      ],
+      "alpha": {
+        "solid": 1326,
+        "transparent": 2619,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-goblin.png",
+      "sha256": "1b1449ad241b2adca047e1012764d112c5865935db6566280e6272abb5f1e39d"
+    },
+    {
+      "type": "skeleton",
+      "layer": 2,
+      "bounds": [
+        535,
+        62,
+        189,
+        196
+      ],
+      "alpha": {
+        "solid": 1401,
+        "transparent": 2539,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-skeleton.png",
+      "sha256": "ed50097ca4c03efc22cfb4eb010c6fa2111348370aacab8545a1cf97e6e23898"
+    },
+    {
+      "type": "insect",
+      "layer": 2,
+      "bounds": [
+        767,
+        120,
+        209,
+        138
+      ],
+      "alpha": {
+        "solid": 1281,
+        "transparent": 2707,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-insect.png",
+      "sha256": "48e6c5b80f8a44cbe70cc69a86184bc277d611c77ea59ac1ceab6979af7f4a24"
+    },
+    {
+      "type": "insectqueen",
+      "layer": 2,
+      "bounds": [
+        1002,
+        17,
+        294,
+        241
+      ],
+      "alpha": {
+        "solid": 1575,
+        "transparent": 2374,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-insectqueen.png",
+      "sha256": "14d2dd23c4c78e109e98f4dccab6169d429d89bbd33fe646e64de796681fd9dd"
+    },
+    {
+      "type": "cultist",
+      "layer": 2,
+      "bounds": [
+        1318,
+        21,
+        196,
+        237
+      ],
+      "alpha": {
+        "solid": 1196,
+        "transparent": 2755,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-cultist.png",
+      "sha256": "0eb569412ee7bd223d8cf0514089af97267f69f1676bb088ddff2523206eb611"
+    },
+    {
+      "type": "miner",
+      "layer": 2,
+      "bounds": [
+        41,
+        357,
+        201,
+        155
+      ],
+      "alpha": {
+        "solid": 1467,
+        "transparent": 2514,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-miner.png",
+      "sha256": "ac3c53dde23715c0ab9ade468d3500f9ab1f51725054d8ab089a260bb09fe838"
+    },
+    {
+      "type": "automaton",
+      "layer": 2,
+      "bounds": [
+        298,
+        302,
+        163,
+        210
+      ],
+      "alpha": {
+        "solid": 1429,
+        "transparent": 2501,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-automaton.png",
+      "sha256": "b6411cd38affd4486429fb372eec55e73b2af955627208eeaf7397103f474a92"
+    },
+    {
+      "type": "cavewolf",
+      "layer": 2,
+      "bounds": [
+        493,
+        344,
+        260,
+        168
+      ],
+      "alpha": {
+        "solid": 1223,
+        "transparent": 2754,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-cavewolf.png",
+      "sha256": "430a0813408b7a610894c2bad18be4fbc2ab5f500fe661d4d7551cf4c6ef244d"
+    },
+    {
+      "type": "worm",
+      "layer": 2,
+      "bounds": [
+        782,
+        300,
+        197,
+        212
+      ],
+      "alpha": {
+        "solid": 1991,
+        "transparent": 1979,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-worm.png",
+      "sha256": "321f68693ce4af7a9e45e5e784d23458e3a8b476c03858bada52da5ce4ef2bcf"
+    },
+    {
+      "type": "dragon",
+      "layer": 2,
+      "bounds": [
+        994,
+        283,
+        317,
+        229
+      ],
+      "alpha": {
+        "solid": 1226,
+        "transparent": 2747,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-dragon.png",
+      "sha256": "c46a9401328df602b5ae45ed310e8a082fb896eb4a4b6c9451e276b94ea44fa5"
+    },
+    {
+      "type": "guardian",
+      "layer": 2,
+      "bounds": [
+        1311,
+        284,
+        201,
+        228
+      ],
+      "alpha": {
+        "solid": 1750,
+        "transparent": 2213,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-guardian.png",
+      "sha256": "459172b754854d8b6d6acd46247fe1ccce71b146869438f3a6e4b38d3583c79f"
+    },
+    {
+      "type": "troll",
+      "layer": 2,
+      "bounds": [
+        23,
+        541,
+        233,
+        230
+      ],
+      "alpha": {
+        "solid": 2354,
+        "transparent": 1625,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-troll.png",
+      "sha256": "cae46080e28493cae1d32aac6596e2102c0fad57a318f3c2628c174d8f73a1d2"
+    },
+    {
+      "type": "elemental",
+      "layer": 2,
+      "bounds": [
+        277,
+        537,
+        214,
+        225
+      ],
+      "alpha": {
+        "solid": 1365,
+        "transparent": 2461,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-elemental.png",
+      "sha256": "a77e6a444ddd931c74ddc668adc6ded5e8884815b69c27121db3bf76fb69f2ef"
+    },
+    {
+      "type": "fairy",
+      "layer": 2,
+      "bounds": [
+        545,
+        551,
+        162,
+        218
+      ],
+      "alpha": {
+        "solid": 928,
+        "transparent": 3034,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-fairy.png",
+      "sha256": "c726cec67336ef1d53539d347a93cd6c9f7319b2b24a41ca0b1de46bc3c75d63"
+    },
+    {
+      "type": "champion",
+      "layer": 2,
+      "bounds": [
+        754,
+        536,
+        235,
+        236
+      ],
+      "alpha": {
+        "solid": 1815,
+        "transparent": 2176,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-champion.png",
+      "sha256": "284a62176325cae1d98ca2c5d89e1edf2b40dc72f7a0a294b6f93aff1b5a9297"
+    },
+    {
+      "type": "lich",
+      "layer": 2,
+      "bounds": [
+        1014,
+        533,
+        232,
+        238
+      ],
+      "alpha": {
+        "solid": 1652,
+        "transparent": 2310,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-lich.png",
+      "sha256": "5467025e5335419afbb894d9468ae71aa86f7448bd77192f9eb0ea6571580966"
+    },
+    {
+      "type": "spider",
+      "layer": 2,
+      "bounds": [
+        1260,
+        608,
+        258,
+        163
+      ],
+      "alpha": {
+        "solid": 1221,
+        "transparent": 2762,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-spider.png",
+      "sha256": "6cd708786330d8ec6d24a648c5b31b2d0111632e901448c725b59317d4b46ac7"
+    },
+    {
+      "type": "beast",
+      "layer": 2,
+      "bounds": [
+        17,
+        802,
+        274,
+        197
+      ],
+      "alpha": {
+        "solid": 1320,
+        "transparent": 2650,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-beast.png",
+      "sha256": "8efb2f5aca55a923ed08180d6c2f1a483371f9511dc47b3e0344da698efc6a8f"
+    },
+    {
+      "type": "golem",
+      "layer": 2,
+      "bounds": [
+        307,
+        774,
+        235,
+        225
+      ],
+      "alpha": {
+        "solid": 2391,
+        "transparent": 1588,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-golem.png",
+      "sha256": "297fc9abbb71de306b82dab8506cb3e91261f7224d5f91d1f1f4aa76dca84983"
+    },
+    {
+      "type": "undead",
+      "layer": 2,
+      "bounds": [
+        569,
+        811,
+        200,
+        187
+      ],
+      "alpha": {
+        "solid": 1714,
+        "transparent": 2233,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-undead.png",
+      "sha256": "8f635384213fa2904656b77ba0cb64f6cc2e41ebac921546a8d233503034a576"
+    },
+    {
+      "type": "raider",
+      "layer": 2,
+      "bounds": [
+        794,
+        794,
+        209,
+        204
+      ],
+      "alpha": {
+        "solid": 1895,
+        "transparent": 2075,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-raider.png",
+      "sha256": "eee9a97f12b00c54b8134d9cc7b10f9e7def722f8bf1180e6e842647bb34aecf"
+    },
+    {
+      "type": "immortal",
+      "layer": 3,
+      "bounds": [
+        24,
+        26,
+        243,
+        230
+      ],
+      "alpha": {
+        "solid": 2143,
+        "transparent": 1827,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-immortal.png",
+      "sha256": "620c8efbab15515cc7cdf413547f9ae24478cedf4bdac42366009e0c87470362"
+    },
+    {
+      "type": "goblin",
+      "layer": 3,
+      "bounds": [
+        318,
+        99,
+        174,
+        157
+      ],
+      "alpha": {
+        "solid": 1308,
+        "transparent": 2599,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-goblin.png",
+      "sha256": "5826cbf1c2acc18b0d9a237d1894447830e94b473a76e1f66626548407107401"
+    },
+    {
+      "type": "skeleton",
+      "layer": 3,
+      "bounds": [
+        556,
+        68,
+        152,
+        188
+      ],
+      "alpha": {
+        "solid": 1390,
+        "transparent": 2536,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-skeleton.png",
+      "sha256": "3d43c2e120baac8b9bf29984f3678652d5d9138fe2ced0ee7580ad9dfe8e66cd"
+    },
+    {
+      "type": "insect",
+      "layer": 3,
+      "bounds": [
+        768,
+        106,
+        208,
+        149
+      ],
+      "alpha": {
+        "solid": 1206,
+        "transparent": 2742,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-insect.png",
+      "sha256": "e94973a98ad923acf599b1f5d7e17ca9c0b64d9123e8fb87bff1bf1b79faa6eb"
+    },
+    {
+      "type": "insectqueen",
+      "layer": 3,
+      "bounds": [
+        990,
+        10,
+        317,
+        245
+      ],
+      "alpha": {
+        "solid": 1559,
+        "transparent": 2380,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-insectqueen.png",
+      "sha256": "ae24a48c464fafa8e7e47204c95cf24a34210212d62da765d343aa56e2755b5c"
+    },
+    {
+      "type": "cultist",
+      "layer": 3,
+      "bounds": [
+        1343,
+        45,
+        172,
+        211
+      ],
+      "alpha": {
+        "solid": 1288,
+        "transparent": 2662,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-cultist.png",
+      "sha256": "95544c634ca5f59c3a33c8561c2eb81067b2608c078d25ebb7dad4e07eff8c1c"
+    },
+    {
+      "type": "miner",
+      "layer": 3,
+      "bounds": [
+        49,
+        370,
+        174,
+        145
+      ],
+      "alpha": {
+        "solid": 1693,
+        "transparent": 2277,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-miner.png",
+      "sha256": "552b21af66c63b83f27a071737f30350eac0809fedc7b7d49dcbde97b0e79b07"
+    },
+    {
+      "type": "automaton",
+      "layer": 3,
+      "bounds": [
+        286,
+        303,
+        172,
+        212
+      ],
+      "alpha": {
+        "solid": 1510,
+        "transparent": 2428,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-automaton.png",
+      "sha256": "6611b53167189cab3adb87cae1d1fc21d47a9c0bb58031a9e19b8b5d09a64805"
+    },
+    {
+      "type": "cavewolf",
+      "layer": 3,
+      "bounds": [
+        496,
+        359,
+        248,
+        156
+      ],
+      "alpha": {
+        "solid": 1155,
+        "transparent": 2829,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-cavewolf.png",
+      "sha256": "35eabbc46d90b0f78638ec2d691d571cbc851a7d18bc38f55061cfd25e79f80b"
+    },
+    {
+      "type": "worm",
+      "layer": 3,
+      "bounds": [
+        774,
+        285,
+        193,
+        230
+      ],
+      "alpha": {
+        "solid": 1791,
+        "transparent": 2210,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-worm.png",
+      "sha256": "59da22c9fd09e2c0f2269a79740d4c5c9cf524498197f637c7b335a2f69a4a2e"
+    },
+    {
+      "type": "dragon",
+      "layer": 3,
+      "bounds": [
+        978,
+        256,
+        327,
+        260
+      ],
+      "alpha": {
+        "solid": 1352,
+        "transparent": 2612,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-dragon.png",
+      "sha256": "4ce75d3089f396e0bdf956795f6754908b69d3ba1d60190ae759d7fbc7ed0433"
+    },
+    {
+      "type": "guardian",
+      "layer": 3,
+      "bounds": [
+        1305,
+        287,
+        219,
+        228
+      ],
+      "alpha": {
+        "solid": 2069,
+        "transparent": 1913,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-guardian.png",
+      "sha256": "025f8b2eff520a2b874359a7d00d57453eea893c79eaaaacc29d3a716b7c2ab4"
+    },
+    {
+      "type": "troll",
+      "layer": 3,
+      "bounds": [
+        19,
+        544,
+        218,
+        224
+      ],
+      "alpha": {
+        "solid": 2232,
+        "transparent": 1752,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-troll.png",
+      "sha256": "6bea4a56445da49b335c10837507ec1460142764e5e18dfaafbe6a288bd533a7"
+    },
+    {
+      "type": "elemental",
+      "layer": 3,
+      "bounds": [
+        281,
+        536,
+        213,
+        232
+      ],
+      "alpha": {
+        "solid": 1559,
+        "transparent": 2340,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-elemental.png",
+      "sha256": "01caa173d5f9ac92c8a1f0c08ab67bd5e4359ad86d37dfa0d23baa21529a5a24"
+    },
+    {
+      "type": "fairy",
+      "layer": 3,
+      "bounds": [
+        545,
+        546,
+        161,
+        213
+      ],
+      "alpha": {
+        "solid": 996,
+        "transparent": 2947,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-fairy.png",
+      "sha256": "386a3cbc64d63730f871f3c0df421595ebb095933011afdbd14031ea96024789"
+    },
+    {
+      "type": "champion",
+      "layer": 3,
+      "bounds": [
+        753,
+        538,
+        198,
+        230
+      ],
+      "alpha": {
+        "solid": 1791,
+        "transparent": 2191,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-champion.png",
+      "sha256": "fe9d5e7d92b75be7304ddc83774e412d7da2c65b2ea06b2ec067975b7f7fdfdb"
+    },
+    {
+      "type": "lich",
+      "layer": 3,
+      "bounds": [
+        1009,
+        525,
+        249,
+        243
+      ],
+      "alpha": {
+        "solid": 1533,
+        "transparent": 2364,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-lich.png",
+      "sha256": "71c606cb6b18677d2c820b94c9df0e3306be2f0f0854c37f6996ca9eb8f94f28"
+    },
+    {
+      "type": "spider",
+      "layer": 3,
+      "bounds": [
+        1258,
+        583,
+        267,
+        185
+      ],
+      "alpha": {
+        "solid": 1257,
+        "transparent": 2708,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-spider.png",
+      "sha256": "547bc7d0a1cb887bec160bacfc2624c9ac8dda00e19bbf67f914c39efd787696"
+    },
+    {
+      "type": "beast",
+      "layer": 3,
+      "bounds": [
+        12,
+        816,
+        264,
+        191
+      ],
+      "alpha": {
+        "solid": 1539,
+        "transparent": 2455,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-beast.png",
+      "sha256": "d33183af194435876257cc955a31ecb5fe953f366cb2645ef7fff32ea6ef2103"
+    },
+    {
+      "type": "golem",
+      "layer": 3,
+      "bounds": [
+        299,
+        768,
+        237,
+        239
+      ],
+      "alpha": {
+        "solid": 2115,
+        "transparent": 1860,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-golem.png",
+      "sha256": "1a8a31adddb91d9be9960a7220dc76f207c43b3d043da3196ba3c9f7005dd2ad"
+    },
+    {
+      "type": "undead",
+      "layer": 3,
+      "bounds": [
+        561,
+        834,
+        183,
+        173
+      ],
+      "alpha": {
+        "solid": 1771,
+        "transparent": 2180,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-undead.png",
+      "sha256": "2e92ff00f078f13dad8020e89a305f0edecf24db8052b1209ed22bc228cbcff2"
+    },
+    {
+      "type": "raider",
+      "layer": 3,
+      "bounds": [
+        769,
+        801,
+        265,
+        206
+      ],
+      "alpha": {
+        "solid": 1092,
+        "transparent": 2883,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-raider.png",
+      "sha256": "8af81042813cc1ec4059f3a16b8c912d9f6c2acf9eb1336906c439cc43845720"
+    },
+    {
+      "type": "immortal",
+      "layer": 4,
+      "bounds": [
+        19,
+        12,
+        261,
+        273
+      ],
+      "alpha": {
+        "solid": 1985,
+        "transparent": 1958,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-immortal.png",
+      "sha256": "be3c9471c281ac5c0d4404fa3d6f42279a97064890f633150b1998b4bd262192"
+    },
+    {
+      "type": "goblin",
+      "layer": 4,
+      "bounds": [
+        313,
+        147,
+        174,
+        138
+      ],
+      "alpha": {
+        "solid": 1230,
+        "transparent": 2689,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-goblin.png",
+      "sha256": "6975edbabd11fa35d920f00db9a87be3fcd9f0683e678a6518b16f9bc934a955"
+    },
+    {
+      "type": "skeleton",
+      "layer": 4,
+      "bounds": [
+        531,
+        127,
+        203,
+        158
+      ],
+      "alpha": {
+        "solid": 1088,
+        "transparent": 2888,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-skeleton.png",
+      "sha256": "19bb5094239ca8f863311e7ec2f0f5d7db63854403540d37032568b438e19f9d"
+    },
+    {
+      "type": "insect",
+      "layer": 4,
+      "bounds": [
+        768,
+        124,
+        220,
+        161
+      ],
+      "alpha": {
+        "solid": 1385,
+        "transparent": 2594,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-insect.png",
+      "sha256": "05fde9046aec002e51ae47f26f5607d2071bd8e69823280fd3581c393ac48151"
+    },
+    {
+      "type": "insectqueen",
+      "layer": 4,
+      "bounds": [
+        1011,
+        21,
+        307,
+        264
+      ],
+      "alpha": {
+        "solid": 1960,
+        "transparent": 2012,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-insectqueen.png",
+      "sha256": "3734d65e1b1ef74bf7a3dee919b08b270c265480098e3e81a4b5332fe1cb3860"
+    },
+    {
+      "type": "cultist",
+      "layer": 4,
+      "bounds": [
+        1375,
+        57,
+        149,
+        228
+      ],
+      "alpha": {
+        "solid": 1189,
+        "transparent": 2796,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-cultist.png",
+      "sha256": "656c4995e073ae53d9df038d3ba08bb11aabf4e19489e8719d86a7faf24fb35d"
+    },
+    {
+      "type": "miner",
+      "layer": 4,
+      "bounds": [
+        31,
+        393,
+        215,
+        143
+      ],
+      "alpha": {
+        "solid": 1394,
+        "transparent": 2619,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-miner.png",
+      "sha256": "79fff29e523ffc36142496d3f687a681f6951534ef818c42e9e4dc8b56fec75e"
+    },
+    {
+      "type": "automaton",
+      "layer": 4,
+      "bounds": [
+        268,
+        326,
+        191,
+        210
+      ],
+      "alpha": {
+        "solid": 1758,
+        "transparent": 2170,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-automaton.png",
+      "sha256": "4687bdf88d54e3a39803068bf99386dff4ea43539f8ce13e0f00cd364d7b3347"
+    },
+    {
+      "type": "cavewolf",
+      "layer": 4,
+      "bounds": [
+        478,
+        387,
+        255,
+        149
+      ],
+      "alpha": {
+        "solid": 1139,
+        "transparent": 2866,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-cavewolf.png",
+      "sha256": "b9b63f923076e28615fdd0cce18f435fd000085b26bce700f94f7430a700fea0"
+    },
+    {
+      "type": "worm",
+      "layer": 4,
+      "bounds": [
+        750,
+        332,
+        259,
+        204
+      ],
+      "alpha": {
+        "solid": 1424,
+        "transparent": 2589,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-worm.png",
+      "sha256": "e12046aef3d67e505c7808f0106c724b4063c599d7dbd4b8afdf3d6988a37990"
+    },
+    {
+      "type": "dragon",
+      "layer": 4,
+      "bounds": [
+        1009,
+        323,
+        317,
+        213
+      ],
+      "alpha": {
+        "solid": 1338,
+        "transparent": 2662,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-dragon.png",
+      "sha256": "84b274ed155c771ac479f52b52cb6dc2e8dab807c11b9e2c96b8514ad4b9c002"
+    },
+    {
+      "type": "guardian",
+      "layer": 4,
+      "bounds": [
+        1326,
+        318,
+        200,
+        218
+      ],
+      "alpha": {
+        "solid": 2022,
+        "transparent": 1932,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-guardian.png",
+      "sha256": "b990d25182ca292c66995f65123e5bdc4ed5dadede8854d999e5c449afac3d22"
+    },
+    {
+      "type": "troll",
+      "layer": 4,
+      "bounds": [
+        24,
+        584,
+        218,
+        211
+      ],
+      "alpha": {
+        "solid": 2330,
+        "transparent": 1644,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-troll.png",
+      "sha256": "136c31365a31ca882c6822ea87f83f91f099b8f77ee22b47d70b2c6db0cde050"
+    },
+    {
+      "type": "elemental",
+      "layer": 4,
+      "bounds": [
+        271,
+        576,
+        198,
+        211
+      ],
+      "alpha": {
+        "solid": 1423,
+        "transparent": 2347,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-elemental.png",
+      "sha256": "e3437429ce9a1d66ee22c11844658b7e1a9e235a4a584ea078815f16d817271a"
+    },
+    {
+      "type": "fairy",
+      "layer": 4,
+      "bounds": [
+        494,
+        584,
+        147,
+        206
+      ],
+      "alpha": {
+        "solid": 879,
+        "transparent": 3096,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-fairy.png",
+      "sha256": "06345b3b5bd817c463e1c5b61b87c790b3c70f2083b2c6fa42812ef53ee749fa"
+    },
+    {
+      "type": "champion",
+      "layer": 4,
+      "bounds": [
+        726,
+        584,
+        185,
+        215
+      ],
+      "alpha": {
+        "solid": 1776,
+        "transparent": 2220,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-champion.png",
+      "sha256": "97a9add4cd8726deaf782ad99bdc89f33c5955fb769abc4d7ea65b8fb78de5fa"
+    },
+    {
+      "type": "lich",
+      "layer": 4,
+      "bounds": [
+        980,
+        572,
+        233,
+        227
+      ],
+      "alpha": {
+        "solid": 1937,
+        "transparent": 1993,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-lich.png",
+      "sha256": "411f6189d94c76c0dcdc4c0eb735476735d6b11d35017aa481779c9b48e337fd"
+    },
+    {
+      "type": "spider",
+      "layer": 4,
+      "bounds": [
+        1247,
+        595,
+        272,
+        204
+      ],
+      "alpha": {
+        "solid": 1245,
+        "transparent": 2715,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-spider.png",
+      "sha256": "e8b70ce599b6cd19ef3d75a1851b4c8a85374bbe8a7ea5b2b4cb0f193241755a"
+    },
+    {
+      "type": "beast",
+      "layer": 4,
+      "bounds": [
+        8,
+        828,
+        252,
+        182
+      ],
+      "alpha": {
+        "solid": 1507,
+        "transparent": 2491,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-beast.png",
+      "sha256": "03cb6f470f5771e3c3e2227d97fb3d466c096da334eaf519980321ac457b7b65"
+    },
+    {
+      "type": "golem",
+      "layer": 4,
+      "bounds": [
+        281,
+        799,
+        249,
+        213
+      ],
+      "alpha": {
+        "solid": 1911,
+        "transparent": 2071,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-golem.png",
+      "sha256": "4f1b8d65f46ab7f79ddbeb296007911a216f49209229fe62a55360741813ddb2"
+    },
+    {
+      "type": "undead",
+      "layer": 4,
+      "bounds": [
+        565,
+        850,
+        198,
+        162
+      ],
+      "alpha": {
+        "solid": 1494,
+        "transparent": 2479,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-undead.png",
+      "sha256": "b8b8029f29451ff9b9b013504bf33b8d01114bf72c9377583f780dd62cfa54bd"
+    },
+    {
+      "type": "raider",
+      "layer": 4,
+      "bounds": [
+        805,
+        838,
+        212,
+        174
+      ],
+      "alpha": {
+        "solid": 1416,
+        "transparent": 2548,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-raider.png",
+      "sha256": "c11627ce1d502ff3992a1b700b960bdcc3892893a5a016be90aaf290cd8b072d"
+    },
+    {
+      "type": "immortal",
+      "layer": 5,
+      "bounds": [
+        21,
+        25,
+        242,
+        250
+      ],
+      "alpha": {
+        "solid": 2088,
+        "transparent": 1905,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-immortal.png",
+      "sha256": "d4eace7ff3ad63ad77a5be49f3f4806401e612360e06c4ea358e9333ce61f1d2"
+    },
+    {
+      "type": "goblin",
+      "layer": 5,
+      "bounds": [
+        296,
+        116,
+        201,
+        157
+      ],
+      "alpha": {
+        "solid": 1333,
+        "transparent": 2625,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-goblin.png",
+      "sha256": "32d631ed4ee4996989840296df8be0f379d99dbb4c6136eec6563efb2b133b6f"
+    },
+    {
+      "type": "skeleton",
+      "layer": 5,
+      "bounds": [
+        542,
+        83,
+        217,
+        191
+      ],
+      "alpha": {
+        "solid": 1190,
+        "transparent": 2780,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-skeleton.png",
+      "sha256": "daefd1b7e0945f1099e3e95ae08df24c4e7883fba86a19f42111b5407c9fa33f"
+    },
+    {
+      "type": "insect",
+      "layer": 5,
+      "bounds": [
+        769,
+        122,
+        204,
+        152
+      ],
+      "alpha": {
+        "solid": 1446,
+        "transparent": 2533,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-insect.png",
+      "sha256": "9b0357620608e4de0c3640a4bd994d4f7f59e28799db5599ebe9982f3e37c581"
+    },
+    {
+      "type": "insectqueen",
+      "layer": 5,
+      "bounds": [
+        1001,
+        37,
+        291,
+        237
+      ],
+      "alpha": {
+        "solid": 1537,
+        "transparent": 2430,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-insectqueen.png",
+      "sha256": "b790fe3e266f8bbf564c71ef59512c3b25dab1696d6c9856001e0808ec29a3dc"
+    },
+    {
+      "type": "cultist",
+      "layer": 5,
+      "bounds": [
+        1323,
+        56,
+        183,
+        219
+      ],
+      "alpha": {
+        "solid": 1534,
+        "transparent": 2450,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-cultist.png",
+      "sha256": "c9ed20de6f21a29f5b470caaba24b9797e6941780d749ef4332c5cbd042b4f9f"
+    },
+    {
+      "type": "miner",
+      "layer": 5,
+      "bounds": [
+        28,
+        372,
+        218,
+        165
+      ],
+      "alpha": {
+        "solid": 1611,
+        "transparent": 2381,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-miner.png",
+      "sha256": "b41e6ee4d3131b24e5aa87fa45273417b9fb35aa69c84d657ba65ac18f1f704d"
+    },
+    {
+      "type": "automaton",
+      "layer": 5,
+      "bounds": [
+        281,
+        297,
+        196,
+        240
+      ],
+      "alpha": {
+        "solid": 1395,
+        "transparent": 2571,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-automaton.png",
+      "sha256": "3421646d26069f70a3cdb91d60f49d047a3348ebcc374b86bbc1f936469d72b3"
+    },
+    {
+      "type": "cavewolf",
+      "layer": 5,
+      "bounds": [
+        493,
+        380,
+        258,
+        157
+      ],
+      "alpha": {
+        "solid": 1196,
+        "transparent": 2807,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-cavewolf.png",
+      "sha256": "8bb852e11bebbb28e17465f243600b2556874115235c5996f8bc8e6881c4b192"
+    },
+    {
+      "type": "worm",
+      "layer": 5,
+      "bounds": [
+        774,
+        316,
+        208,
+        221
+      ],
+      "alpha": {
+        "solid": 2230,
+        "transparent": 1779,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-worm.png",
+      "sha256": "61c2ad19affa8cbb7664236b37e9e80051712092f33e1446130a799b0d37706e"
+    },
+    {
+      "type": "dragon",
+      "layer": 5,
+      "bounds": [
+        997,
+        292,
+        297,
+        245
+      ],
+      "alpha": {
+        "solid": 1704,
+        "transparent": 2236,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-dragon.png",
+      "sha256": "0c221e1f42bdc141fef27cd21c742ff1026cb11e5d135ada51955ee05666844c"
+    },
+    {
+      "type": "guardian",
+      "layer": 5,
+      "bounds": [
+        1294,
+        300,
+        233,
+        237
+      ],
+      "alpha": {
+        "solid": 2076,
+        "transparent": 1886,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-guardian.png",
+      "sha256": "0b32c51c986789ceaf7863502d0d872e9d053f1b8e9847843dcef18d497f9f2a"
+    },
+    {
+      "type": "troll",
+      "layer": 5,
+      "bounds": [
+        26,
+        560,
+        222,
+        226
+      ],
+      "alpha": {
+        "solid": 2261,
+        "transparent": 1714,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-troll.png",
+      "sha256": "db046c41f4eade948c65683469e844c251ae1091bad9e6e51fd74ff045ae602c"
+    },
+    {
+      "type": "elemental",
+      "layer": 5,
+      "bounds": [
+        278,
+        560,
+        218,
+        222
+      ],
+      "alpha": {
+        "solid": 1391,
+        "transparent": 2426,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-elemental.png",
+      "sha256": "bbfde843cca7522dc83de45f2d7231f22d374d0c93b7659d8fd793b78b4c287f"
+    },
+    {
+      "type": "fairy",
+      "layer": 5,
+      "bounds": [
+        544,
+        576,
+        156,
+        197
+      ],
+      "alpha": {
+        "solid": 1226,
+        "transparent": 2719,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-fairy.png",
+      "sha256": "dbb4f60d2effdc44735cfe915f8101f5d12543146964bcaba4da475cde8f8a3f"
+    },
+    {
+      "type": "champion",
+      "layer": 5,
+      "bounds": [
+        743,
+        560,
+        239,
+        226
+      ],
+      "alpha": {
+        "solid": 1928,
+        "transparent": 2091,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-champion.png",
+      "sha256": "8ae0e84e4128e40d48b543881113f2af3234913ca59836aac0c0c47517bf3456"
+    },
+    {
+      "type": "lich",
+      "layer": 5,
+      "bounds": [
+        1005,
+        560,
+        245,
+        226
+      ],
+      "alpha": {
+        "solid": 1533,
+        "transparent": 2448,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-lich.png",
+      "sha256": "f4e67ea62eb155d8b3f0db6616f8455d8b7f36913f0e2764e399a804d065885f"
+    },
+    {
+      "type": "spider",
+      "layer": 5,
+      "bounds": [
+        1260,
+        617,
+        260,
+        167
+      ],
+      "alpha": {
+        "solid": 1147,
+        "transparent": 2855,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-spider.png",
+      "sha256": "8d6706ec15a7048d63ba1e65656355a346a59da015f856f5c7ae5005f745530b"
+    },
+    {
+      "type": "beast",
+      "layer": 5,
+      "bounds": [
+        12,
+        829,
+        252,
+        171
+      ],
+      "alpha": {
+        "solid": 1401,
+        "transparent": 2610,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-beast.png",
+      "sha256": "9723ba16226252d45be582603c1407d9fe6a5a72c98636047648e1671f255785"
+    },
+    {
+      "type": "golem",
+      "layer": 5,
+      "bounds": [
+        287,
+        789,
+        241,
+        211
+      ],
+      "alpha": {
+        "solid": 2052,
+        "transparent": 1951,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-golem.png",
+      "sha256": "7fdf48f18af7098afaab61e8870f192d9069458fb6bbb605bf6cf49133aea5a2"
+    },
+    {
+      "type": "undead",
+      "layer": 5,
+      "bounds": [
+        557,
+        806,
+        197,
+        194
+      ],
+      "alpha": {
+        "solid": 1830,
+        "transparent": 2098,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-undead.png",
+      "sha256": "d11943ca5462823a140bfd29f6a39062cd4a2403e6e922842d3ea359761b3984"
+    },
+    {
+      "type": "raider",
+      "layer": 5,
+      "bounds": [
+        775,
+        806,
+        240,
+        194
+      ],
+      "alpha": {
+        "solid": 1363,
+        "transparent": 2648,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-raider.png",
+      "sha256": "f87c9509cc6731ec35b1957274f9e04e2b00844d6849a1cc6312e12efa137841"
+    },
+    {
+      "type": "immortal",
+      "layer": 6,
+      "bounds": [
+        17,
+        17,
+        264,
+        254
+      ],
+      "alpha": {
+        "solid": 2209,
+        "transparent": 1794,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-immortal.png",
+      "sha256": "dd96268a6e6002b8deb063bad9ca9054f7dc8ea86cd9a6e731fb23ad41d69471"
+    },
+    {
+      "type": "goblin",
+      "layer": 6,
+      "bounds": [
+        301,
+        113,
+        188,
+        158
+      ],
+      "alpha": {
+        "solid": 1312,
+        "transparent": 2625,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-goblin.png",
+      "sha256": "df9df70f94a54566a7497aa27e279aeda15fa6aadfeb98a778b1c884790e143b"
+    },
+    {
+      "type": "skeleton",
+      "layer": 6,
+      "bounds": [
+        530,
+        66,
+        211,
+        205
+      ],
+      "alpha": {
+        "solid": 1343,
+        "transparent": 2609,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-skeleton.png",
+      "sha256": "b8ea403cb22ef517d844b0b2801dff32834e9d564c73f36396aa541debd024e2"
+    },
+    {
+      "type": "insect",
+      "layer": 6,
+      "bounds": [
+        747,
+        118,
+        216,
+        153
+      ],
+      "alpha": {
+        "solid": 1392,
+        "transparent": 2590,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-insect.png",
+      "sha256": "78a270d0279e2a08e0f6a7aeb1eab1cd9bd65f0be8679d4f475f41dfe3eebdbe"
+    },
+    {
+      "type": "insectqueen",
+      "layer": 6,
+      "bounds": [
+        990,
+        18,
+        312,
+        253
+      ],
+      "alpha": {
+        "solid": 1563,
+        "transparent": 2396,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-insectqueen.png",
+      "sha256": "ff8701db54c29ab3a4964211607faf76a93cab3ed4db14edec459a8c9f26d674"
+    },
+    {
+      "type": "cultist",
+      "layer": 6,
+      "bounds": [
+        1333,
+        19,
+        178,
+        252
+      ],
+      "alpha": {
+        "solid": 1112,
+        "transparent": 2861,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-cultist.png",
+      "sha256": "57240d2e08080d7dfe2d6673fa27a1e8030ac3af17d6dd502586a24bfc9ae6cc"
+    },
+    {
+      "type": "miner",
+      "layer": 6,
+      "bounds": [
+        40,
+        324,
+        186,
+        211
+      ],
+      "alpha": {
+        "solid": 1655,
+        "transparent": 2321,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-miner.png",
+      "sha256": "c59db133da4bb647cb664a0e89b9c1cfc6a471058d9e3d005bbe9bccebffabc2"
+    },
+    {
+      "type": "automaton",
+      "layer": 6,
+      "bounds": [
+        279,
+        293,
+        199,
+        242
+      ],
+      "alpha": {
+        "solid": 1434,
+        "transparent": 2553,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-automaton.png",
+      "sha256": "54e90cbd048381739e820cb73a523bca5479ba665e7d6d4cfb374e4b96cc2bab"
+    },
+    {
+      "type": "cavewolf",
+      "layer": 6,
+      "bounds": [
+        499,
+        369,
+        236,
+        166
+      ],
+      "alpha": {
+        "solid": 1431,
+        "transparent": 2533,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-cavewolf.png",
+      "sha256": "70e55dda22cdbc14744a20ad831c9b7f649dae4e9e8ba8623f369a8a42a48f51"
+    },
+    {
+      "type": "worm",
+      "layer": 6,
+      "bounds": [
+        760,
+        355,
+        208,
+        178
+      ],
+      "alpha": {
+        "solid": 1814,
+        "transparent": 2188,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-worm.png",
+      "sha256": "09be27ee6aa274bc9cbb7dccebd1736e3e1f2400142a4e6d2df455b599ec7b95"
+    },
+    {
+      "type": "dragon",
+      "layer": 6,
+      "bounds": [
+        979,
+        290,
+        333,
+        245
+      ],
+      "alpha": {
+        "solid": 1590,
+        "transparent": 2380,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-dragon.png",
+      "sha256": "93f2ea6590100ee8847adcf79c1d0aec400033470cabe016a4b415d9a962185f"
+    },
+    {
+      "type": "guardian",
+      "layer": 6,
+      "bounds": [
+        1324,
+        290,
+        181,
+        245
+      ],
+      "alpha": {
+        "solid": 1672,
+        "transparent": 2325,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-guardian.png",
+      "sha256": "e65d3ef06cebdc22e14b01404452fff356e1f6e579dad8f670a425d7ebc0ec67"
+    },
+    {
+      "type": "troll",
+      "layer": 6,
+      "bounds": [
+        15,
+        553,
+        241,
+        233
+      ],
+      "alpha": {
+        "solid": 2306,
+        "transparent": 1689,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-troll.png",
+      "sha256": "4220c78fc6f9fe96ac5abc54bb5e6a3d61e1003588bbe0aedb2d87dd0cbacba5"
+    },
+    {
+      "type": "elemental",
+      "layer": 6,
+      "bounds": [
+        283,
+        554,
+        200,
+        232
+      ],
+      "alpha": {
+        "solid": 1447,
+        "transparent": 2459,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-elemental.png",
+      "sha256": "f2dd373663fd0b0871c55ddd27ee8732f144839e6f76e6c476af426713eb7859"
+    },
+    {
+      "type": "fairy",
+      "layer": 6,
+      "bounds": [
+        530,
+        574,
+        171,
+        201
+      ],
+      "alpha": {
+        "solid": 1217,
+        "transparent": 2732,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-fairy.png",
+      "sha256": "95d322377507c8c82d4b3b7d9838860bd11a9e1c91bdd974bb5dfaf2b1ee5fd8"
+    },
+    {
+      "type": "champion",
+      "layer": 6,
+      "bounds": [
+        746,
+        550,
+        223,
+        236
+      ],
+      "alpha": {
+        "solid": 1954,
+        "transparent": 2041,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-champion.png",
+      "sha256": "5ea1c0afc665e94a1c63aba33f887c544cb59a11756eff64ca2fded6c282426c"
+    },
+    {
+      "type": "lich",
+      "layer": 6,
+      "bounds": [
+        999,
+        556,
+        232,
+        230
+      ],
+      "alpha": {
+        "solid": 1626,
+        "transparent": 2319,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-lich.png",
+      "sha256": "79e9629ff5af45f95afab7a4ae36efb8a22fb6d4d594b6e0b7cfe75102e46746"
+    },
+    {
+      "type": "spider",
+      "layer": 6,
+      "bounds": [
+        1249,
+        613,
+        277,
+        172
+      ],
+      "alpha": {
+        "solid": 1044,
+        "transparent": 2914,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-spider.png",
+      "sha256": "dba3574bd1066157411c2236d86a2270b9c8bc48e6de60a6e329f7bba682f99b"
+    },
+    {
+      "type": "beast",
+      "layer": 6,
+      "bounds": [
+        18,
+        820,
+        260,
+        187
+      ],
+      "alpha": {
+        "solid": 1504,
+        "transparent": 2496,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-beast.png",
+      "sha256": "af2f43c6a501609b31aa81b16d77b36b6e0f4dd88ab21da1c2092595edda3703"
+    },
+    {
+      "type": "golem",
+      "layer": 6,
+      "bounds": [
+        297,
+        786,
+        230,
+        221
+      ],
+      "alpha": {
+        "solid": 2321,
+        "transparent": 1677,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-golem.png",
+      "sha256": "5495961af53b75e859bb4c087c42d81025e8760dd8adfd20ea602c1f6fe0ef65"
+    },
+    {
+      "type": "undead",
+      "layer": 6,
+      "bounds": [
+        561,
+        822,
+        209,
+        185
+      ],
+      "alpha": {
+        "solid": 1688,
+        "transparent": 2274,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-undead.png",
+      "sha256": "c4266e7bcbf23b2152eaa5564006fe99f6ac6aa5d06a41e5677e950c32246e4d"
+    },
+    {
+      "type": "raider",
+      "layer": 6,
+      "bounds": [
+        806,
+        812,
+        189,
+        195
+      ],
+      "alpha": {
+        "solid": 1739,
+        "transparent": 2224,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-raider.png",
+      "sha256": "19ea8ea555528bb6824077e3014801eea8803ae392d1a571a4c8ff97dec4e494"
+    },
+    {
+      "type": "immortal",
+      "layer": 7,
+      "bounds": [
+        17,
+        19,
+        238,
+        268
+      ],
+      "alpha": {
+        "solid": 1814,
+        "transparent": 2180,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-immortal.png",
+      "sha256": "c37e5f28555b491488a281654628187e732710ca5760649b5aa0b24bc4fb57df"
+    },
+    {
+      "type": "goblin",
+      "layer": 7,
+      "bounds": [
+        304,
+        118,
+        191,
+        169
+      ],
+      "alpha": {
+        "solid": 1333,
+        "transparent": 2604,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-goblin.png",
+      "sha256": "f6056cad5f1dd49af7275f9a97f7773b8c70d850be6fdcfd8475d0bbbd6acc17"
+    },
+    {
+      "type": "skeleton",
+      "layer": 7,
+      "bounds": [
+        552,
+        117,
+        206,
+        170
+      ],
+      "alpha": {
+        "solid": 1054,
+        "transparent": 2893,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-skeleton.png",
+      "sha256": "43b33a1d314a169f2d720d778b9f08ca5a247ebdd0def626d43572a2053580e3"
+    },
+    {
+      "type": "insect",
+      "layer": 7,
+      "bounds": [
+        780,
+        136,
+        209,
+        151
+      ],
+      "alpha": {
+        "solid": 1257,
+        "transparent": 2699,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-insect.png",
+      "sha256": "999fdb31edd838a124ca34f68b55438b1b7c970c82d2b44ab35272a5730f1cc6"
+    },
+    {
+      "type": "insectqueen",
+      "layer": 7,
+      "bounds": [
+        1017,
+        13,
+        278,
+        274
+      ],
+      "alpha": {
+        "solid": 1924,
+        "transparent": 1993,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-insectqueen.png",
+      "sha256": "c197c231702e48b1473c1af7f22b24a0cffdfafd6577c40612092b3de77af066"
+    },
+    {
+      "type": "cultist",
+      "layer": 7,
+      "bounds": [
+        1322,
+        59,
+        189,
+        228
+      ],
+      "alpha": {
+        "solid": 1336,
+        "transparent": 2597,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-cultist.png",
+      "sha256": "e342f4f98c2ab49f0ab34b4534e34907a57677544a62116083e3abe9b7e0ef6a"
+    },
+    {
+      "type": "miner",
+      "layer": 7,
+      "bounds": [
+        35,
+        372,
+        218,
+        167
+      ],
+      "alpha": {
+        "solid": 1436,
+        "transparent": 2551,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-miner.png",
+      "sha256": "93f754154c7316192f5b301ac678dfbd2805e78d51b7dcca6a581891b384b9fb"
+    },
+    {
+      "type": "automaton",
+      "layer": 7,
+      "bounds": [
+        292,
+        322,
+        198,
+        221
+      ],
+      "alpha": {
+        "solid": 1736,
+        "transparent": 2206,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-automaton.png",
+      "sha256": "17ef72e373e1ff7dede63470434ad932540517805ca9856678b1db6ebf8749fc"
+    },
+    {
+      "type": "cavewolf",
+      "layer": 7,
+      "bounds": [
+        520,
+        355,
+        242,
+        188
+      ],
+      "alpha": {
+        "solid": 1489,
+        "transparent": 2475,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-cavewolf.png",
+      "sha256": "bd4ee56f571d9852a23003779b6e81a6acbdeb870ad21905e4efbab1f8c7766f"
+    },
+    {
+      "type": "worm",
+      "layer": 7,
+      "bounds": [
+        774,
+        341,
+        230,
+        198
+      ],
+      "alpha": {
+        "solid": 1601,
+        "transparent": 2323,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-worm.png",
+      "sha256": "0d62eff84a0124be7c8433f2f58e46c880aa50d80529af7a77066486b9c44e19"
+    },
+    {
+      "type": "dragon",
+      "layer": 7,
+      "bounds": [
+        1022,
+        304,
+        270,
+        239
+      ],
+      "alpha": {
+        "solid": 1903,
+        "transparent": 2039,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-dragon.png",
+      "sha256": "2739ca19e8cd641b48c5d02df71f4f55326b8f4366937c3da7a0e8af5fac4aef"
+    },
+    {
+      "type": "guardian",
+      "layer": 7,
+      "bounds": [
+        1302,
+        302,
+        227,
+        240
+      ],
+      "alpha": {
+        "solid": 2127,
+        "transparent": 1848,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-guardian.png",
+      "sha256": "2051f47198e68bfb371e3730a68dfff4722c99c9ce7638f4cb0913577175a307"
+    },
+    {
+      "type": "troll",
+      "layer": 7,
+      "bounds": [
+        32,
+        573,
+        225,
+        225
+      ],
+      "alpha": {
+        "solid": 2384,
+        "transparent": 1578,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-troll.png",
+      "sha256": "e2d41068e2699d97df1c1ce5f9b37f6f42d7239d59548f8c35e9afe734e33874"
+    },
+    {
+      "type": "elemental",
+      "layer": 7,
+      "bounds": [
+        298,
+        558,
+        185,
+        239
+      ],
+      "alpha": {
+        "solid": 1035,
+        "transparent": 2890,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-elemental.png",
+      "sha256": "690b4a1d095fbee5ad59310cf27192a2bf5b384e7081b8923c23de0b0d136ee0"
+    },
+    {
+      "type": "fairy",
+      "layer": 7,
+      "bounds": [
+        551,
+        595,
+        140,
+        193
+      ],
+      "alpha": {
+        "solid": 1127,
+        "transparent": 2826,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-fairy.png",
+      "sha256": "e8cfccb704058d704af5efbf4a2bd050cf2ac0c8edfaf90d34580da3e2cf8b5a"
+    },
+    {
+      "type": "champion",
+      "layer": 7,
+      "bounds": [
+        746,
+        556,
+        231,
+        242
+      ],
+      "alpha": {
+        "solid": 1888,
+        "transparent": 2098,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-champion.png",
+      "sha256": "4d27e1c6d9f03cf2aae7feea42e4bbd341b762ef3d1d7dd744720a1e471a60ca"
+    },
+    {
+      "type": "lich",
+      "layer": 7,
+      "bounds": [
+        1014,
+        556,
+        242,
+        243
+      ],
+      "alpha": {
+        "solid": 1706,
+        "transparent": 2189,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-lich.png",
+      "sha256": "ea5c2ad98d3ecdade20e47368d802b358771ddbbd4252e23eb901afcffabf745"
+    },
+    {
+      "type": "spider",
+      "layer": 7,
+      "bounds": [
+        1267,
+        624,
+        252,
+        174
+      ],
+      "alpha": {
+        "solid": 1130,
+        "transparent": 2859,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-spider.png",
+      "sha256": "dc78154e8335f8505d1b111a7bf22ea3c2ce7a3832387107b94e50fb7fc81e7d"
+    },
+    {
+      "type": "beast",
+      "layer": 7,
+      "bounds": [
+        14,
+        826,
+        256,
+        181
+      ],
+      "alpha": {
+        "solid": 1391,
+        "transparent": 2582,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-beast.png",
+      "sha256": "292e42bc352344da29f19d87b6255d3af3f655da9999a8b9baf57133bc9ce86d"
+    },
+    {
+      "type": "golem",
+      "layer": 7,
+      "bounds": [
+        293,
+        810,
+        233,
+        195
+      ],
+      "alpha": {
+        "solid": 1849,
+        "transparent": 2135,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-golem.png",
+      "sha256": "f6c4a9b4780abdf0246b8ffba64514da4f12423845742ad064435dfd87300d32"
+    },
+    {
+      "type": "undead",
+      "layer": 7,
+      "bounds": [
+        558,
+        838,
+        172,
+        166
+      ],
+      "alpha": {
+        "solid": 1979,
+        "transparent": 1967,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-undead.png",
+      "sha256": "1867ae17de6a39218e2ee8acfc01f3aed8dfb7e439a3c10f016c6dc420c86a71"
+    },
+    {
+      "type": "raider",
+      "layer": 7,
+      "bounds": [
+        778,
+        819,
+        222,
+        186
+      ],
+      "alpha": {
+        "solid": 1416,
+        "transparent": 2539,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-raider.png",
+      "sha256": "d800b518a36ffd19acca3e4cf04a07375c66defb43a57e2bad89ee0c61d2e8de"
+    },
+    {
+      "type": "soldier",
+      "layer": 1,
+      "bounds": [
+        23,
+        27,
+        113,
+        102
+      ],
+      "alpha": {
+        "solid": 1654,
+        "transparent": 2283,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-soldier.png",
+      "sha256": "7c01f80559bb4fce44ef2d22b965c53cef99c61cdab038645e6a7d16b24ab368"
+    },
+    {
+      "type": "archer",
+      "layer": 1,
+      "bounds": [
+        149,
+        30,
+        105,
+        100
+      ],
+      "alpha": {
+        "solid": 1857,
+        "transparent": 1999,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-archer.png",
+      "sha256": "87c8966f8292b3979238cc6a13b940f3645faab505880aea2af2a0578b2a9ddb"
+    },
+    {
+      "type": "mage",
+      "layer": 1,
+      "bounds": [
+        277,
+        9,
+        97,
+        121
+      ],
+      "alpha": {
+        "solid": 1455,
+        "transparent": 2491,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-mage.png",
+      "sha256": "d46beddb450cc8c954965cd5d045e5ac3bf47d0157ad4c829bf485bc3db8ecc5"
+    },
+    {
+      "type": "cleric",
+      "layer": 1,
+      "bounds": [
+        392,
+        29,
+        131,
+        100
+      ],
+      "alpha": {
+        "solid": 1399,
+        "transparent": 2551,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-cleric.png",
+      "sha256": "952c82281eddc626398dd4cb4eea8b4628910ecefff6750f6fa143a5f36e8c2a"
+    },
+    {
+      "type": "dog",
+      "layer": 1,
+      "bounds": [
+        523,
+        49,
+        137,
+        84
+      ],
+      "alpha": {
+        "solid": 1202,
+        "transparent": 2736,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-dog.png",
+      "sha256": "d8fef87e424c4ea534605c8a0e1b800c3f08756a46b1a51bb401a3ab63457a9c"
+    },
+    {
+      "type": "rat",
+      "layer": 1,
+      "bounds": [
+        660,
+        72,
+        94,
+        61
+      ],
+      "alpha": {
+        "solid": 1508,
+        "transparent": 2422,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-rat.png",
+      "sha256": "0a062effad99cb1000cfffe43ddcfec853d57f791ce24b72fe12d4a7f4db99de"
+    },
+    {
+      "type": "thug",
+      "layer": 1,
+      "bounds": [
+        797,
+        18,
+        93,
+        115
+      ],
+      "alpha": {
+        "solid": 1388,
+        "transparent": 2573,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-thug.png",
+      "sha256": "6d24a21a81d1ad8f8acba3e8914c2aa4333ca3db201157b061de3f2b346fd52d"
+    },
+    {
+      "type": "alchemist",
+      "layer": 1,
+      "bounds": [
+        1035,
+        27,
+        76,
+        105
+      ],
+      "alpha": {
+        "solid": 1662,
+        "transparent": 2301,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-alchemist.png",
+      "sha256": "d41c968bd00d77254de88b080aa17716ceca0bee37ebc43c73738208d69a2db7"
+    },
+    {
+      "type": "trapper",
+      "layer": 1,
+      "bounds": [
+        1154,
+        44,
+        56,
+        91
+      ],
+      "alpha": {
+        "solid": 1359,
+        "transparent": 2628,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-trapper.png",
+      "sha256": "f144d9cde150d6f472b7e3beec910a22c13775df891356bc937ce71cbe6f2071"
+    },
+    {
+      "type": "siege",
+      "layer": 1,
+      "bounds": [
+        1210,
+        23,
+        137,
+        112
+      ],
+      "alpha": {
+        "solid": 1925,
+        "transparent": 2061,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-siege.png",
+      "sha256": "c121774e647d26bdfb82f0b5ea9ca93cfe35096f03f35e065caf51ae9d94eded"
+    },
+    {
+      "type": "hero",
+      "layer": 1,
+      "bounds": [
+        1347,
+        13,
+        125,
+        121
+      ],
+      "alpha": {
+        "solid": 1831,
+        "transparent": 2110,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-hero.png",
+      "sha256": "1b50f3240ab7d79131627742c62aca2cfe9fa13d05b935e49a73d4f5e238426a"
+    },
+    {
+      "type": "berserker",
+      "layer": 1,
+      "bounds": [
+        1497,
+        13,
+        135,
+        118
+      ],
+      "alpha": {
+        "solid": 1585,
+        "transparent": 2370,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/1-berserker.png",
+      "sha256": "cb97d0ebd22fea6780e85b50f4d96306c484e322acba88d93decc92b70bec262"
+    },
+    {
+      "type": "soldier",
+      "layer": 2,
+      "bounds": [
+        20,
+        149,
+        115,
+        119
+      ],
+      "alpha": {
+        "solid": 1771,
+        "transparent": 2190,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-soldier.png",
+      "sha256": "611f522e071cf62c2862e0683e6f7d778e84dc1d4bb51896f82f360bbdfe0ef5"
+    },
+    {
+      "type": "archer",
+      "layer": 2,
+      "bounds": [
+        141,
+        160,
+        113,
+        109
+      ],
+      "alpha": {
+        "solid": 1938,
+        "transparent": 1940,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-archer.png",
+      "sha256": "aad79460d7de99e8410e04f204ffafd058a6b12e3e7c7ea33961e6f498913ec3"
+    },
+    {
+      "type": "mage",
+      "layer": 2,
+      "bounds": [
+        267,
+        139,
+        106,
+        130
+      ],
+      "alpha": {
+        "solid": 1443,
+        "transparent": 2507,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-mage.png",
+      "sha256": "60ed0ef20fb969fd6cfdce40dbaa9a1d3fd1e94b8428d857506235590b005216"
+    },
+    {
+      "type": "cleric",
+      "layer": 2,
+      "bounds": [
+        388,
+        161,
+        135,
+        108
+      ],
+      "alpha": {
+        "solid": 1472,
+        "transparent": 2488,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-cleric.png",
+      "sha256": "36296b23f1a28a5fefecd5d199f5b878cb7bb6adfe35d23199b99bb0fb4071b7"
+    },
+    {
+      "type": "dog",
+      "layer": 2,
+      "bounds": [
+        523,
+        182,
+        142,
+        87
+      ],
+      "alpha": {
+        "solid": 1152,
+        "transparent": 2811,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-dog.png",
+      "sha256": "4c3c47ee7a7c37424c17ddd4989cccdb861b1a117ebdb65674d3d814a6bfd1cc"
+    },
+    {
+      "type": "rat",
+      "layer": 2,
+      "bounds": [
+        665,
+        201,
+        100,
+        67
+      ],
+      "alpha": {
+        "solid": 1447,
+        "transparent": 2467,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-rat.png",
+      "sha256": "5987ffb80cc5b2f66f8fc488d77c2c360b73adbb283591f186245fcdb6aeb77d"
+    },
+    {
+      "type": "thug",
+      "layer": 2,
+      "bounds": [
+        911,
+        165,
+        71,
+        104
+      ],
+      "alpha": {
+        "solid": 1828,
+        "transparent": 2171,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-thug.png",
+      "sha256": "012511eef5e5d040bdc5b6fb85f80625479308a80b30862dfab0ba4a791e48d4"
+    },
+    {
+      "type": "alchemist",
+      "layer": 2,
+      "bounds": [
+        1035,
+        164,
+        76,
+        105
+      ],
+      "alpha": {
+        "solid": 1740,
+        "transparent": 2236,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-alchemist.png",
+      "sha256": "a0ac4052d4684264a2d604d281c8683cd89454ae4497f6fe5e863830e115648d"
+    },
+    {
+      "type": "trapper",
+      "layer": 2,
+      "bounds": [
+        1111,
+        178,
+        106,
+        92
+      ],
+      "alpha": {
+        "solid": 1416,
+        "transparent": 2558,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-trapper.png",
+      "sha256": "22296f62ef1ac914d447e5a0883fd75f755fba6c96e580d88d9b9f4b857cdf6d"
+    },
+    {
+      "type": "siege",
+      "layer": 2,
+      "bounds": [
+        1217,
+        146,
+        127,
+        125
+      ],
+      "alpha": {
+        "solid": 2166,
+        "transparent": 1808,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-siege.png",
+      "sha256": "bcc05ec3fa205c8da92ef03ae0cf22b8f0bca62baf380e3563dc155cabe13673"
+    },
+    {
+      "type": "hero",
+      "layer": 2,
+      "bounds": [
+        1350,
+        160,
+        123,
+        110
+      ],
+      "alpha": {
+        "solid": 1938,
+        "transparent": 2014,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-hero.png",
+      "sha256": "8b10c47098e8d2a735a99446f92f464b58d7048f7e6a6064801d229fa507f8a9"
+    },
+    {
+      "type": "berserker",
+      "layer": 2,
+      "bounds": [
+        1499,
+        146,
+        129,
+        120
+      ],
+      "alpha": {
+        "solid": 1848,
+        "transparent": 2104,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/2-berserker.png",
+      "sha256": "aec866d1680d91b547c99a42de40c8504d79397c5ca557c80350f9d573c093fd"
+    },
+    {
+      "type": "soldier",
+      "layer": 3,
+      "bounds": [
+        20,
+        285,
+        114,
+        123
+      ],
+      "alpha": {
+        "solid": 1614,
+        "transparent": 2328,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-soldier.png",
+      "sha256": "bb552898a2a3de9605c0a5837d1d132e5783d4559a2b6533b27ba569dd0a5305"
+    },
+    {
+      "type": "archer",
+      "layer": 3,
+      "bounds": [
+        144,
+        299,
+        113,
+        110
+      ],
+      "alpha": {
+        "solid": 1767,
+        "transparent": 2079,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-archer.png",
+      "sha256": "07336e5a355e7512ec11cf6f1a8fab56316d36025ef10545bcb2dd72e2f653f7"
+    },
+    {
+      "type": "mage",
+      "layer": 3,
+      "bounds": [
+        272,
+        279,
+        104,
+        129
+      ],
+      "alpha": {
+        "solid": 1490,
+        "transparent": 2443,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-mage.png",
+      "sha256": "e2545145ee9d17b4539159960624ba118fcdd6b63979c47eec8eb9d5f343cd78"
+    },
+    {
+      "type": "cleric",
+      "layer": 3,
+      "bounds": [
+        390,
+        288,
+        133,
+        120
+      ],
+      "alpha": {
+        "solid": 1521,
+        "transparent": 2418,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-cleric.png",
+      "sha256": "d02440d604b14a7923dbf2a7ce4dde6e67341c880c0fd1d896bfbae1b78f42ab"
+    },
+    {
+      "type": "dog",
+      "layer": 3,
+      "bounds": [
+        523,
+        317,
+        137,
+        92
+      ],
+      "alpha": {
+        "solid": 1323,
+        "transparent": 2627,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-dog.png",
+      "sha256": "d698f5dcd4c9aaaceb76ee55195329d320d6891614993aa78d432d682ac5f24b"
+    },
+    {
+      "type": "rat",
+      "layer": 3,
+      "bounds": [
+        660,
+        327,
+        98,
+        81
+      ],
+      "alpha": {
+        "solid": 1663,
+        "transparent": 2179,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-rat.png",
+      "sha256": "d35611ac208f14491d86e196fd78b71fb6f407c410c79b18fdb25695f26c55fb"
+    },
+    {
+      "type": "thug",
+      "layer": 3,
+      "bounds": [
+        912,
+        299,
+        71,
+        110
+      ],
+      "alpha": {
+        "solid": 1529,
+        "transparent": 2460,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-thug.png",
+      "sha256": "584a359097f459ac82083219f3af1ac22e958da30bd1ed95d8f83de2b41a7167"
+    },
+    {
+      "type": "alchemist",
+      "layer": 3,
+      "bounds": [
+        1031,
+        301,
+        79,
+        108
+      ],
+      "alpha": {
+        "solid": 1611,
+        "transparent": 2346,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-alchemist.png",
+      "sha256": "4bad08b2d1efdab7dc83a1caaa417c7232daf716a804a0e8ade8c1679adf3028"
+    },
+    {
+      "type": "trapper",
+      "layer": 3,
+      "bounds": [
+        1110,
+        320,
+        102,
+        90
+      ],
+      "alpha": {
+        "solid": 1586,
+        "transparent": 2377,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-trapper.png",
+      "sha256": "abd0f863872b9a2c502d79a62ec416bec15353b8193305f745acb528bcb439cb"
+    },
+    {
+      "type": "siege",
+      "layer": 3,
+      "bounds": [
+        1212,
+        293,
+        139,
+        117
+      ],
+      "alpha": {
+        "solid": 1949,
+        "transparent": 2038,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-siege.png",
+      "sha256": "cad78f8a3f78fdcc25c36d46d74bc75a94bc79712a3358c0298b78f81ec96691"
+    },
+    {
+      "type": "hero",
+      "layer": 3,
+      "bounds": [
+        1355,
+        285,
+        127,
+        127
+      ],
+      "alpha": {
+        "solid": 1714,
+        "transparent": 2233,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-hero.png",
+      "sha256": "3a632b52adde8cef7bf442f6a4e58a3505337333d80d0c6bbb2525aaaaafc6e3"
+    },
+    {
+      "type": "berserker",
+      "layer": 3,
+      "bounds": [
+        1496,
+        291,
+        136,
+        118
+      ],
+      "alpha": {
+        "solid": 1635,
+        "transparent": 2307,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/3-berserker.png",
+      "sha256": "fa697fc1cd7985b735e2b72af910ea12e814f4c9fbefac431035abddaee8fa7c"
+    },
+    {
+      "type": "soldier",
+      "layer": 4,
+      "bounds": [
+        19,
+        428,
+        116,
+        121
+      ],
+      "alpha": {
+        "solid": 1749,
+        "transparent": 2187,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-soldier.png",
+      "sha256": "28798f0fe33cda9cddb2e496c9013a7a9f89ef8c4f20b2fd6d52a1632e6a040b"
+    },
+    {
+      "type": "archer",
+      "layer": 4,
+      "bounds": [
+        146,
+        428,
+        111,
+        122
+      ],
+      "alpha": {
+        "solid": 1741,
+        "transparent": 2145,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-archer.png",
+      "sha256": "e700f596a6d4740068383b9bbaf7f9d4464ba1ed547c70df8fb174c2cf205c36"
+    },
+    {
+      "type": "mage",
+      "layer": 4,
+      "bounds": [
+        275,
+        421,
+        102,
+        133
+      ],
+      "alpha": {
+        "solid": 1414,
+        "transparent": 2525,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-mage.png",
+      "sha256": "017d9c5040731ed937a4093a8a5c9588310e8a1b5a862175c48a54ae62d153c5"
+    },
+    {
+      "type": "cleric",
+      "layer": 4,
+      "bounds": [
+        390,
+        434,
+        134,
+        116
+      ],
+      "alpha": {
+        "solid": 1558,
+        "transparent": 2365,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-cleric.png",
+      "sha256": "c1aed5cef2021ba9acab992402174d41fd3c68954a33e0956f684546ed72ecb3"
+    },
+    {
+      "type": "dog",
+      "layer": 4,
+      "bounds": [
+        524,
+        450,
+        138,
+        101
+      ],
+      "alpha": {
+        "solid": 1413,
+        "transparent": 2549,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-dog.png",
+      "sha256": "d99aa00302866abbb59ec29cc2183cb36702fe14c1496ac1ca0aa280e7005b20"
+    },
+    {
+      "type": "rat",
+      "layer": 4,
+      "bounds": [
+        662,
+        472,
+        100,
+        79
+      ],
+      "alpha": {
+        "solid": 1561,
+        "transparent": 2343,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-rat.png",
+      "sha256": "94808c289a7dc468a04f727989c3970f9fc1b4fb5cfbf7780561c3d6a4c1a921"
+    },
+    {
+      "type": "thug",
+      "layer": 4,
+      "bounds": [
+        909,
+        447,
+        74,
+        104
+      ],
+      "alpha": {
+        "solid": 1853,
+        "transparent": 2100,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-thug.png",
+      "sha256": "37f7dd033fc1f703f24bceccbbe2f9f8e0012278c8d3703b3605204664e0f8fd"
+    },
+    {
+      "type": "alchemist",
+      "layer": 4,
+      "bounds": [
+        1031,
+        439,
+        82,
+        112
+      ],
+      "alpha": {
+        "solid": 1627,
+        "transparent": 2325,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-alchemist.png",
+      "sha256": "9810f1f90962e1839ec1feb8a7e74ec5f3b79d87cc2f220d4c0d6b4e57ac5fc0"
+    },
+    {
+      "type": "trapper",
+      "layer": 4,
+      "bounds": [
+        1113,
+        448,
+        99,
+        105
+      ],
+      "alpha": {
+        "solid": 1569,
+        "transparent": 2381,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-trapper.png",
+      "sha256": "da5a86eeb06169eb12ddc6456a87239b05df1402286456db092fbf289672f493"
+    },
+    {
+      "type": "siege",
+      "layer": 4,
+      "bounds": [
+        1212,
+        422,
+        130,
+        132
+      ],
+      "alpha": {
+        "solid": 2209,
+        "transparent": 1755,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-siege.png",
+      "sha256": "7e07e424b2f6a693a3504c44677dae0e5d24d8911d5f572719c7d880823119e7"
+    },
+    {
+      "type": "hero",
+      "layer": 4,
+      "bounds": [
+        1352,
+        429,
+        126,
+        124
+      ],
+      "alpha": {
+        "solid": 2026,
+        "transparent": 1893,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-hero.png",
+      "sha256": "f21264a036a6ccc06ef0e07570c79a64bd184d71aba3fd46fbdb8e61773af26e"
+    },
+    {
+      "type": "berserker",
+      "layer": 4,
+      "bounds": [
+        1495,
+        420,
+        137,
+        131
+      ],
+      "alpha": {
+        "solid": 1859,
+        "transparent": 2076,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/4-berserker.png",
+      "sha256": "57d2ec3e47a1b8005027c3339caf2dc0122b6ea742943640ba6ed3c51d1a68b0"
+    },
+    {
+      "type": "soldier",
+      "layer": 5,
+      "bounds": [
+        15,
+        571,
+        120,
+        117
+      ],
+      "alpha": {
+        "solid": 1869,
+        "transparent": 2089,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-soldier.png",
+      "sha256": "c006b6f1c3711570a706ec8b28e81d778771aa840450de54a3b1e71625f01ed6"
+    },
+    {
+      "type": "archer",
+      "layer": 5,
+      "bounds": [
+        135,
+        578,
+        120,
+        111
+      ],
+      "alpha": {
+        "solid": 2041,
+        "transparent": 1861,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-archer.png",
+      "sha256": "d978d7c7801fd5a668f32c0ca80ed3484a65198bcde30a1e5f4375676d1eb904"
+    },
+    {
+      "type": "mage",
+      "layer": 5,
+      "bounds": [
+        267,
+        554,
+        111,
+        134
+      ],
+      "alpha": {
+        "solid": 1635,
+        "transparent": 2325,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-mage.png",
+      "sha256": "c6ebbfcc58f4e7a5daa6242608f27e50609591501e23cde826c99b7fa44c3d5b"
+    },
+    {
+      "type": "cleric",
+      "layer": 5,
+      "bounds": [
+        386,
+        571,
+        137,
+        119
+      ],
+      "alpha": {
+        "solid": 1543,
+        "transparent": 2415,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-cleric.png",
+      "sha256": "634b44b4a9a2e89288a3df2e7f4180d68d1694c70e6a34004b080c48fe925964"
+    },
+    {
+      "type": "dog",
+      "layer": 5,
+      "bounds": [
+        523,
+        588,
+        137,
+        101
+      ],
+      "alpha": {
+        "solid": 1418,
+        "transparent": 2547,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-dog.png",
+      "sha256": "13577d912e65b5d9c2f3c6c3a85f9af01e53b6c883208853fb18fa48f7cd555e"
+    },
+    {
+      "type": "rat",
+      "layer": 5,
+      "bounds": [
+        660,
+        621,
+        105,
+        68
+      ],
+      "alpha": {
+        "solid": 1492,
+        "transparent": 2443,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-rat.png",
+      "sha256": "ac2f7486d47aa3973009b9453d5da10a1a47ef2d836dc640381951a65b1463cf"
+    },
+    {
+      "type": "thug",
+      "layer": 5,
+      "bounds": [
+        797,
+        575,
+        92,
+        114
+      ],
+      "alpha": {
+        "solid": 1532,
+        "transparent": 2461,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-thug.png",
+      "sha256": "f495d5462f5f3d15d6c6a2992dc43dfa99614863d5489b373ab83b49c9ee7f1f"
+    },
+    {
+      "type": "alchemist",
+      "layer": 5,
+      "bounds": [
+        1029,
+        584,
+        85,
+        105
+      ],
+      "alpha": {
+        "solid": 1875,
+        "transparent": 2078,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-alchemist.png",
+      "sha256": "48c31186adf22ae495bcd59f162bb4ce5cf8f309461bbc8fb9f857adcad65e3a"
+    },
+    {
+      "type": "trapper",
+      "layer": 5,
+      "bounds": [
+        1114,
+        596,
+        99,
+        97
+      ],
+      "alpha": {
+        "solid": 1658,
+        "transparent": 2272,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-trapper.png",
+      "sha256": "3bc574c22b9075b248c86f1375c744a5ed441684e69953369b852e011fbab2eb"
+    },
+    {
+      "type": "siege",
+      "layer": 5,
+      "bounds": [
+        1213,
+        564,
+        132,
+        129
+      ],
+      "alpha": {
+        "solid": 2263,
+        "transparent": 1693,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-siege.png",
+      "sha256": "e6fd96649aeae1aa162667ef66cf29b40f831a1a12415e9b3c47426ca41d8722"
+    },
+    {
+      "type": "hero",
+      "layer": 5,
+      "bounds": [
+        1345,
+        577,
+        134,
+        116
+      ],
+      "alpha": {
+        "solid": 1856,
+        "transparent": 2134,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-hero.png",
+      "sha256": "a54f96bf71100698896b3323a3fad9c203cce637b71d8642e07d3423e9e94530"
+    },
+    {
+      "type": "berserker",
+      "layer": 5,
+      "bounds": [
+        1504,
+        571,
+        128,
+        120
+      ],
+      "alpha": {
+        "solid": 1903,
+        "transparent": 2053,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/5-berserker.png",
+      "sha256": "11ef29abddbe52535250029d977f169698ef4225cbb36b71bde593ab3ed47cee"
+    },
+    {
+      "type": "soldier",
+      "layer": 6,
+      "bounds": [
+        17,
+        711,
+        111,
+        111
+      ],
+      "alpha": {
+        "solid": 1916,
+        "transparent": 2018,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-soldier.png",
+      "sha256": "ed06037c5e2f355643296cbb5c6ddb4367ca28e079ce80f69b6b98609ab3f172"
+    },
+    {
+      "type": "archer",
+      "layer": 6,
+      "bounds": [
+        138,
+        712,
+        114,
+        113
+      ],
+      "alpha": {
+        "solid": 1833,
+        "transparent": 2048,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-archer.png",
+      "sha256": "fc7c4291a278cd56568a94042f338c3c42e2a8a457f7e9f25a360937e8b978e0"
+    },
+    {
+      "type": "mage",
+      "layer": 6,
+      "bounds": [
+        271,
+        698,
+        98,
+        125
+      ],
+      "alpha": {
+        "solid": 1467,
+        "transparent": 2467,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-mage.png",
+      "sha256": "6f6d41bbf8b2fadddfc0ce93f927201e0bc56ba59fdcd771af35fa435837fa72"
+    },
+    {
+      "type": "cleric",
+      "layer": 6,
+      "bounds": [
+        386,
+        714,
+        139,
+        107
+      ],
+      "alpha": {
+        "solid": 1448,
+        "transparent": 2510,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-cleric.png",
+      "sha256": "b9572b2043780c4a558d0738c3f564ea738ea9343b56402add85410358a7c2e2"
+    },
+    {
+      "type": "dog",
+      "layer": 6,
+      "bounds": [
+        525,
+        735,
+        135,
+        89
+      ],
+      "alpha": {
+        "solid": 1349,
+        "transparent": 2601,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-dog.png",
+      "sha256": "ea1d4e3c757fea4468ac64b25d5443d2326188a567aec3a31947cad802f2c598"
+    },
+    {
+      "type": "rat",
+      "layer": 6,
+      "bounds": [
+        660,
+        759,
+        103,
+        65
+      ],
+      "alpha": {
+        "solid": 1441,
+        "transparent": 2494,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-rat.png",
+      "sha256": "3f45f42c500440ae5783c2dc9ffb1aa3efa86a6eb92b1457ed5f9ed18ddb2287"
+    },
+    {
+      "type": "thug",
+      "layer": 6,
+      "bounds": [
+        911,
+        720,
+        72,
+        103
+      ],
+      "alpha": {
+        "solid": 1778,
+        "transparent": 2203,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-thug.png",
+      "sha256": "37c79ab3b58215f5fc44a3a9c20a9271c199fd971231197ca725a205e14666ba"
+    },
+    {
+      "type": "alchemist",
+      "layer": 6,
+      "bounds": [
+        1031,
+        716,
+        81,
+        108
+      ],
+      "alpha": {
+        "solid": 1655,
+        "transparent": 2284,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-alchemist.png",
+      "sha256": "93fe3bb8c1f7c05448b1076b20f96f27d18d5a653823c3550a50efaa6994e520"
+    },
+    {
+      "type": "trapper",
+      "layer": 6,
+      "bounds": [
+        1112,
+        725,
+        96,
+        101
+      ],
+      "alpha": {
+        "solid": 1526,
+        "transparent": 2389,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-trapper.png",
+      "sha256": "7299382bfb8d8ebe804c80d8151bbe4fb184061d8ba0507d627757be4c3c745e"
+    },
+    {
+      "type": "siege",
+      "layer": 6,
+      "bounds": [
+        1208,
+        708,
+        132,
+        118
+      ],
+      "alpha": {
+        "solid": 2184,
+        "transparent": 1786,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-siege.png",
+      "sha256": "636b9349b2e8618622365a0e8f49212f920cffe7bae0d850c8af453b02679b8c"
+    },
+    {
+      "type": "hero",
+      "layer": 6,
+      "bounds": [
+        1347,
+        718,
+        127,
+        110
+      ],
+      "alpha": {
+        "solid": 1711,
+        "transparent": 2271,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-hero.png",
+      "sha256": "fd37980a5d225752b71ae2cb2d92293bcae20101f67046e44aade11ee8d979bf"
+    },
+    {
+      "type": "berserker",
+      "layer": 6,
+      "bounds": [
+        1498,
+        707,
+        130,
+        116
+      ],
+      "alpha": {
+        "solid": 1696,
+        "transparent": 2243,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/6-berserker.png",
+      "sha256": "b120d97b904d7a7c93d2b813f580a83d03371e0cc094ddb9aad4f601ec89011a"
+    },
+    {
+      "type": "soldier",
+      "layer": 7,
+      "bounds": [
+        13,
+        834,
+        122,
+        114
+      ],
+      "alpha": {
+        "solid": 1613,
+        "transparent": 2320,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-soldier.png",
+      "sha256": "a44622001b0e4f3b27886a255f875ff3eebe558dd0473502e75dcda78d4e661e"
+    },
+    {
+      "type": "archer",
+      "layer": 7,
+      "bounds": [
+        140,
+        841,
+        112,
+        107
+      ],
+      "alpha": {
+        "solid": 1713,
+        "transparent": 2137,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-archer.png",
+      "sha256": "b6afabe80fbf64ab34fe46339764d50b9ae13d78246aae9f7af0db7a782407d3"
+    },
+    {
+      "type": "mage",
+      "layer": 7,
+      "bounds": [
+        263,
+        831,
+        123,
+        118
+      ],
+      "alpha": {
+        "solid": 1837,
+        "transparent": 2056,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-mage.png",
+      "sha256": "7fc140b86a67029a00beb994b8d0eb6f54a0ce37230a0e91a547a0ad18481b7e"
+    },
+    {
+      "type": "cleric",
+      "layer": 7,
+      "bounds": [
+        386,
+        839,
+        137,
+        110
+      ],
+      "alpha": {
+        "solid": 1412,
+        "transparent": 2540,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-cleric.png",
+      "sha256": "b9a748a0f0de9ecc2e915615cbe6b430596326765f1efaad8cff7559e4a2154d"
+    },
+    {
+      "type": "dog",
+      "layer": 7,
+      "bounds": [
+        523,
+        847,
+        137,
+        103
+      ],
+      "alpha": {
+        "solid": 1346,
+        "transparent": 2598,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-dog.png",
+      "sha256": "00b2990837af574dfa546ba893ddbf48ccf40e9da57dbda561ddd5c11decb48d"
+    },
+    {
+      "type": "rat",
+      "layer": 7,
+      "bounds": [
+        660,
+        868,
+        104,
+        82
+      ],
+      "alpha": {
+        "solid": 1619,
+        "transparent": 2248,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-rat.png",
+      "sha256": "3588cec998e85afc9a0c4cdf418db01bc036d18e94e06967cbc090d044fd4ba4"
+    },
+    {
+      "type": "thug",
+      "layer": 7,
+      "bounds": [
+        911,
+        841,
+        72,
+        108
+      ],
+      "alpha": {
+        "solid": 1650,
+        "transparent": 2307,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-thug.png",
+      "sha256": "7fef0ec345588159ffd50750440361e54c64dd94609786a1dc99331053ac5cfe"
+    },
+    {
+      "type": "alchemist",
+      "layer": 7,
+      "bounds": [
+        1031,
+        846,
+        73,
+        103
+      ],
+      "alpha": {
+        "solid": 1647,
+        "transparent": 2272,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-alchemist.png",
+      "sha256": "8bbfdf39191dfae41a39d0d5a2171ed4bea890933f2c9c0559b0ef708ed80918"
+    },
+    {
+      "type": "trapper",
+      "layer": 7,
+      "bounds": [
+        1104,
+        848,
+        111,
+        103
+      ],
+      "alpha": {
+        "solid": 1293,
+        "transparent": 2632,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-trapper.png",
+      "sha256": "8eea609ffb5dd91d9ea4bb7a66d8742a6776e81e6f7a2f72efbb806eea8bc487"
+    },
+    {
+      "type": "siege",
+      "layer": 7,
+      "bounds": [
+        1215,
+        836,
+        134,
+        116
+      ],
+      "alpha": {
+        "solid": 1938,
+        "transparent": 2025,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-siege.png",
+      "sha256": "22f768c17f85a5cf8160835d5b7a74f13f7ae12cf8395aeb0a0082a56478b2cb"
+    },
+    {
+      "type": "hero",
+      "layer": 7,
+      "bounds": [
+        1349,
+        835,
+        131,
+        116
+      ],
+      "alpha": {
+        "solid": 1737,
+        "transparent": 2193,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-hero.png",
+      "sha256": "6e88ee2e866ec4c5cf0e034e27846e3c156a2e32cf6af72f8b9f851831db5c3d"
+    },
+    {
+      "type": "berserker",
+      "layer": 7,
+      "bounds": [
+        1499,
+        832,
+        133,
+        117
+      ],
+      "alpha": {
+        "solid": 1748,
+        "transparent": 2123,
+        "border": 0
+      },
+      "path": "public/assets/layer-enemies/7-berserker.png",
+      "sha256": "89c5413945a08ff9ad68fb207daeb2a3fdc453ad03f79f09222d65f29e95c8be"
+    }
+  ]
+}

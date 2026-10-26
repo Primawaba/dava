@@ -45,7 +45,7 @@ export class RoomAppearance{
    if(p[i+3]<32||paperDistance<36)continue;const lum=original[0]*.299+original[1]*.587+original[2]*.114,x=i/4%w,y=Math.floor(i/4/w);
    const surface=options.neighbors?.length?materialPaletteAt(shadeRoom,x,y,canvas.width,canvas.height,options.neighbors):null;let color=roomTone(lum,surface?[surface.floor,surface.wall,surface.light]:palette);
    if(crystal&&lum>95)color=roomMix(color,[176,220,247],pulse*.22*Math.min(1,(lum-95)/90));
-   for(const hazard of layers){const hMaterial=passagePalette({type:hazard,worldLayer:options.worldLayer||0}),palette=surface&&hazard===layers[0]?[surface.floor,surface.wall,surface.light]:[hMaterial.floor,hMaterial.wall,hMaterial.light],liquid=['water','lava','crater'].includes(hazard),depth=y/canvas.height;
+   for(const hazard of layers){const hMaterial=passagePalette({type:hazard,worldLayer:options.worldLayer||0,voidTint:type==='void'}),palette=surface&&hazard===layers[0]?[surface.floor,surface.wall,surface.light]:[hMaterial.floor,hMaterial.wall,hMaterial.light],liquid=['water','lava','crater'].includes(hazard),depth=y/canvas.height;
     color=roomMix(color,roomTone(lum,palette),liquid?(.4+.52*shaderSmooth(.38,.70,depth)):.72);
     // Wet glints and wisps modify only existing foreground pixels, never a box.
     if(liquid&&depth>.52&&(y%9===2&&x%13<7))color=roomMix(color,palette[2],.5);

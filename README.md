@@ -1,5 +1,13 @@
 # CONQUER · Crônicas do Abismo
 
+## Atualização 1.19.0 — invasões, territórios e variedade narrativa
+
+- Bandidos racionais invadem na exploração após intervalos de 5–8 turnos, junto das ameaças da descoberta. Cada bandido tem 15 de força; o grupo cobre uma força-alvo de 15 + 5 × profundidade, arredondando para cima. Surgem no ponto mais profundo com caminho transitável até a fortaleza.
+- Ao atacar um guardião territorial, os defensores avançam primeiro. O guardião reage no próprio território. O Cristal do Vazio e suas extensões recebem material roxo escuro.
+- Coringas entram no baralho apenas quando a fortaleza alcança profundidade 5; profundidades de outros planos não antecipam isso.
+- Cada categoria de registro da crônica tem pelo menos cinco formulações, alternadas sem consumir a aleatoriedade do jogo. O texto permanece igual no diário, na exportação e após salvar/carregar. Registros antigos recebem variações em ordem cronológica.
+
+
 Jogo single player de exploração, construção e defesa de uma fortaleza subterrânea. Interface em português, combate em tempo real com IA, partidas reproduzíveis por semente e distribuição web instalável (PWA).
 
 

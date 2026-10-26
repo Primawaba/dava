@@ -1,3 +1,5 @@
+import {initializeChronicleState,makeChronicleRecord,validateChronicle} from './narrative.js';
+import {installIncursions,validateIncursions} from './incursions.js';
 import {installResearch,newResearch,validateResearch} from './research.js';
 import {installInteractions,validateInteractions} from './interactions.js';
 import {installChronicle} from './chronicle.js';
@@ -21,7 +23,7 @@ export class Game {
   this.s={layerVersion:2,layerHistory:{base:{current:challengeOptions.runes?.includes('nightmares')?7:0,transitions:[]}},research:newResearch(),challengeOptions:{layers:challengeOptions.layers===true,runes:Array.isArray(challengeOptions.runes)?challengeOptions.runes:[]},version:1,riseVersion:1,lives:3,rulesVersion:2,immortalVersion:1,barricadeVersion:1,barricades:{},rivalDungeons:[],effectCards:[],nextEffectId:1,passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
   this.projectiles=[];this.effects=[];this.dead=[];this.events=[];this.tickBudget=0;
   this.addRoom(0,0,'gate');for(let i=0;i<5;i++)this.addUnit('soldier',0,0,true);
-  this.shuffleDeck();
+  this.shuffleDeck();this.initializeRaidSchedule(true);
   this.note('Os portões se abrem. Cinco guerreiros leais aguardam suas ordens.','good');
  }
  // Reuse paths across frames only while every graph input is unchanged.
@@ -34,7 +36,7 @@ export class Game {
  get target(){return this.rooms.find(r=>r.type==='throne'&&!r.damaged)||this.room(0,0)}
  random(){let t=this.s.seed+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);this.s.seed>>>=0;return((t^t>>>14)>>>0)/4294967296}
  roll(n){return 1+Math.floor(this.random()*n)}
- note(text,kind='info'){this.s.log.unshift({text,kind,turn:this.s.turn});this.s.log=this.s.log.slice(0,100);this.events.push({type:'log',text,kind})}
+ note(text,kind='info'){this.s.log.unshift(makeChronicleRecord(this.s,text,kind));this.s.log=this.s.log.slice(0,100);this.events.push({type:'log',text,kind})}
  effect(title,description,tone='neutral',input=null){
   this.s.effectCards??=[];this.s.nextEffectId??=1;
   const card={id:this.s.nextEffectId++,title,description,tone,input};this.s.effectCards.push(card);this.events.push({type:'effect-card',id:card.id});return card;
@@ -120,9 +122,12 @@ export class Game {
   const d=(team!=='ally'?ENEMIES[type]:UNITS[type])||UNITS[type]||{power:power||5,speed:0.65,range:0.42};const p=power||d.power||5;
   const u={id:this.s.nextId++,type,team,loyal:loyal||d.mutiny===0,power:p,hp:p*8,maxHp:p*8,shield:0,x,y,home:key(x,y),cooldown:this.random()*0.6,attack:0,walk:0,shot:false,stun:0,order:'defend',size:d.size||1,facing:1};this.s.units.push(u);this._tacticsDirty=true;return u;
  }
- shuffleDeck(){this.s.deck=[];for(const suit of SUITS)for(let rank=1;rank<=13;rank++)this.s.deck.push({suit,rank});if(this.s.jokerAdded){for(const joker of ['red','black'])if(!(this.s.jokerCooldown?.[joker]>this.s.turn))this.s.deck.push({suit:'★',rank:0,joker});}for(let i=this.s.deck.length-1;i>0;i--){const j=Math.floor(this.random()*(i+1));[this.s.deck[i],this.s.deck[j]]=[this.s.deck[j],this.s.deck[i]]}}
+ shuffleDeck(){this.s.deck=[];for(const suit of SUITS)for(let rank=1;rank<=13;rank++)this.s.deck.push({suit,rank});if(this.jokersUnlocked()&&this.s.jokerAdded){for(const joker of ['red','black'])if(!(this.s.jokerCooldown?.[joker]>this.s.turn))this.s.deck.push({suit:'★',rank:0,joker});}for(let i=this.s.deck.length-1;i>0;i--){const j=Math.floor(this.random()*(i+1));[this.s.deck[i],this.s.deck[j]]=[this.s.deck[j],this.s.deck[i]]}}
+ enforceJokerDepth(){if(!this.jokersUnlocked()){this.s.deck=this.s.deck.filter(c=>c.suit!=='★');this.s.discard=this.s.discard.filter(c=>c.suit!=='★');this.s.jokerAdded=false;}}
+ jokersUnlocked(){return (this.s.activePlane==null?this.s.maxDepth:(this.s.worldMaps?.base?.maxDepth||0))>=5}
  draw(depth=0){
-  if(depth>=5&&!this.s.jokerAdded){this.s.jokerAdded=true;this.s.deck.splice(Math.floor(this.random()*(this.s.deck.length+1)),0,{suit:'★',rank:0,joker:'red'});this.s.deck.splice(Math.floor(this.random()*(this.s.deck.length+1)),0,{suit:'★',rank:0,joker:'black'});this.note('Profundidade 5. Os coringas despertam no baralho.','warn')}
+  this.enforceJokerDepth();
+  if(this.jokersUnlocked()&&!this.s.jokerAdded){this.s.jokerAdded=true;for(const joker of ['red','black'])if(!this.s.deck.some(c=>c.suit==='★'&&(c.joker||'black')===joker))this.s.deck.splice(Math.floor(this.random()*(this.s.deck.length+1)),0,{suit:'★',rank:0,joker});this.note('Profundidade 5. Os coringas despertam no baralho.','warn')}
   if(!this.s.deck.length){this.shuffleDeck();this.s.discard=[]}
   const c=this.s.deck.pop();this.s.discard.push(c);return c;
  }
@@ -152,7 +157,7 @@ export class Game {
  path(start,end,team='ally',unit=null){
   const sk=typeof start==='string'?start:key(Math.round(start.x),Math.round(start.y));
   const ek=typeof end==='string'?end:key(Math.round(end.x),Math.round(end.y));
-  const ck=`${sk}|${ek}|${team}|${unit?.type||'-'}|${unit?.team||'-'}|${unit?.power||'-'}|${(unit?.traits||[]).join(',')}|${!!unit?.flying}|${!!unit?.cosmic}|${team==='enemy'&&unit?this.unitData(unit).speed:'-'}`;if(this._routeCache?.has(ck))return this._routeCache.get(ck);
+  const ck=`${sk}|${ek}|${team}|${unit?.type||'-'}|${unit?.team||'-'}|${unit?.power||'-'}|${(unit?.traits||[]).join(',')}|${!!unit?.flying}|${!!unit?.cosmic}|${unit?.defendingTerritory||'-'}|${team==='enemy'&&unit?this.unitData(unit).speed:'-'}`;if(this._routeCache?.has(ck))return this._routeCache.get(ck);
   const finish=result=>{if(this._routeCache?.size>=4096)this._routeCache.delete(this._routeCache.keys().next().value);this._routeCache?.set(ck,result);return result};
   if(!this.s.rooms[sk]||!this.s.rooms[ek])return finish(null);
   if(sk===ek)return finish([]);
@@ -523,6 +528,7 @@ export class Game {
    if((u.team==='enemy'||this.s.madTraps)&&at.trap?.armed&&!u.traits?.includes(7)){if(at.trap.kind==='damage')this.damage(u,at.trap.level*10*8,{source:'trap'});else u.stun=at.trap.level*2;at.trap.armed=false;if(u.hp<=0)continue}
    if(u.type==='trapper'){for(const r of this.rooms)if(r.trap&&distance(r,u)<1.5)r.trap.armed=true}
    if(u.type==='cleric'&&u.team==='ally'&&u.cooldown<=0){for(const v of this.allies)if(distance(u,v)<=1.5)v.shield=Math.min(16,v.shield+16);u.cooldown=2.5;u.attack=0.3;continue}
+   if(u.team==='enemy'&&u.defendingTerritory&&u.awaitingAttack){u.walk=0;continue;}
    const opponents=actors.filter(v=>v.team!==u.team&&v.hp>0&&(u.type!=='rat'||at.type==='sewer'&&Math.round(v.x)===at.x&&Math.round(v.y)===at.y)).sort((a,b)=>distance(u,a)-distance(u,b)||a.id-b.id);
    let target=!u.nonAttacking&&opponents.find(v=>d.range>.5?distance(u,v)<=d.range&&this.lineOfSight(u,v):this.meleeContact(u,v));
    if(target&&!(u.type==='siege'&&u.shot)){
@@ -732,7 +738,7 @@ export class Game {
   }
   for(const r of Object.values(s.rooms))if(r.type!=='sealed'&&!r.builtPartOf&&!DAMAGEABLE_ROOMS.includes(r.type))r.damaged=false;
   for(const r of Object.values(s.rooms))if(r.cavernGroup===key(r.x,r.y)&&r.type!=='cave'&&!r.playerBuilt&&ROOMS[r.type]?.r===undefined){r.bossRoot=r.cavernGroup;for(const member of Object.values(s.rooms))if(member.cavernGroup===r.cavernGroup&&member.type==='cave')member.bossRoot=r.cavernGroup;}
-  if(s.returnPhase&&(!Number.isFinite(s.returnPhase.elapsed)||s.returnPhase.elapsed<0||s.returnPhase.elapsed>300000||!Array.isArray(s.returnPhase.units)||s.returnPhase.units.length>3000||s.returnPhase.units.some(u=>!validUnit(u))))throw Error('Retorno inválido.');validateResearch(s);validateRiseState(s,data.dead);validateColony(s);validateInteractions(s);validateAdvanced(s);validateWorlds(s);validateChallenges(s);for(const r of Object.values(s.rooms)){delete r.longCave;delete r.longPanel;if(r.type==='altar'&&!r.dedication)r.dedication='fortune';if(!s.riseVersion&&r.type==='solitary'&&r.prisoners&&!r.captive)r.captive={type:'raider',power:1,name:'Prisioneiro antigo',range:.42,size:1,mutiny:12};}s.riseVersion=1;const g=new Game();g.s=s;g.s.name=s.name.slice(0,40);g.s.paused=s.combat;for(const u of s.units){u.order='defend';if(u.frontTarget&&!s.units.some(e=>e.id===u.frontTarget&&e.team==='enemy'&&e.hp>0))u.frontTarget=null;if(u.team==='ally'&&['golem','siege'].includes(u.type))u.size=UNITS[u.type].size;else u.size??=(u.team!=='ally'?ENEMIES[u.type]?.size:UNITS[u.type]?.size)||1;u.facing??=1;if(u.moveTarget&&!s.rooms[u.moveTarget])u.moveTarget=null;}g.projectiles=data.projectiles;g.dead=data.dead;
+  if(s.returnPhase&&(!Number.isFinite(s.returnPhase.elapsed)||s.returnPhase.elapsed<0||s.returnPhase.elapsed>300000||!Array.isArray(s.returnPhase.units)||s.returnPhase.units.length>3000||s.returnPhase.units.some(u=>!validUnit(u))))throw Error('Retorno inválido.');validateChronicle(s);validateIncursions(s);validateResearch(s);validateRiseState(s,data.dead);validateColony(s);validateInteractions(s);validateAdvanced(s);validateWorlds(s);validateChallenges(s);for(const r of Object.values(s.rooms)){delete r.longCave;delete r.longPanel;if(r.type==='altar'&&!r.dedication)r.dedication='fortune';if(!s.riseVersion&&r.type==='solitary'&&r.prisoners&&!r.captive)r.captive={type:'raider',power:1,name:'Prisioneiro antigo',range:.42,size:1,mutiny:12};}s.riseVersion=1;const g=new Game();g.s=s;g.s.name=s.name.slice(0,40);g.s.paused=s.combat;for(const u of s.units){u.order='defend';if(u.frontTarget&&!s.units.some(e=>e.id===u.frontTarget&&e.team==='enemy'&&e.hp>0))u.frontTarget=null;if(u.team==='ally'&&['golem','siege'].includes(u.type))u.size=UNITS[u.type].size;else u.size??=(u.team!=='ally'?ENEMIES[u.type]?.size:UNITS[u.type]?.size)||1;u.facing??=1;if(u.moveTarget&&!s.rooms[u.moveTarget])u.moveTarget=null;}g.projectiles=data.projectiles;g.dead=data.dead;
   if(s.immortalVersion!==undefined&&s.immortalVersion!==1)throw Error('Versão de criatura imortal inválida.');
   for(const r of g.rooms){if(r.type==='invincible'){
    if(s.immortalVersion===undefined){r.closed=false;g.placeImmortal(r)}
@@ -740,7 +746,7 @@ export class Game {
   }else if(r.immortalId)throw Error('Criatura imortal fora da câmara.');}
   for(const u of g.s.units)if(u.type==='immortal'&&(u.hp<=0||u.team!=='neutral'||g.s.rooms[u.home]?.type!=='invincible'||g.s.rooms[u.home].immortalId!==u.id||u.x!==g.s.rooms[u.home].x||u.y!==g.s.rooms[u.home].y))throw Error('Criatura imortal inválida.');
   for(const r of g.rooms)if(r.type==='sealed'&&r.damaged)g.openSealedRoom(r,true);
-  g.s.research??=newResearch(true);g.migrateRoomLayers();g.s.paused=g.s.combat;g.s.immortalVersion=1;g.events=[];delete g.s.returnPhase;return g;
+  g.s.research??=newResearch(true);initializeChronicleState(g.s);g.enforceJokerDepth();g.migrateRoomLayers();g.initializeRaidSchedule();g.s.paused=g.s.combat;g.s.immortalVersion=1;g.events=[];delete g.s.returnPhase;return g;
  }
 }
 
@@ -767,6 +773,8 @@ installChronicle(Game);
 installInteractions(Game);
 
 installResearch(Game);
+
+installIncursions(Game);
 
 const uncachedUpdate=Game.prototype.update;
 Game.prototype.update=function(dt){return this.withQueryCache(()=>uncachedUpdate.call(this,dt),false);};

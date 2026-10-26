@@ -55,7 +55,7 @@
   <main class="title-content"><div class="eyebrow"><span></span> CRÔNICAS DO ABISMO <span></span></div><h1>CONQUER</h1><div class="title-rule">♠ <i></i> ♦ <i></i> ♣ <i></i> ♥</div><p class="title-tagline">Construa seu reino.<br>Desperte o que jaz abaixo.</p><p class="title-description">Cada carta, uma descoberta. Cada sala, uma história.<br>O abismo aguarda seu próximo conquistador.</p>
    <nav class="main-menu" aria-label="Menu principal"><button id="continue-game" class="primary menu-primary" hidden><span data-icon="play"></span>Continuar jornada <small id="continue-label"></small><span>→</span></button><button id="new-game" class="primary menu-primary"><span data-icon="plus"></span>Nova fortaleza<span>→</span></button><div class="menu-secondary"><button id="title-save" disabled title="Inicie uma fortaleza para salvar"><span data-icon="save"></span>Salvar</button><button id="load-game"><span data-icon="load"></span>Carregar</button><button id="title-options"><span data-icon="settings"></span>Opções</button><button id="quit-game"><span data-icon="exit"></span>Sair</button></div></nav>
    <p id="startup-help" class="startup-help">Se o menu não responder no iPhone, <a href="https://raw.githack.com/Primawaba/dava/main/JOGAR-CONQUER.html">abra a versão web no Safari ↗</a>. A prévia do app Arquivos pode bloquear o jogo.</p><div class="title-note"><span class="tiny-diamond">◆</span> UMA JORNADA SOLO DE ESTRATÉGIA & EXPLORAÇÃO</div>
-  </main><footer class="title-footer"><span>UM BARALHO. UMA FORTALEZA. INFINITAS HISTÓRIAS.</span><span>PC & MOBILE <i>·</i> OFFLINE <i>·</i> v1.18.0</span></footer>
+  </main><footer class="title-footer"><span>UM BARALHO. UMA FORTALEZA. INFINITAS HISTÓRIAS.</span><span>PC & MOBILE <i>·</i> OFFLINE <i>·</i> v1.19.0</span></footer>
  </section>
  <section id="game-screen" class="screen" hidden>
   <header class="game-header"><button id="game-menu" class="game-brand" aria-label="Abrir menu de pausa"><span>◇</span> CONQUER</button><div class="resource-row"><div class="resource" title="Recursos: usados em construções e armadilhas"><span class="resource-symbol heart">♥</span><span><b id="resources">20</b><small>RECURSOS <em id="res-cap">/50</em></small></span></div><div class="resource" title="Riquezas: usadas para recrutar tropas"><span class="resource-symbol gold">♦</span><span><b id="gold">20</b><small>RIQUEZAS <em id="gold-cap">/50</em></small></span></div><div class="resource" title="Moral: unidades desleais podem se amotinar se a moral cair abaixo de seu limite"><span data-icon="flag" class="morale-symbol"></span><span><b id="morale">10</b><small>MORAL</small></span></div><div class="resource troop-resource" title="Defensores vivos e força total"><span data-icon="shield"></span><span><span class="troop-totals"><b id="troops">5</b><span class="troop-strength" title="Força nominal total das tropas aliadas vivas" aria-label="Força total das tropas"><span data-icon="sword"></span><strong id="troop-strength">25</strong><em>STR</em></span></span><small>DEFENSORES</small></span></div></div><div class="header-actions"><button id="quick-save" class="icon-button" title="Salvar jogo (Ctrl+S)" aria-label="Salvar jogo"><span data-icon="save"></span></button><button id="game-help" class="icon-button" title="Como jogar" aria-label="Como jogar"><span data-icon="help"></span></button><button id="open-options" class="icon-button desktop-only" title="Opções" aria-label="Opções"><span data-icon="settings"></span></button></div></header>
@@ -239,6 +239,420 @@ const PASSAGES=['h-0','h-1','v-0','v-1','door-e','door-w','door-n','door-s','gra
 
 const DAMAGEABLE_ROOMS=Object.keys(ROOMS).filter(type=>ROOMS[type].r!==undefined||type==='gate');
 const CRYSTAL_PALETTE={floor:[22,37,52],wall:[62,88,112],light:[127,180,215]};
+
+
+// narrative.js
+// A category has its own phrase cycle. Selecting prose never consumes game RNG.
+const CHRONICLE_TEMPLATES={
+ founding:[
+ 'Cinco guerreiros cruzaram o portão e juraram guardar a nova fortaleza. À frente deles, a montanha ainda escondia todos os seus segredos.',
+ 'A história começou com cinco guardiões diante de um portão recém-aberto. Atrás deles ficaria o mundo conhecido; adiante, a pedra por conquistar.',
+ 'Cinco companheiros assumiram a primeira vigília. Entre a entrada e o coração da montanha, tudo ainda estava por construir.',
+ 'O portão recebeu seus primeiros defensores. Eram cinco, unidos pela promessa de fazer daquela entrada uma fortaleza.',
+ 'A primeira guarnição reuniu-se sob o arco do portão. Cinco guerreiros leais dariam início à jornada nas profundezas.'
+ ],
+ turn:[
+ 'A vida seguiu entre as muralhas. Enquanto os habitantes cuidavam de seus afazeres, a próxima incursão nas profundezas era preparada.',
+ 'Ferramentas e conversas voltaram a preencher os corredores. Havia trabalho a terminar antes da próxima escavação.',
+ 'Os habitantes retomaram seus postos, divididos entre o cuidado da fortaleza e a expectativa do que haveria além da pedra.',
+ 'A rotina encontrou seu ritmo sob a montanha. As oficinas trabalhavam enquanto se preparava um novo avanço.',
+ 'Mais uma etapa da jornada começou. Entre reparos, provisões e planos, a fortaleza se preparou para crescer.',
+ 'Passos conhecidos percorreram os túneis. Cada habitante retomou sua tarefa, e a exploração voltou a ocupar as conversas.'
+ ],
+ combat:[
+ 'O alarme ecoou pelos túneis. Os defensores deixaram seus postos e correram para conter os invasores, repartindo suas forças entre as frentes ameaçadas.',
+ 'O chamado às armas interrompeu a rotina. A guarnição reuniu-se nos corredores para enfrentar a ameaça.',
+ 'Havia inimigos na fortaleza. Os defensores buscaram suas armas e avançaram para os pontos em perigo.',
+ 'A vigília transformou-se em batalha. Tropas deixaram seus abrigos para proteger os caminhos da fortaleza.',
+ 'Os corredores encheram-se de passos apressados. A defesa organizou suas frentes diante dos inimigos.',
+ 'O trabalho foi interrompido pelo chamado dos guardas. Mais uma vez, a segurança da fortaleza dependeria das armas.'
+ ],
+ victory:[
+ 'Quando o último invasor caiu, o silêncio voltou aos corredores. Os sobreviventes recolheram os espólios e regressaram aos seus afazeres com o ânimo renovado.',
+ 'A defesa prevaleceu. Entre os restos da batalha, os sobreviventes reuniram o que podia ser aproveitado e retomaram a vida da fortaleza.',
+ 'Os inimigos foram vencidos. A guarnição pôde baixar as armas, recuperar o fôlego e recolher os espólios.',
+ 'A ameaça terminou diante da resistência dos defensores. Os sobreviventes voltaram aos seus postos mais confiantes.',
+ 'A fortaleza resistiu a outra batalha. O fim do combate trouxe alívio aos habitantes e novos espólios às reservas.',
+ 'Por fim, os corredores ficaram livres dos invasores. Os que sobreviveram cuidaram da recuperação e do que restara do confronto.'
+ ],
+ doorBuilt:[
+ 'Uma porta reforçada foi erguida no túnel. Atrás de suas traves, a fortaleza ganhou um novo refúgio contra os perigos da montanha.',
+ 'Os construtores fecharam o trabalho com uma porta robusta. A passagem agora tinha uma proteção própria.',
+ 'Ferro e madeira reforçada passaram a guardar o corredor. Os habitantes encontraram ali uma defesa a mais.',
+ 'Uma nova porta tomou seu lugar entre as salas. Suas traves poderiam deter o que antes atravessava o túnel livremente.',
+ 'O corredor recebeu uma barreira reforçada. A fortaleza dispunha de mais um ponto onde conter o perigo.'
+ ],
+ doorLost:[
+ 'As traves cederam, e a porta reforçada desabou. O túnel estava aberto outra vez, deixando os habitantes expostos ao que viesse do outro lado.',
+ 'A porta não resistiu. Onde antes havia uma barreira, restou uma passagem sem proteção.',
+ 'A defesa do corredor foi rompida. Os habitantes perderam a segurança oferecida por aquela porta.',
+ 'A porta reforçada foi destruída, abrindo o caminho para os perigos do outro lado.',
+ 'A barreira do túnel cedeu. A passagem deixou de contar com a proteção de suas traves.'
+ ],
+ jokerDepth:[
+ 'Os exploradores desceram além dos primeiros estratos. Naquela escuridão mais antiga, maravilhas e horrores começaram a disputar o destino da fortaleza.',
+ 'A quinta profundidade foi alcançada. Dali em diante, o desconhecido guardaria encontros ainda mais extraordinários.',
+ 'A escavação chegou ao quinto andar da montanha. Novos presságios passaram a acompanhar a jornada.',
+ 'Ao atingir a quinta profundidade, os habitantes entraram numa parte da montanha capaz de esconder relíquias e monstruosidades.',
+ 'Os túneis finalmente alcançaram a quinta profundidade. A fortaleza estava pronta para encontrar segredos de outra ordem.'
+ ],
+ artifact:[
+ 'Um artefato despertou em meio à pedra. Sua bênção acompanharia os defensores nas batalhas que ainda estavam por vir.',
+ 'A fortaleza recebeu a bênção de um artefato encantado. Seu poder fortaleceu as armas dos defensores.',
+ 'Um novo poder foi descoberto na relíquia. Os guerreiros levariam sua força para os próximos confrontos.',
+ 'O encanto do artefato passou a servir à fortaleza, tornando seus defensores mais perigosos em batalha.',
+ 'A relíquia revelou uma bênção duradoura. A guarnição ganhou força para enfrentar a escuridão.'
+ ],
+ festival:[
+ 'As preocupações deram lugar à música e às conversas do festival. Por algumas horas, os habitantes puderam esquecer o peso da montanha.',
+ 'A fortaleza celebrou um festival. A convivência renovou o ânimo daqueles que viviam sob a pedra.',
+ 'Os habitantes reservaram um tempo para festejar. A celebração trouxe disposição nova aos corredores.',
+ 'Um festival interrompeu a rotina de trabalho e vigília. O encontro deixou os habitantes mais animados.',
+ 'A celebração reuniu os moradores da fortaleza. Por algum tempo, os perigos da exploração ficaram em segundo plano.'
+ ],
+ theftDragon:[
+ 'Mãos cautelosas retiraram ouro da pilha de tesouros. O dragão não despertou, e os ladrões voltaram em silêncio, carregando sua pequena fortuna.',
+ 'O ouro foi retirado sem acordar seu dono. Os saqueadores deixaram o covil enquanto o dragão permanecia adormecido.',
+ 'A incursão ao tesouro terminou em silêncio. A fortaleza ganhou ouro, e o dragão continuou a dormir.',
+ 'Uma parte do tesouro foi levada do covil. A criatura não percebeu o roubo e permaneceu em seu sono.',
+ 'Os ladrões saíram com ouro e com a sorte de não terem despertado o dragão.'
+ ],
+ invention:[
+ 'Das oficinas saiu uma descoberta que mudaria o modo de lutar da fortaleza. Os defensores receberam os novos engenhos com esperança renovada.',
+ 'A engenhosidade dos artífices produziu um novo avanço. As tropas passaram a contar com armamentos mais eficazes.',
+ 'O trabalho de pesquisa deu resultado nas oficinas. A fortaleza ganhou uma vantagem para as batalhas futuras.',
+ 'Os construtores apresentaram seus novos engenhos à guarnição. A descoberta tornou a defesa mais forte.',
+ 'Uma inovação tomou forma entre ferramentas e projetos. Seu efeito seria sentido nas armas dos defensores.'
+ ],
+ hospital:[
+ 'No hospital, um defensor que parecia perdido abriu os olhos novamente. Seus companheiros voltariam a vê-lo entre eles.',
+ 'Um combatente foi trazido de volta pelo hospital. A guarnição recebeu novamente alguém que havia caído.',
+ 'O cuidado do hospital recuperou um defensor derrotado. Ele pôde voltar a servir à fortaleza.',
+ 'A batalha não teria a última palavra sobre aquele defensor. O hospital conseguiu devolvê-lo aos companheiros.',
+ 'Um dos caídos retornou graças ao hospital. Seu lugar entre as tropas deixaria de ficar vazio.'
+ ],
+ immortal:[
+ 'A criatura que resistira a tantos golpes enfim foi vencida por um poder capaz de encerrar sua existência. A passagem antes proibida ficou em silêncio.',
+ 'Um efeito de morte instantânea pôs fim à criatura imortal. O caminho que ela guardava ficou livre.',
+ 'A existência do guardião imortal foi encerrada. Os habitantes poderiam atravessar a passagem antes bloqueada.',
+ 'O bloqueio da criatura imortal terminou diante de um poder que não dependia de feri-la aos poucos.',
+ 'A criatura imortal deixou de guardar a sala. Sua morte abriu um caminho que as armas comuns não conseguiam libertar.'
+ ],
+ defense:[
+ 'Novas defesas foram preparadas na pedra. Os habitantes esperavam que elas detivessem os próximos intrusos.',
+ 'A fortaleza ganhou outra defesa. O corredor estava mais bem preparado para receber inimigos.',
+ 'Os artífices concluíram a instalação defensiva. Uma nova proteção aguardava os invasores.',
+ 'O caminho foi preparado para resistir a uma incursão. Os defensores ganharam mais um recurso contra a ameaça.',
+ 'Mais uma defesa tomou seu lugar na fortaleza, reforçando os planos de proteção dos habitantes.'
+ ],
+ defeat:[
+ 'A última gema se desfez sobre o portão. Sem sua proteção, a fortaleza caiu, e as vozes dos habitantes se perderam no abismo.',
+ 'A terceira gema se partiu. A proteção do portão terminou, encerrando a resistência da fortaleza.',
+ 'Nenhuma gema restou para guardar a entrada. A fortaleza sucumbiu depois de sua última defesa.',
+ 'A perda da última gema marcou a queda da fortaleza. A jornada de seus habitantes chegara ao fim.',
+ 'Sobre o portão, a terceira gema foi destruída. A fortaleza não conseguiria continuar a resistir.'
+ ],
+ construction:[
+ 'Onde antes havia apenas rocha, tomou forma {room}. O trabalho dos construtores acrescentou um novo lugar à vida da fortaleza.',
+ '{room} passou a fazer parte da fortaleza. Ferramentas e materiais deram uma nova função àquele espaço.',
+ 'Os construtores concluíram {room}. Os habitantes puderam começar a usar mais uma instalação.',
+ 'A construção de {room} terminou. A fortaleza ganhou um espaço para ampliar seus planos.',
+ 'Mais uma obra foi entregue: {room}. O esforço dos habitantes deixou sua marca na pedra.'
+ ],
+ recruitment:[
+ '{unit} apresentou-se em {room} e passou a integrar a guarnição. Mais um habitante assumia seu lugar na defesa da fortaleza.',
+ 'A guarnição recebeu {unit}, instalado em {room}. A fortaleza contaria com mais um defensor.',
+ '{room} recebeu um novo ocupante: {unit}. Suas forças se juntaram às da defesa.',
+ 'O recrutamento de {unit} reforçou as tropas. Seu lugar na fortaleza seria em {room}.',
+ 'Mais um combatente entrou para a defesa: {unit}, destinado a {room}.'
+ ],
+ passage:[
+ 'Os golpes das ferramentas abriram caminho entre {from} e {to}. Pela primeira vez, os habitantes puderam atravessar de uma sala à outra.',
+ 'Uma passagem foi aberta entre {from} e {to}. Os dois espaços passaram a compartilhar um caminho.',
+ 'A parede entre {from} e {to} deu lugar a um túnel. A circulação da fortaleza ganhou outra rota.',
+ '{from} e {to} foram ligadas pelos escavadores. O trajeto antes interrompido ficou livre.',
+ 'O trabalho na pedra uniu {from} a {to}. Os habitantes ganharam um novo corredor para percorrer.'
+ ],
+ production:[
+ 'O trabalho dos habitantes rendeu novos materiais e riquezas. As reservas receberam o fruto de mais uma jornada sob a montanha.',
+ 'Os produtores entregaram o resultado de seu trabalho. Novas provisões foram reunidas nas reservas.',
+ 'O esforço cotidiano voltou a abastecer a fortaleza. Os estoques receberam uma nova contribuição.',
+ 'As atividades da fortaleza deram seus frutos. Materiais e riquezas encontraram lugar entre as reservas.',
+ 'Mais uma produção foi recolhida. O trabalho nas salas ajudou a sustentar os próximos planos.',
+ 'O movimento dos trabalhadores terminou em novas entregas aos estoques. A fortaleza pôde contar com o que produziu.',
+ 'As reservas cresceram com o resultado das atividades locais. Cada entrega ajudaria a manter a fortaleza em funcionamento.'
+ ],
+ trade:[
+ 'As reservas mudaram de mãos. Os mercadores levaram parte dos estoques e deixaram aquilo de que a fortaleza precisava naquele momento.',
+ 'Uma troca foi concluída. Parte das reservas foi cedida em busca de suprimentos mais úteis aos planos atuais.',
+ 'Os habitantes negociaram seus estoques e receberam outros bens em retorno.',
+ 'A negociação alterou o conteúdo das reservas. A fortaleza trocou o que possuía pelo que precisava.',
+ 'O acordo de troca foi cumprido. Novos bens entraram onde outros deixaram os estoques.'
+ ],
+ mutiny:[
+ 'O descontentamento de {unit} tornou-se rebelião. Quem antes defendia a fortaleza voltou-se contra seus antigos companheiros.',
+ '{unit} rompeu com a fortaleza. A defesa ganhou um inimigo entre aqueles que antes serviam a ela.',
+ 'A lealdade de {unit} não resistiu. O motim transformou um antigo defensor em ameaça.',
+ 'A insatisfação levou {unit} à revolta. Os habitantes teriam de enfrentar alguém que conhecia seus corredores.',
+ '{unit} se amotinou e voltou suas armas contra a fortaleza.'
+ ],
+ discovery:[
+ 'Ao romper a última camada de pedra, os exploradores encontraram {room}. As lanternas iluminaram mais um lugar até então oculto sob a montanha.',
+ 'A escavação revelou {room}. Mais um dos segredos da montanha passou a fazer parte do mapa.',
+ 'Além da abertura recém-feita estava {room}. Os habitantes descobriram outro destino para seus túneis.',
+ 'As ferramentas alcançaram {room}. A descoberta ampliou o conhecimento da fortaleza sobre as profundezas.',
+ 'O avanço dos exploradores levou a {room}. A pedra guardava mais uma surpresa.',
+ 'Uma passagem para o desconhecido revelou {room}. O novo espaço ganhou lugar na história da fortaleza.',
+ 'A luz das lanternas entrou em {room}, até então escondida da fortaleza.',
+ 'Os escavadores encontraram {room} durante seu avanço. O mapa já não terminava naquele ponto.'
+ ],
+ resourceFind:[
+ 'Os exploradores voltaram com {n} {resource}, encontrados entre os segredos da montanha. A descoberta alimentou os planos da fortaleza.',
+ 'A busca rendeu {n} {resource}. O achado foi levado para reforçar as reservas.',
+ 'Entre a pedra recém-explorada foram encontrados {n} {resource}, destinados aos próximos esforços da fortaleza.',
+ 'O avanço trouxe um ganho de {n} {resource}. Os habitantes recolheram o que conseguiram encontrar.',
+ 'A exploração revelou {n} {resource}. A fortaleza recebeu mais um recurso para seus planos.'
+ ],
+ portalAttack:[
+ 'A superfície do portal se agitou. Invasores vindos de outro mundo atravessaram a passagem, levando uma nova ameaça aos corredores da fortaleza.',
+ 'O portal abriu caminho para uma incursão. Criaturas de outro plano entraram na fortaleza.',
+ 'A vigília do portal foi interrompida por invasores. A passagem entre mundos tornara-se uma frente de batalha.',
+ 'Inimigos atravessaram o portal e alcançaram os corredores. A fortaleza teria de defender sua ligação com outro mundo.',
+ 'A travessia do portal trouxe uma ameaça. Tropas estrangeiras avançaram para o interior da fortaleza.'
+ ],
+ portalQuiet:[
+ 'Os guardas vigiaram o portal, atentos a qualquer movimento. Dessa vez, nada atravessou a passagem.',
+ 'O portal permaneceu sob observação. Nenhum invasor apareceu do outro lado.',
+ 'A vigília junto ao portal terminou sem uma incursão. A passagem entre mundos continuou silenciosa.',
+ 'Os defensores mantiveram os olhos no portal, mas não precisaram enfrentar visitantes hostis.',
+ 'Nada de ameaçador saiu do portal durante aquela vigília.'
+ ],
+ rivalFound:[
+ 'Além da primeira câmara, os exploradores descobriram novas salas de uma masmorra rival. A presença de vizinhos hostis tornava a montanha ainda mais perigosa.',
+ 'Uma masmorra rival revelou a extensão de suas salas. A fortaleza havia encontrado outra presença sob a montanha.',
+ 'Os exploradores mapearam novos trechos da masmorra rival. A descoberta mostrava que não estavam sozinhos nas profundezas.',
+ 'Mais salas de uma masmorra rival foram reveladas. Seus corredores se estendiam além do encontro inicial.',
+ 'A descoberta de uma masmorra rival abriu outra parte do mapa, acompanhada pelos perigos de seus ocupantes.'
+ ],
+ rivalWon:[
+ 'Os últimos redutos da masmorra rival cederam. Seus tesouros foram levados à fortaleza, e seus corredores deixaram de abrigar uma ameaça.',
+ 'A masmorra rival foi conquistada. A fortaleza recolheu suas riquezas e assegurou aqueles espaços.',
+ 'A resistência da masmorra rival terminou. Os vencedores puderam tomar seus espólios.',
+ 'Os habitantes celebraram a conquista da masmorra rival, cujos corredores já não pertenciam aos inimigos.',
+ 'A fortaleza prevaleceu sobre seus rivais e reuniu os despojos da conquista.'
+ ],
+ broadCave:[
+ 'A luz das lanternas não alcançou a outra extremidade da caverna. O salão natural abria-se muito além do que a entrada fazia imaginar.',
+ 'Os exploradores encontraram uma caverna que continuava para além do primeiro espaço.',
+ 'A abertura revelou um salão natural amplo, que exigiria mais lugar no mapa.',
+ 'A caverna mostrou sua extensão aos poucos. Sua entrada escondia um espaço maior do que parecia.',
+ 'A escavação desembocou numa caverna extensa. A fortaleza ganhava conhecimento de um salão contínuo sob a pedra.'
+ ],
+ formation:[
+ '{room} revelou-se maior do que parecia. Sua extensão continuava para além da primeira câmara, formando um único lugar sob a montanha.',
+ 'Os exploradores seguiram a continuidade de {room} e descobriram que o mesmo lugar ocupava várias casas.',
+ 'A extensão de {room} ganhou forma no mapa. Seus trechos pertenciam a uma única formação.',
+ 'A descoberta de {room} não terminou na primeira abertura. Outros espaços davam continuidade ao mesmo lugar.',
+ '{room} estendia-se por mais de uma casa, compondo uma formação contínua.'
+ ],
+ gemLost:[
+ 'Uma das gemas se rompeu sobre o portão. Os invasores desapareceram em clarões de magia, e cinco guardiões retomaram a vigília. A fortaleza sobrevivera, mas sua proteção estava mais frágil.',
+ 'A derrota custou uma gema do portão. Sua magia dissipou os invasores, enquanto cinco guardiões assumiam novamente a entrada.',
+ 'Uma gema foi destruída para que a fortaleza pudesse continuar. Os inimigos desapareceram, e cinco defensores voltaram ao portão.',
+ 'O portão perdeu parte de sua proteção. A gema quebrada levou os invasores consigo e permitiu uma nova vigília de cinco guardiões.',
+ 'A fortaleza resistiu à derrota graças ao sacrifício de uma gema. Quando os inimigos sumiram, cinco guardiões retomaram seus postos.'
+ ],
+ explosion:[
+ 'Um clarão correu pelos túneis tomados pelo gás. A explosão sacudiu a fortaleza e deixou um rastro de construções danificadas.',
+ 'O gás encontrou uma fonte de ignição. A explosão atingiu as construções alcançadas pela nuvem.',
+ 'Uma explosão rompeu a quietude dos corredores. O gás inflamável deixara danos por onde se espalhara.',
+ 'Os túneis tomados pelo gás foram sacudidos por uma detonação, danificando as salas atingidas.',
+ 'A nuvem inflamável incendiou-se. Restou à fortaleza lidar com os danos da explosão.'
+ ],
+ casualties:[
+ 'Os perigos do ambiente alcançaram os habitantes antes que pudessem escapar. A fortaleza perdeu {n} de seus defensores.',
+ '{n} defensores caíram diante dos líquidos ou vapores perigosos da montanha.',
+ 'A exposição aos perigos das salas derrotou {n} unidades da fortaleza.',
+ 'O ambiente cobrou novas baixas: {n} defensores não resistiram aos fluidos ou gases.',
+ 'A fortaleza perdeu {n} combatentes para perigos que não podiam enfrentar apenas com suas armas.'
+ ],
+ upgrade:[
+ 'Os artífices voltaram às defesas e aperfeiçoaram seu trabalho. Os próximos invasores encontrariam uma resistência ainda maior.',
+ 'A defesa recebeu novos aperfeiçoamentos. O trabalho dos artífices tornou a proteção mais eficaz.',
+ 'Os habitantes reforçaram uma instalação defensiva, preparando-a melhor para os confrontos seguintes.',
+ 'Mais trabalho foi dedicado às defesas existentes. Seus mecanismos ganharam um novo aprimoramento.',
+ 'Uma defesa da fortaleza foi melhorada. A experiência dos construtores acrescentou resistência ao que já estava pronto.'
+ ],
+ goodMagic:[
+ 'Uma bênção alcançou a fortaleza: {spell}. Os habitantes sentiram a presença de seu encanto.',
+ 'O poder de {spell} manifestou-se em favor da fortaleza.',
+ 'A magia de {spell} trouxe um novo auxílio aos habitantes.',
+ 'Um encanto benéfico tomou forma sob o nome de {spell}.',
+ 'Os habitantes receberam a bênção de {spell} em sua jornada sob a montanha.'
+ ],
+ badMagic:[
+ 'Uma maldição caiu sobre a fortaleza: {spell}. Os habitantes teriam de lidar com seus efeitos.',
+ 'O poder de {spell} lançou uma nova dificuldade sobre a jornada.',
+ 'A fortaleza foi alcançada pela magia de {spell}, um presságio desfavorável aos seus habitantes.',
+ 'Um encanto hostil manifestou-se: {spell}. Mais uma ameaça exigia atenção.',
+ 'A maldição de {spell} fez sentir sua presença entre os habitantes.'
+ ],
+ bandits:[
+ 'Bandidos encontraram uma entrada nas profundezas. Seus passos ecoaram pelos túneis, ameaçando os habitantes da fortaleza.',
+ 'Uma companhia de bandidos apareceu nos trechos mais profundos e avançou para o interior da fortaleza.',
+ 'Os túneis profundos trouxeram visitantes hostis: um grupo de bandidos buscava caminho entre as salas.',
+ 'A fortaleza recebeu uma incursão de bandidos pelas profundezas. A guarnição teria de contê-los.',
+ 'Bandidos alcançaram a fortaleza por sua parte mais profunda. O perigo agora vinha de dentro da montanha.'
+ ],
+ layer:[
+ 'Os exploradores alcançaram {room}. A pedra revelada dali em diante guardaria os sinais dessa camada.',
+ 'Uma nova camada foi encontrada: {room}. As próximas descobertas carregariam sua marca.',
+ 'A escavação tocou {room}, acrescentando outra natureza às profundezas ainda desconhecidas.',
+ 'A montanha revelou a camada {room}. Um novo trecho da jornada começava a se desenhar.',
+ 'Os habitantes chegaram a {room}. A partir daquela profundidade, novas salas poderiam guardar suas particularidades.'
+ ],
+ reanimation:[
+ 'O corpo de {unit} ergueu-se onde havia caído. A morte lhe dera uma nova e terrível forma.',
+ '{unit} voltou a se mover no lugar de sua queda. Um morto-vivo tomara o lugar do inimigo derrotado.',
+ 'A derrota não encerrou a ameaça de {unit}. Seu corpo se levantou novamente, agora morto-vivo.',
+ 'Onde {unit} havia tombado, uma forma reanimada voltou a ameaçar os defensores.',
+ 'O corpo caído de {unit} recebeu uma segunda existência. Os defensores teriam de enfrentar sua forma morta-viva.'
+ ],
+ research:[
+ 'Os segredos arrancados dos prisioneiros inspiraram os artífices: {room} passou a fazer parte dos planos da fortaleza.',
+ 'As informações obtidas abriram caminho para {room}. Os habitantes ganharam um novo projeto para executar.',
+ 'O conhecimento reunido na fortaleza deu origem aos planos de {room}.',
+ 'Os artífices compreenderam os segredos necessários para {room}. A descoberta ficaria entre os projetos conhecidos.',
+ 'As informações recolhidas tornaram possível o projeto de {room}, ampliando as escolhas dos construtores.'
+ ],
+ seal:[
+ 'A câmara selada foi aberta, libertando sua maldição. A exploração ao redor pôde continuar.',
+ 'O selo da câmara cedeu. A maldição foi liberada, mas o caminho para novas escavações voltou a ficar disponível.',
+ 'A abertura da câmara trouxe seu perigo oculto à fortaleza e encerrou o bloqueio das explorações próximas.',
+ 'A câmara deixou de estar selada. Sua maldição foi solta, e os espaços ao redor voltaram a poder ser explorados.',
+ 'A barreira da câmara foi rompida. A fortaleza teria de enfrentar sua maldição para seguir explorando.'
+ ],
+ exhaustion:[
+ 'Os cristais se esgotaram. A caverna continuava aberta à passagem, mas já não oferecia sua antiga riqueza.',
+ 'A fonte de cristais deixou de produzir. Restou uma sala transitável, marcada pelo esgotamento.',
+ 'A extração chegou ao fim naquela caverna de cristal. Seus caminhos permaneceram, mas sua produção cessou.',
+ 'A caverna perdeu os cristais que sustentavam sua produção. Os habitantes ainda poderiam atravessá-la.',
+ 'Os habitantes encontraram o veio de cristal esgotado. A sala já não abasteceria as reservas.'
+ ],
+ bridge:[
+ 'A ponte levadiça foi {state}. A fortaleza passou a contar com uma nova disposição de seus caminhos.',
+ 'Os habitantes deixaram a ponte levadiça {state}, alterando a passagem naquele ponto.',
+ 'A ponte foi {state}. Sua posição mudou o caminho disponível entre as salas.',
+ 'Uma ordem mudou a posição da ponte levadiça, agora {state}.',
+ 'A travessia foi ajustada: a ponte levadiça ficou {state}.'
+ ],
+ drain:[
+ 'O perigo líquido ou gasoso foi drenado. A sala voltou a mostrar o que havia sob a contaminação.',
+ 'A drenagem retirou o fluido ou gás da sala. Os habitantes puderam avaliar o espaço liberado.',
+ 'O trabalho de drenagem limpou a sala do perigo que a ocupava.',
+ 'A sala foi drenada. A fortaleza recuperou o espaço antes tomado pela contaminação.',
+ 'Os habitantes concluíram a retirada do fluido ou gás. O lugar podia ser usado conforme o estado de sua estrutura.'
+ ],
+ portalClosed:[
+ 'O portal foi selado. Aquela passagem deixou de oferecer uma entrada para novas invasões.',
+ 'Os habitantes encerraram a ligação do portal. Invasores já não poderiam entrar por ele.',
+ 'A ameaça daquela passagem entre mundos foi contida com o fechamento do portal.',
+ 'O selo do portal foi concluído, interrompendo a chegada de inimigos por aquela sala.',
+ 'A fortaleza fechou o portal e eliminou uma de suas entradas para invasores.'
+ ],
+ burrow:[
+ '{detail} Os escavadores da fortaleza acompanharam as marcas deixadas na pedra.',
+ 'O movimento da criatura escavadora alterou os caminhos sob a montanha. {detail}',
+ 'A pedra registrou a passagem do escavador. {detail}',
+ '{detail} Seus túneis acrescentaram um novo perigo ao mapa.',
+ 'O escavador voltou a mover a terra. {detail}'
+ ],
+ capturedRoom:[
+ 'Os invasores tomaram {room}. A fortaleza perdeu o controle daquele espaço.',
+ '{room} caiu sob o domínio dos invasores.',
+ 'A presença inimiga tornou-se ocupação em {room}. Os habitantes já não controlavam a sala.',
+ 'Os defensores perderam {room} para os invasores.',
+ 'A tomada de {room} abriu uma nova preocupação para a fortaleza.'
+ ],
+ voidVictory:[
+ 'O Cristal do Vazio foi conquistado. A fortaleza alcançou o objetivo de sua jornada no abismo.',
+ 'A conquista do Cristal do Vazio encerrou a resistência que aguardava nas profundezas.',
+ 'O guardião caiu, e o Cristal do Vazio passou a pertencer à fortaleza.',
+ 'A fortaleza prevaleceu diante do Cristal do Vazio. Sua jornada alcançara a vitória.',
+ 'Os habitantes conquistaram o Cristal do Vazio e firmaram seu domínio sobre o abismo.'
+ ],
+ voidDefeat:[
+ 'A batalha pelo Cristal do Vazio foi perdida. As gemas do portão não puderam mudar o fim daquela jornada.',
+ 'O Cristal do Vazio permaneceu fora do alcance da fortaleza. A derrota ali encerrou a campanha.',
+ 'Nem as gemas restantes puderam proteger a fortaleza da derrota diante do Cristal do Vazio.',
+ 'O confronto nas profundezas terminou em derrota definitiva. A proteção do portão não alcançava o Cristal do Vazio.',
+ 'A jornada terminou na batalha pelo Cristal do Vazio, apesar da proteção que ainda restava no portão.'
+ ],
+ generic:[
+ '{text}',
+ 'Mais um acontecimento ficou registrado: {text}',
+ 'Os habitantes guardaram a memória daquele momento. {text}',
+ 'A crônica recebeu um novo relato. {text}',
+ 'Na história da fortaleza, ficou também este acontecimento: {text}'
+ ]
+};
+const exactNarrativeTypes={
+ 'Os portões se abrem. Cinco guerreiros leais aguardam suas ordens.':'founding',
+ 'Um novo turno começa. Prepare a fortaleza antes de explorar.':'turn',
+ 'Às armas! Os defensores se dividem entre os núcleos inimigos por força, distância e urgência.':'combat',
+ 'Vitória! Os sobreviventes se recuperam. +1 moral e espólios de guerra.':'victory',
+ 'Porta reforçada instalada no corredor. Bloqueia invasores, tiros, líquidos e gases.':'doorBuilt',
+ 'Uma porta reforçada foi destruída. O corredor ficou desprotegido.':'doorLost',
+ 'Profundidade 5. Os coringas despertam no baralho.':'jokerDepth',
+ 'Um artefato encantado concede +6% de dano permanente.':'artifact',
+ 'Um festival aquece os corações. +5 moral.':'festival',
+ '20♦ roubadas. O dragão continua dormindo.':'theftDragon',
+ 'Engenharia extraordinária: +15% de dano permanente.':'invention',
+ 'O Hospital trouxe um defensor de volta.':'hospital',
+ 'A criatura imortal foi eliminada por morte instantânea. A passagem está livre.':'immortal',
+ 'Defesa instalada.':'defense',
+ 'A terceira gema do portão se partiu. Sua fortaleza caiu.':'defeat',
+ 'O Cristal do Vazio é seu. A fortaleza conquistou o abismo.':'voidVictory',
+ 'Derrota definitiva no Cristal do Vazio. As gemas restantes não podem salvar a fortaleza.':'voidDefeat'
+};
+function classifyChronicle(text){let m;const type=exactNarrativeTypes[text];if(type)return{type,data:{}};
+ if((m=text.match(/^(.+) construída\. /)))return{type:'construction',data:{room:m[1]}};
+ if((m=text.match(/^(.+) recrutado em (.+)\.$/)))return{type:'recruitment',data:{unit:m[1],room:m[2]}};
+ if((m=text.match(/^Passagem aberta entre (.+) e (.+)\.$/)))return{type:'passage',data:{from:m[1],to:m[2]}};
+ if(text.startsWith('Produção da fortaleza:'))return{type:'production',data:{}};
+ if(text.startsWith('Troca concluída:'))return{type:'trade',data:{}};
+ if((m=text.match(/^(.+) se amotinou!/)))return{type:'mutiny',data:{unit:m[1]}};
+ if((m=text.match(/^[♥♦♣♠] \d+ · Você encontrou (\d+) (recursos|riquezas)\.$/)))return{type:'resourceFind',data:{n:m[1],resource:m[2]}};
+ if((m=text.match(/^[♥♦♣♠] \d+ · (.+)\.$/))||(m=text.match(/^Exploração: (.+?) \(/)))return{type:'discovery',data:{room:m[1]}};
+ if(text.startsWith('Invasão pelo portal'))return{type:'portalAttack',data:{}};
+ if(text.startsWith('Portal em '))return{type:'portalQuiet',data:{}};
+ if(text.startsWith('Masmorra rival revelada'))return{type:'rivalFound',data:{}};
+ if(text.startsWith('Masmorra rival conquistada'))return{type:'rivalWon',data:{}};
+ if(text.startsWith('Uma caverna ampla se estende'))return{type:'broadCave',data:{}};
+ if((m=text.match(/^(.+): \d+ espaços contínuos\./)))return{type:'formation',data:{room:m[1]}};
+ if(text.startsWith('Uma gema do portão se partiu'))return{type:'gemLost',data:{}};
+ if(text.startsWith('Gás inflamável alcançou'))return{type:'explosion',data:{}};
+ if((m=text.match(/^(\d+) unidade\(s\) foram derrotadas imediatamente por fluidos/)))return{type:'casualties',data:{n:m[1]}};
+ if(text.startsWith('Defesa aprimorada.'))return{type:'upgrade',data:{}};
+ if((m=text.match(/^Magia (boa|ruim) · ([^:]+):/)))return{type:m[1]==='boa'?'goodMagic':'badMagic',data:{spell:m[2]}};
+ if(text.startsWith('Bandidos encontraram uma entrada'))return{type:'bandits',data:{}};
+ if((m=text.match(/^Os exploradores alcançaram (.+)\. A pedra revelada/)))return{type:'layer',data:{room:m[1]}};
+ if((m=text.match(/^O corpo de (.+) ergueu-se onde havia caído/)))return{type:'reanimation',data:{unit:m[1]}};
+ if((m=text.match(/^Os segredos arrancados dos prisioneiros inspiraram os artífices: (.+) passou/)))return{type:'research',data:{room:m[1]}};
+ if(text.includes('câmara')&&text.includes('maldição'))return{type:'seal',data:{}};
+ if(text.startsWith('Uma caverna de cristal se esgotou'))return{type:'exhaustion',data:{}};
+ if((m=text.match(/^Ponte levadiça (fechada|aberta)/)))return{type:'bridge',data:{state:m[1]}};
+ if(text.startsWith('Magma drenado.')||text.startsWith('Sala drenada.'))return{type:'drain',data:{}};
+ if(text.startsWith('Portal selado.'))return{type:'portalClosed',data:{}};
+ if(text.startsWith('O escavador '))return{type:'burrow',data:{detail:text}};
+ if((m=text.match(/^(.+) tomada pelos invasores\./)))return{type:'capturedRoom',data:{room:m[1]}};
+ return{type:'generic',data:{text}};
+}
+function renderChronicleEntry(text,variant=0){const {type,data}=classifyChronicle(text),phrases=CHRONICLE_TEMPLATES[type],template=phrases[Math.abs(Math.trunc(variant)||0)%phrases.length];return template.replace(/\{(\w+)\}/g,(_,k)=>data[k]??'');}
+function initializeChronicleState(s){const rebuilding=!s.narrativeCounts,counters=s.narrativeCounts||{};let sequence=Math.max(s.chronicleSequence||0,...s.log.map(e=>e.id||0));for(const e of [...s.log].reverse()){const {type}=classifyChronicle(e.text);if(e.prose===undefined){e.narrativeVariant=e.narrativeVariant??((counters[type]||0)%CHRONICLE_TEMPLATES[type].length);e.prose=renderChronicleEntry(e.text,e.narrativeVariant);if(!rebuilding)counters[type]=(counters[type]||0)+1;}if(rebuilding)counters[type]=(counters[type]||0)+1;if(!e.id)e.id=++sequence;}s.narrativeCounts=counters;s.chronicleSequence=sequence;s.narrativeVersion=1;}
+function makeChronicleRecord(s,text,kind='info'){if(s.narrativeVersion!==1||!s.narrativeCounts)initializeChronicleState(s);const {type}=classifyChronicle(text),count=s.narrativeCounts[type]||0,variant=count%CHRONICLE_TEMPLATES[type].length;s.narrativeCounts[type]=count+1;return{text,kind,turn:s.turn,id:++s.chronicleSequence,narrativeVariant:variant,prose:renderChronicleEntry(text,variant)};}
+function readableChronicleEntries(s){const counts={};return [...s.log].reverse().map(e=>{const {type}=classifyChronicle(e.text),n=counts[type]||0;counts[type]=n+1;return{...e,text:e.prose??renderChronicleEntry(e.text,e.narrativeVariant??n)};});}
+function validateChronicle(s){if(s.narrativeVersion!==undefined&&s.narrativeVersion!==1)throw Error('Versão narrativa inválida.');if(s.chronicleSequence!==undefined&&(!Number.isInteger(s.chronicleSequence)||s.chronicleSequence<0||s.chronicleSequence>1e12))throw Error('Sequência da crônica inválida.');if(s.narrativeCounts!==undefined&&(!s.narrativeCounts||typeof s.narrativeCounts!=='object'||Array.isArray(s.narrativeCounts)||Object.entries(s.narrativeCounts).some(([type,n])=>!Object.hasOwn(CHRONICLE_TEMPLATES,type)||!Number.isInteger(n)||n<0||n>1e12)))throw Error('Variações da crônica inválidas.');const ids=new Set();for(const e of s.log){if(e.prose!==undefined&&(typeof e.prose!=='string'||e.prose.length>3000)||e.narrativeVariant!==undefined&&(!Number.isInteger(e.narrativeVariant)||e.narrativeVariant<0||e.narrativeVariant>=CHRONICLE_TEMPLATES[classifyChronicle(e.text).type].length))throw Error('Texto narrativo inválido.');if(e.id!==undefined){if(!Number.isInteger(e.id)||e.id<1||ids.has(e.id))throw Error('Registro da crônica inválido.');ids.add(e.id);}}}
 
 
 // layer-data.js
@@ -726,7 +1140,7 @@ const rulesDist=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 function installAdvancedRules(Game){const previous={};for(const name of ['resolveEffect','draw','shuffleDeck','neighbors','moveUnit','damage','beginCombat','endCombat','update','income','action','build','buildReason','cost','addUnit','immune','passable','checkMutiny','magic','explore','damageRoom','spawnEnemies','defenseGoal','resolveRise','recruit'])previous[name]=Game.prototype[name];
  Object.assign(Game.prototype,{
   resolveJoker(card,r){const color=card.joker||'black';this.s.jokerCooldown??={};this.s.jokerCooldown[color]=this.s.turn+5;this.s.jokerWaiting??={};this.s.jokerWaiting[color]=true;if(color==='black'){const u=this.spawnMonstrosity(r);this.effect('Coringa preto',`${u.enemyName}: ${Math.round(u.power)} STR. A monstruosidade foi despertada.`,'bad');if(!u.hidden)this.beginCombat();}else{const a=this.tableCard(),b=this.tableCard();r.legendary={form:[this.roll(4),this.roll(4)],traits:[a.rank,b.rank]};this.effect('Coringa vermelho',`Artefato encontrado: ${r.legendary.traits.map(n=>ARTIFACT_TRAITS[n-1]).join(' e ')}.`,'good');if([a.rank,b.rank].includes(6)){const unit=this.addUnit('guardian',r.x,r.y,true,'ally',20*r.legendary.form[1]);unit.artifactHome=rulesKey(r);}}},
-  draw(depth=0){this.s.jokerWaiting??={};for(const color of ['red','black'])if(this.s.jokerWaiting[color]&&this.s.turn>=(this.s.jokerCooldown?.[color]||0)){delete this.s.jokerWaiting[color];if(!this.s.deck.some(c=>c.joker===color))this.s.deck.splice(Math.floor(this.random()*(this.s.deck.length+1)),0,{suit:'★',rank:0,joker:color});}const c=previous.draw.call(this,depth);if(c.suit==='★'){c.joker??=this.s.nextLegacyJoker==='red'?'red':'black';this.s.nextLegacyJoker=c.joker==='red'?'black':'red';this.s.jokerCooldown??={};this.s.jokerCooldown[c.joker]=this.s.turn+5;this.s.jokerWaiting[c.joker]=true;}return c;},
+  draw(depth=0){this.s.jokerWaiting??={};for(const color of ['red','black'])if(this.jokersUnlocked()&&this.s.jokerAdded&&this.s.jokerWaiting[color]&&this.s.turn>=(this.s.jokerCooldown?.[color]||0)){delete this.s.jokerWaiting[color];if(!this.s.deck.some(c=>c.joker===color))this.s.deck.splice(Math.floor(this.random()*(this.s.deck.length+1)),0,{suit:'★',rank:0,joker:color});}const c=previous.draw.call(this,depth);if(c.suit==='★'){c.joker??=this.s.nextLegacyJoker==='red'?'red':'black';this.s.nextLegacyJoker=c.joker==='red'?'black':'red';this.s.jokerCooldown??={};this.s.jokerCooldown[c.joker]=this.s.turn+5;this.s.jokerWaiting[c.joker]=true;}return c;},
   museumBonus(u,target){let bonus=0;for(const r of this.rooms.filter(r=>r.type==='museum'&&this.active(r)&&this.inAura(r,u))){if(r.trophySpecies?.includes(target?.type))bonus+=10;}return bonus;},
   effectiveStrength(u){const health=Math.max(0,u.hp/u.maxHp);return Math.round((u.power*(u.team==='ally'?1+(this.s.blessings||0)*.06:1))*health*10)/10;},
   damage(u,amount,options){const attacker=this.s.units.find(v=>v.id===options?.attacker);if(u.monstrosity&&u.traits?.includes(9)&&attacker&&this.unitData(attacker).range<=.5&&attacker.shield<=0&&!['golem','undead'].includes(attacker.type)){this.killInstant(attacker);return;}const alive=u.hp>0;previous.damage.call(this,u,amount,options);if(alive&&u.hp<=0&&u.team==='enemy'&&(u.monstrosity||u.size>1.5)){for(const r of this.rooms.filter(r=>r.type==='museum'&&this.active(r)))if(this.roll(4)===4){r.trophySpecies??=[];if(r.trophySpecies.length<4)r.trophySpecies.push(u.type);else this.ruleEvent('trophy','Museu lotado','Escolha o troféu que será substituído.',{x:r.x,y:r.y,species:u.type});}}},
@@ -958,50 +1372,9 @@ function installChronicle(Game){const old={};for(const n of ['damage','beginComb
   explore(x,y,from){const result=old.explore.call(this,x,y,from);if(result.ok&&result.card?.suit==='♣'&&result.card.rank===11){if(this.s.resources>1000){if(this.roll(4)===1)this.s.resources=Math.floor(this.s.resources/2);else{const r=this.rooms.filter(r=>r.type==='warehouse').sort((a,b)=>b.y-a.y)[0];if(r)this.spawnEnemies(r,260,'elemental');}this.effect('J♣ · Reservas ameaçadas','O acúmulo de recursos atraiu uma praga ou um elemental.','bad');}if(this.s.gold>1000){if(this.roll(4)===1&&!this.s.discoveredInventions?.includes(7))this.s.gold=Math.floor(this.s.gold/2);else{const r=this.rooms.filter(r=>r.type==='treasury').sort((a,b)=>b.y-a.y)[0];if(r)this.spawnEnemies(r,240,'raider');}this.effect('J♣ · Guilda de Ladrões','A riqueza da fortaleza atraiu ladrões.','bad');}if(this.enemies.length)this.beginCombat();}this.checkAchievements();return result;}
 });}
 
-// Reading preserves the stored event order, including ties within a turn.
-function chronicleEntries(state){return [...state.log].reverse().map(e=>({...e,text:narrativeEntry(e.text)}));}
-function narrativeEntry(text){
- const exact={
- 'Os portões se abrem. Cinco guerreiros leais aguardam suas ordens.':'Cinco guerreiros cruzaram o portão e juraram guardar a nova fortaleza. À frente deles, a montanha ainda escondia todos os seus segredos.',
- 'Um novo turno começa. Prepare a fortaleza antes de explorar.':'A vida seguiu entre as muralhas. Enquanto os habitantes cuidavam de seus afazeres, a próxima incursão nas profundezas era preparada.',
- 'Às armas! Os defensores se dividem entre os núcleos inimigos por força, distância e urgência.':'O alarme ecoou pelos túneis. Os defensores deixaram seus postos e correram para conter os invasores, repartindo suas forças entre as frentes ameaçadas.',
- 'Vitória! Os sobreviventes se recuperam. +1 moral e espólios de guerra.':'Quando o último invasor caiu, o silêncio voltou aos corredores. Os sobreviventes recolheram os espólios e regressaram aos seus afazeres com o ânimo renovado.',
- 'Porta reforçada instalada no corredor. Bloqueia invasores, tiros, líquidos e gases.':'Uma porta reforçada foi erguida no túnel. Atrás de suas traves, a fortaleza ganhou um novo refúgio contra os perigos da montanha.',
- 'Uma porta reforçada foi destruída. O corredor ficou desprotegido.':'As traves cederam, e a porta reforçada desabou. O túnel estava aberto outra vez, deixando os habitantes expostos ao que viesse do outro lado.',
- 'Profundidade 5. Os coringas despertam no baralho.':'Os exploradores desceram além dos primeiros estratos. Naquela escuridão mais antiga, maravilhas e horrores começaram a disputar o destino da fortaleza.',
- 'Um artefato encantado concede +6% de dano permanente.':'Um artefato despertou em meio à pedra. Sua bênção acompanharia os defensores nas batalhas que ainda estavam por vir.',
- 'Um festival aquece os corações. +5 moral.':'As preocupações deram lugar à música e às conversas do festival. Por algumas horas, os habitantes puderam esquecer o peso da montanha.',
- '20♦ roubadas. O dragão continua dormindo.':'Mãos cautelosas retiraram ouro da pilha de tesouros. O dragão não despertou, e os ladrões voltaram em silêncio, carregando sua pequena fortuna.',
- 'Engenharia extraordinária: +15% de dano permanente.':'Das oficinas saiu uma descoberta que mudaria o modo de lutar da fortaleza. Os defensores receberam os novos engenhos com esperança renovada.',
- 'O Hospital trouxe um defensor de volta.':'No hospital, um defensor que parecia perdido abriu os olhos novamente. Seus companheiros voltariam a vê-lo entre eles.',
- 'A criatura imortal foi eliminada por morte instantânea. A passagem está livre.':'A criatura que resistira a tantos golpes enfim foi vencida por um poder capaz de encerrar sua existência. A passagem antes proibida ficou em silêncio.',
- 'Defesa instalada.':'Novas defesas foram preparadas na pedra. Os habitantes esperavam que elas detivessem os próximos intrusos.',
- 'A terceira gema do portão se partiu. Sua fortaleza caiu.':'A última gema se desfez sobre o portão. Sem sua proteção, a fortaleza caiu, e as vozes dos habitantes se perderam no abismo.'
- };
- if(exact[text])return exact[text];let m;
- if((m=text.match(/^(.+) construída\. /)))return `Onde antes havia apenas rocha, tomou forma ${m[1]}. O trabalho dos construtores acrescentou um novo lugar à vida da fortaleza.`;
- if((m=text.match(/^(.+) recrutado em (.+)\.$/)))return `${m[1]} apresentou-se em ${m[2]} e passou a integrar a guarnição. Mais um habitante assumia seu lugar na defesa da fortaleza.`;
- if((m=text.match(/^Passagem aberta entre (.+) e (.+)\.$/)))return `Os golpes das ferramentas abriram caminho entre ${m[1]} e ${m[2]}. Pela primeira vez, os habitantes puderam atravessar de uma sala à outra.`;
- if(text.startsWith('Produção da fortaleza:'))return 'O trabalho dos habitantes rendeu novos materiais e riquezas. As reservas receberam o fruto de mais uma jornada sob a montanha.';
- if(text.startsWith('Troca concluída:'))return 'As reservas mudaram de mãos. Os mercadores levaram parte dos estoques e deixaram aquilo de que a fortaleza precisava naquele momento.';
- if((m=text.match(/^(.+) se amotinou!/)))return `O descontentamento de ${m[1]} tornou-se rebelião. Quem antes defendia a fortaleza voltou-se contra seus antigos companheiros.`;
- if((m=text.match(/^Exploração: (.+?) \(/)))return `À luz das lanternas, os exploradores encontraram ${m[1]}. Um novo segredo da montanha passava a fazer parte de sua história.`;
- if((m=text.match(/^[♥♦♣♠] \d+ · Você encontrou (\d+) (recursos|riquezas)\.$/)))return `Os exploradores voltaram com ${m[1]} ${m[2]}, encontrados entre os segredos da montanha. A descoberta alimentou os planos da fortaleza.`;
- if((m=text.match(/^[♥♦♣♠] \d+ · (.+)\.$/)))return `Ao romper a última camada de pedra, os exploradores encontraram ${m[1]}. As lanternas iluminaram mais um lugar até então oculto sob a montanha.`;
- if(text.startsWith('Invasão pelo portal'))return 'A superfície do portal se agitou. Invasores vindos de outro mundo atravessaram a passagem, levando uma nova ameaça aos corredores da fortaleza.';
- if(text.startsWith('Portal em '))return 'Os guardas vigiaram o portal, atentos a qualquer movimento. Dessa vez, nada atravessou a passagem.';
- if(text.startsWith('Masmorra rival revelada'))return 'Além da primeira câmara, os exploradores descobriram novas salas de uma masmorra rival. A presença de vizinhos hostis tornava a montanha ainda mais perigosa.';
- if(text.startsWith('Masmorra rival conquistada'))return 'Os últimos redutos da masmorra rival cederam. Seus tesouros foram levados à fortaleza, e seus corredores deixaram de abrigar uma ameaça.';
- if((m=text.match(/^Uma caverna ampla se estende por (\d+)/)))return 'A luz das lanternas não alcançou a outra extremidade da caverna. O salão natural abria-se muito além do que a entrada fazia imaginar.';
- if((m=text.match(/^(.+): \d+ espaços contínuos\./)))return `${m[1]} revelou-se maior do que parecia. Sua extensão continuava para além da primeira câmara, formando um único lugar sob a montanha.`;
- if(text.startsWith('Uma gema do portão se partiu'))return 'Uma das gemas se rompeu sobre o portão. Os invasores desapareceram em clarões de magia, e cinco guardiões retomaram a vigília. A fortaleza sobrevivera, mas sua proteção estava mais frágil.';
- if(text.startsWith('Gás inflamável alcançou'))return 'Um clarão correu pelos túneis tomados pelo gás. A explosão sacudiu a fortaleza e deixou um rastro de construções danificadas.';
- if((m=text.match(/^(\d+) unidade\(s\) foram derrotadas imediatamente por fluidos/)))return `A água, o magma ou os vapores venenosos alcançaram os habitantes antes que pudessem escapar. A fortaleza perdeu ${m[1]} de seus defensores para os perigos da montanha.`;
- if(text.startsWith('Defesa aprimorada.'))return 'Os artífices voltaram às defesas e aperfeiçoaram seu trabalho. Os próximos invasores encontrariam uma resistência ainda maior.';
- if(text.startsWith('Magia boa ·'))return text.replace('Magia boa ·','Uma bênção alcançou a fortaleza —');
- if(text.startsWith('Magia ruim ·'))return text.replace('Magia ruim ·','Uma maldição caiu sobre a fortaleza —');
- return text;
-}
+// Shared prose for the diary and exported journal; rendering is read-only.
+function chronicleEntries(state){return readableChronicleEntries(state)}
+function narrativeEntry(text,variant=0){return renderChronicleEntry(text,variant)}
 
 
 // interactions.js
@@ -1031,7 +1404,7 @@ function installInteractions(Game){
   },
   upgradeEdge(a,b){const trap=a&&b&&this.s.passageTraps?.[this.passageKey(a,b)],limit=this.s.discoveredInventions?.includes(12)?4:3;if(this.s.combat||this.s.status!=='playing'||!trap||trap.level>=limit||this.s.resources<20)return{ok:false,reason:'Exige 20♥, uma armadilha aprimorável e fora de combate.'};this.s.resources-=20;trap.level++;trap.armed=true;return{ok:true};},
   beginCombat(){if(this._discoveryTransaction){this._queuedCombat=true;return;}const fresh=!this.s.combat;if(fresh&&this.s.activePlane==null&&this.enemies.some(u=>this.s.rooms[u.home]?.type==='void'))this.s.voidBattle=true;return prior.beginCombat.call(this);},
-  finishDiscovery(method,args){const parent=this._discoveryTransaction;this._discoveryTransaction=true;let result;try{result=prior[method].apply(this,args);}finally{this._discoveryTransaction=parent;if(!parent&&this._queuedCombat){this._queuedCombat=false;if(this.enemies.length)this.beginCombat();}}return result;},
+  finishDiscovery(method,args){const parent=this._discoveryTransaction;this._discoveryTransaction=true;let result;try{result=prior[method].apply(this,args);if(method==='explore'&&result?.ok&&!result.pending)this.triggerBanditRaid(result);}finally{this._discoveryTransaction=parent;if(!parent&&this._queuedCombat){this._queuedCombat=false;if(this.enemies.length)this.beginCombat();}}return result;},
   explore(...args){return this.finishDiscovery('explore',args);},
   openPassage(...args){return this.finishDiscovery('openPassage',args);},
   expandFormation(root,count,options){if(root.type==='desolate'||root.wyrdId===13)options={...options,axis:'horizontal'};if(root.type!=='crater')return prior.expandFormation.call(this,root,count,options);return this.expandVolcano(root);},
@@ -1050,6 +1423,33 @@ function validateInteractions(s){for(const field of ['secretPassages','passageTr
 }
 
 
+// incursions.js
+const incursionKey=r=>`${r.x},${r.y}`;
+function banditInterval(seed,serial=0){let n=Math.imul((seed>>>0)^Math.imul(serial+1,0x9e3779b1),0x85ebca6b);n=Math.imul(n^(n>>>16),0xc2b2ae35);return 5+((n^(n>>>13))>>>0)%4;}
+function banditCount(depth){return Math.max(1,Math.ceil((15+5*Math.max(0,depth))/15));}
+function installIncursions(Game){const old={};for(const n of ['provoke','action','enemyGoal','neighbors','damage','reviveEnemy','onAttack'])old[n]=Game.prototype[n];Object.assign(Game.prototype,{
+ initializeRaidSchedule(newCampaign=false){if(!this.s.banditRaids)this.s.banditRaids={version:1,serial:0,lastTurn:0,nextTurn:(newCampaign?0:this.s.turn)+banditInterval(this.s.seed)};return this.s.banditRaids;},
+ triggerBanditRaid(discovery){const schedule=this.initializeRaidSchedule();if(!discovery?.ok||discovery.pending||!discovery.card||this.s.status!=='playing'||this.s.activePlane!=null||this.s.turn<schedule.nextTurn)return null;
+  const candidates=this.rooms.filter(r=>r.y>=0&&!r.closed&&!r.damaged&&!this.lethalHazard(r,{type:'raider',team:'enemy'})&&this.passable(r,'enemy',{type:'raider',team:'enemy',power:15})&&this.path(r,this.target,'enemy',{type:'raider',team:'enemy',power:15})!==null).sort((a,b)=>b.y-a.y||Math.abs(a.x-discovery.room.x)-Math.abs(b.x-discovery.room.x)||a.x-b.x);const origin=candidates[0];if(!origin)return null;
+  const depth=Math.max(0,...this.rooms.map(r=>r.y)),count=banditCount(depth);if(this.s.units.filter(u=>u.hp>0).length+count>3000){this.effect('Bandidos aguardam uma passagem','O grupo de bandidos não conseguiu entrar. A invasão continua pendente para uma exploração seguinte.','neutral');return null;}
+  schedule.serial++;schedule.lastTurn=this.s.turn;schedule.nextTurn=this.s.turn+banditInterval(this.s.seed,schedule.serial);
+  const enemies=[];for(let n=0;n<count;n++){const u=this.addUnit('raider',origin.x,origin.y,true,'enemy',15);u.enemyName='Bandido';u.banditRaid=schedule.serial;enemies.push(u);}
+  this.effect('Invasão de bandidos',`${count} bandidos racionais surgiram em ${ROOMS[origin.type].name}, na profundidade ${origin.y}. Cada combatente tem 15 STR (${count*15} STR no grupo). Eles atacam junto das demais ameaças desta exploração e podem ser capturados para interrogatório ou contratação.`,'bad');this.note(`Bandidos encontraram uma entrada nas profundezas. Seus passos ecoaram pelos túneis, ameaçando os habitantes da fortaleza.`,'danger');this._tacticsDirty=true;this.beginCombat();return{origin:incursionKey(origin),depth,count,power:count*15,ids:enemies.map(u=>u.id)};
+ },
+ assaultContains(u,r){const id=u?.defendingTerritory,root=this.s.rooms[id];return !!root&&!!r&&(r===root||r.bossRoot===id||r.cavernGroup===id||r.discoveryRoot===id||r.builtPartOf===id);},
+ canAssault(root,guards){if(!guards.length)return false;const states=guards.map(u=>({u,team:u.team,territory:u.territory}));try{for(const {u}of states){u.team='enemy';delete u.territory;}this._routeCache=null;return this.defenders.some(u=>!u.nonAttacking&&(this.unitData(u).speed>0&&this.path(this.anchor(u),root,'ally',u)!==null||this.unitData(u).range>.5&&guards.some(v=>Math.abs(u.x-v.x)+Math.abs(u.y-v.y)<=this.unitData(u).range&&this.lineOfSight(u,v))));}finally{for(const {u,team,territory}of states){u.team=team;if(territory!==undefined)u.territory=territory;}this._routeCache=null;}},
+ orderAssault(root,guards){for(const u of guards){u.defendingTerritory=incursionKey(root);u.awaitingAttack=true;u.moveTarget=null;u.walk=0;}this._tacticsDirty=true;this.effect('Ataque ao território',`Os defensores avançam para ${ROOMS[root.type].name}. O guardião permanece no covil e só reage depois de receber o primeiro ataque das suas tropas.`,'neutral');},
+ provoke(r){const root=this.encounterRoot(r),guards=this.s.units.filter(u=>u.hp>0&&u.team==='neutral'&&u.territory===incursionKey(root));if(!this.canAssault(root,guards))return{ok:false,reason:'Nenhum defensor combatente consegue alcançar ou atingir este território.'};this.orderAssault(root,guards);return old.provoke.call(this,r);},
+ action(name,x,y,arg){const root=this.room(x,y);if(name==='attackGolem'&&root?.type==='golemforge'&&!this.s.combat&&this.s.status==='playing'){const guard=this.s.units.find(u=>u.id===root.golemId&&u.team==='neutral'&&u.hp>0);if(guard){if(!this.canAssault(root,[guard]))return{ok:false,reason:'Nenhum defensor consegue alcançar ou atingir o guardião.'};this.orderAssault(root,[guard]);}}return old.action.call(this,name,x,y,arg);},
+ enemyGoal(u){if(u.defendingTerritory){const home=this.s.rooms[u.defendingTerritory];if(!home)return null;const targets=this.allies.filter(v=>this.assaultContains(u,this.anchor(v))).sort((a,b)=>Math.abs(a.x-u.x)+Math.abs(a.y-u.y)-Math.abs(b.x-u.x)-Math.abs(b.y-u.y));return targets[0]?this.anchor(targets[0]):home;}return old.enemyGoal.call(this,u);},
+ neighbors(r,team='ally',u=null){const neighbors=old.neighbors.call(this,r,team,u);return team==='enemy'&&u?.defendingTerritory?neighbors.filter(n=>this.assaultContains(u,n)):neighbors;},
+ onAttack(u,target){if(u.team==='ally'&&target.defendingTerritory){for(const guard of this.s.units)if(guard.defendingTerritory===target.defendingTerritory)guard.awaitingAttack=false;this._tacticsDirty=true;}return old.onAttack.call(this,u,target);},
+ damage(u,amount,options){const before=u.hp+u.shield;old.damage.call(this,u,amount,options);const attacker=this.s.units.find(v=>v.id===options?.attacker);if(u.defendingTerritory&&attacker?.team==='ally'&&u.hp+u.shield<before){for(const guard of this.s.units)if(guard.defendingTerritory===u.defendingTerritory)guard.awaitingAttack=false;this._tacticsDirty=true;}},
+ reviveEnemy(u,...args){const v=old.reviveEnemy.call(this,u,...args);if(v&&u.defendingTerritory){v.defendingTerritory=u.defendingTerritory;v.awaitingAttack=false;}return v;}
+});}
+function validateIncursions(s){const schedule=s.banditRaids;if(schedule!==undefined&&(!schedule||schedule.version!==1||!Number.isInteger(schedule.serial)||schedule.serial<0||!Number.isInteger(schedule.lastTurn)||schedule.lastTurn<0||schedule.lastTurn>s.turn||!Number.isInteger(schedule.nextTurn)||schedule.nextTurn<1||schedule.nextTurn<=schedule.lastTurn))throw Error('Calendário de bandidos inválido.');for(const map of [s,...Object.values(s.worldMaps||{})])for(const u of map.units||[]){if(u.defendingTerritory!==undefined&&(typeof u.defendingTerritory!=='string'||!map.rooms[u.defendingTerritory]))throw Error('Território de combate inválido.');if(u.awaitingAttack!==undefined&&typeof u.awaitingAttack!=='boolean'||u.banditRaid!==undefined&&(!Number.isInteger(u.banditRaid)||u.banditRaid<1))throw Error('Estado de invasão inválido.');}}
+
+
 // engine.js
 const key=(x,y)=>`${x},${y}`;
 const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
@@ -1059,7 +1459,7 @@ class Game {
   this.s={layerVersion:2,layerHistory:{base:{current:challengeOptions.runes?.includes('nightmares')?7:0,transitions:[]}},research:newResearch(),challengeOptions:{layers:challengeOptions.layers===true,runes:Array.isArray(challengeOptions.runes)?challengeOptions.runes:[]},version:1,riseVersion:1,lives:3,rulesVersion:2,immortalVersion:1,barricadeVersion:1,barricades:{},rivalDungeons:[],effectCards:[],nextEffectId:1,passageVersion:1,passages:{},seed:(Number(seed)>>>0)||123456789,name:String(name).slice(0,40),difficulty:DIFFICULTIES[difficulty]?difficulty:'normal',turn:1,resources:20,gold:20,baseMorale:10,rooms:{},units:[],deck:[],discard:[],jokerAdded:false,combat:false,paused:false,speed:1,status:'playing',built:false,traded:false,turnReady:true,kills:0,battles:0,maxDepth:0,blessings:0,inventions:0,trophies:0,artifacts:[],expedition:null,voidDefeated:false,log:[],nextId:1,seconds:0,card:null};
   this.projectiles=[];this.effects=[];this.dead=[];this.events=[];this.tickBudget=0;
   this.addRoom(0,0,'gate');for(let i=0;i<5;i++)this.addUnit('soldier',0,0,true);
-  this.shuffleDeck();
+  this.shuffleDeck();this.initializeRaidSchedule(true);
   this.note('Os portões se abrem. Cinco guerreiros leais aguardam suas ordens.','good');
  }
  // Reuse paths across frames only while every graph input is unchanged.
@@ -1072,7 +1472,7 @@ class Game {
  get target(){return this.rooms.find(r=>r.type==='throne'&&!r.damaged)||this.room(0,0)}
  random(){let t=this.s.seed+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);this.s.seed>>>=0;return((t^t>>>14)>>>0)/4294967296}
  roll(n){return 1+Math.floor(this.random()*n)}
- note(text,kind='info'){this.s.log.unshift({text,kind,turn:this.s.turn});this.s.log=this.s.log.slice(0,100);this.events.push({type:'log',text,kind})}
+ note(text,kind='info'){this.s.log.unshift(makeChronicleRecord(this.s,text,kind));this.s.log=this.s.log.slice(0,100);this.events.push({type:'log',text,kind})}
  effect(title,description,tone='neutral',input=null){
   this.s.effectCards??=[];this.s.nextEffectId??=1;
   const card={id:this.s.nextEffectId++,title,description,tone,input};this.s.effectCards.push(card);this.events.push({type:'effect-card',id:card.id});return card;
@@ -1158,9 +1558,12 @@ class Game {
   const d=(team!=='ally'?ENEMIES[type]:UNITS[type])||UNITS[type]||{power:power||5,speed:0.65,range:0.42};const p=power||d.power||5;
   const u={id:this.s.nextId++,type,team,loyal:loyal||d.mutiny===0,power:p,hp:p*8,maxHp:p*8,shield:0,x,y,home:key(x,y),cooldown:this.random()*0.6,attack:0,walk:0,shot:false,stun:0,order:'defend',size:d.size||1,facing:1};this.s.units.push(u);this._tacticsDirty=true;return u;
  }
- shuffleDeck(){this.s.deck=[];for(const suit of SUITS)for(let rank=1;rank<=13;rank++)this.s.deck.push({suit,rank});if(this.s.jokerAdded){for(const joker of ['red','black'])if(!(this.s.jokerCooldown?.[joker]>this.s.turn))this.s.deck.push({suit:'★',rank:0,joker});}for(let i=this.s.deck.length-1;i>0;i--){const j=Math.floor(this.random()*(i+1));[this.s.deck[i],this.s.deck[j]]=[this.s.deck[j],this.s.deck[i]]}}
+ shuffleDeck(){this.s.deck=[];for(const suit of SUITS)for(let rank=1;rank<=13;rank++)this.s.deck.push({suit,rank});if(this.jokersUnlocked()&&this.s.jokerAdded){for(const joker of ['red','black'])if(!(this.s.jokerCooldown?.[joker]>this.s.turn))this.s.deck.push({suit:'★',rank:0,joker});}for(let i=this.s.deck.length-1;i>0;i--){const j=Math.floor(this.random()*(i+1));[this.s.deck[i],this.s.deck[j]]=[this.s.deck[j],this.s.deck[i]]}}
+ enforceJokerDepth(){if(!this.jokersUnlocked()){this.s.deck=this.s.deck.filter(c=>c.suit!=='★');this.s.discard=this.s.discard.filter(c=>c.suit!=='★');this.s.jokerAdded=false;}}
+ jokersUnlocked(){return (this.s.activePlane==null?this.s.maxDepth:(this.s.worldMaps?.base?.maxDepth||0))>=5}
  draw(depth=0){
-  if(depth>=5&&!this.s.jokerAdded){this.s.jokerAdded=true;this.s.deck.splice(Math.floor(this.random()*(this.s.deck.length+1)),0,{suit:'★',rank:0,joker:'red'});this.s.deck.splice(Math.floor(this.random()*(this.s.deck.length+1)),0,{suit:'★',rank:0,joker:'black'});this.note('Profundidade 5. Os coringas despertam no baralho.','warn')}
+  this.enforceJokerDepth();
+  if(this.jokersUnlocked()&&!this.s.jokerAdded){this.s.jokerAdded=true;for(const joker of ['red','black'])if(!this.s.deck.some(c=>c.suit==='★'&&(c.joker||'black')===joker))this.s.deck.splice(Math.floor(this.random()*(this.s.deck.length+1)),0,{suit:'★',rank:0,joker});this.note('Profundidade 5. Os coringas despertam no baralho.','warn')}
   if(!this.s.deck.length){this.shuffleDeck();this.s.discard=[]}
   const c=this.s.deck.pop();this.s.discard.push(c);return c;
  }
@@ -1190,7 +1593,7 @@ class Game {
  path(start,end,team='ally',unit=null){
   const sk=typeof start==='string'?start:key(Math.round(start.x),Math.round(start.y));
   const ek=typeof end==='string'?end:key(Math.round(end.x),Math.round(end.y));
-  const ck=`${sk}|${ek}|${team}|${unit?.type||'-'}|${unit?.team||'-'}|${unit?.power||'-'}|${(unit?.traits||[]).join(',')}|${!!unit?.flying}|${!!unit?.cosmic}|${team==='enemy'&&unit?this.unitData(unit).speed:'-'}`;if(this._routeCache?.has(ck))return this._routeCache.get(ck);
+  const ck=`${sk}|${ek}|${team}|${unit?.type||'-'}|${unit?.team||'-'}|${unit?.power||'-'}|${(unit?.traits||[]).join(',')}|${!!unit?.flying}|${!!unit?.cosmic}|${unit?.defendingTerritory||'-'}|${team==='enemy'&&unit?this.unitData(unit).speed:'-'}`;if(this._routeCache?.has(ck))return this._routeCache.get(ck);
   const finish=result=>{if(this._routeCache?.size>=4096)this._routeCache.delete(this._routeCache.keys().next().value);this._routeCache?.set(ck,result);return result};
   if(!this.s.rooms[sk]||!this.s.rooms[ek])return finish(null);
   if(sk===ek)return finish([]);
@@ -1561,6 +1964,7 @@ class Game {
    if((u.team==='enemy'||this.s.madTraps)&&at.trap?.armed&&!u.traits?.includes(7)){if(at.trap.kind==='damage')this.damage(u,at.trap.level*10*8,{source:'trap'});else u.stun=at.trap.level*2;at.trap.armed=false;if(u.hp<=0)continue}
    if(u.type==='trapper'){for(const r of this.rooms)if(r.trap&&distance(r,u)<1.5)r.trap.armed=true}
    if(u.type==='cleric'&&u.team==='ally'&&u.cooldown<=0){for(const v of this.allies)if(distance(u,v)<=1.5)v.shield=Math.min(16,v.shield+16);u.cooldown=2.5;u.attack=0.3;continue}
+   if(u.team==='enemy'&&u.defendingTerritory&&u.awaitingAttack){u.walk=0;continue;}
    const opponents=actors.filter(v=>v.team!==u.team&&v.hp>0&&(u.type!=='rat'||at.type==='sewer'&&Math.round(v.x)===at.x&&Math.round(v.y)===at.y)).sort((a,b)=>distance(u,a)-distance(u,b)||a.id-b.id);
    let target=!u.nonAttacking&&opponents.find(v=>d.range>.5?distance(u,v)<=d.range&&this.lineOfSight(u,v):this.meleeContact(u,v));
    if(target&&!(u.type==='siege'&&u.shot)){
@@ -1770,7 +2174,7 @@ class Game {
   }
   for(const r of Object.values(s.rooms))if(r.type!=='sealed'&&!r.builtPartOf&&!DAMAGEABLE_ROOMS.includes(r.type))r.damaged=false;
   for(const r of Object.values(s.rooms))if(r.cavernGroup===key(r.x,r.y)&&r.type!=='cave'&&!r.playerBuilt&&ROOMS[r.type]?.r===undefined){r.bossRoot=r.cavernGroup;for(const member of Object.values(s.rooms))if(member.cavernGroup===r.cavernGroup&&member.type==='cave')member.bossRoot=r.cavernGroup;}
-  if(s.returnPhase&&(!Number.isFinite(s.returnPhase.elapsed)||s.returnPhase.elapsed<0||s.returnPhase.elapsed>300000||!Array.isArray(s.returnPhase.units)||s.returnPhase.units.length>3000||s.returnPhase.units.some(u=>!validUnit(u))))throw Error('Retorno inválido.');validateResearch(s);validateRiseState(s,data.dead);validateColony(s);validateInteractions(s);validateAdvanced(s);validateWorlds(s);validateChallenges(s);for(const r of Object.values(s.rooms)){delete r.longCave;delete r.longPanel;if(r.type==='altar'&&!r.dedication)r.dedication='fortune';if(!s.riseVersion&&r.type==='solitary'&&r.prisoners&&!r.captive)r.captive={type:'raider',power:1,name:'Prisioneiro antigo',range:.42,size:1,mutiny:12};}s.riseVersion=1;const g=new Game();g.s=s;g.s.name=s.name.slice(0,40);g.s.paused=s.combat;for(const u of s.units){u.order='defend';if(u.frontTarget&&!s.units.some(e=>e.id===u.frontTarget&&e.team==='enemy'&&e.hp>0))u.frontTarget=null;if(u.team==='ally'&&['golem','siege'].includes(u.type))u.size=UNITS[u.type].size;else u.size??=(u.team!=='ally'?ENEMIES[u.type]?.size:UNITS[u.type]?.size)||1;u.facing??=1;if(u.moveTarget&&!s.rooms[u.moveTarget])u.moveTarget=null;}g.projectiles=data.projectiles;g.dead=data.dead;
+  if(s.returnPhase&&(!Number.isFinite(s.returnPhase.elapsed)||s.returnPhase.elapsed<0||s.returnPhase.elapsed>300000||!Array.isArray(s.returnPhase.units)||s.returnPhase.units.length>3000||s.returnPhase.units.some(u=>!validUnit(u))))throw Error('Retorno inválido.');validateChronicle(s);validateIncursions(s);validateResearch(s);validateRiseState(s,data.dead);validateColony(s);validateInteractions(s);validateAdvanced(s);validateWorlds(s);validateChallenges(s);for(const r of Object.values(s.rooms)){delete r.longCave;delete r.longPanel;if(r.type==='altar'&&!r.dedication)r.dedication='fortune';if(!s.riseVersion&&r.type==='solitary'&&r.prisoners&&!r.captive)r.captive={type:'raider',power:1,name:'Prisioneiro antigo',range:.42,size:1,mutiny:12};}s.riseVersion=1;const g=new Game();g.s=s;g.s.name=s.name.slice(0,40);g.s.paused=s.combat;for(const u of s.units){u.order='defend';if(u.frontTarget&&!s.units.some(e=>e.id===u.frontTarget&&e.team==='enemy'&&e.hp>0))u.frontTarget=null;if(u.team==='ally'&&['golem','siege'].includes(u.type))u.size=UNITS[u.type].size;else u.size??=(u.team!=='ally'?ENEMIES[u.type]?.size:UNITS[u.type]?.size)||1;u.facing??=1;if(u.moveTarget&&!s.rooms[u.moveTarget])u.moveTarget=null;}g.projectiles=data.projectiles;g.dead=data.dead;
   if(s.immortalVersion!==undefined&&s.immortalVersion!==1)throw Error('Versão de criatura imortal inválida.');
   for(const r of g.rooms){if(r.type==='invincible'){
    if(s.immortalVersion===undefined){r.closed=false;g.placeImmortal(r)}
@@ -1778,7 +2182,7 @@ class Game {
   }else if(r.immortalId)throw Error('Criatura imortal fora da câmara.');}
   for(const u of g.s.units)if(u.type==='immortal'&&(u.hp<=0||u.team!=='neutral'||g.s.rooms[u.home]?.type!=='invincible'||g.s.rooms[u.home].immortalId!==u.id||u.x!==g.s.rooms[u.home].x||u.y!==g.s.rooms[u.home].y))throw Error('Criatura imortal inválida.');
   for(const r of g.rooms)if(r.type==='sealed'&&r.damaged)g.openSealedRoom(r,true);
-  g.s.research??=newResearch(true);g.migrateRoomLayers();g.s.paused=g.s.combat;g.s.immortalVersion=1;g.events=[];delete g.s.returnPhase;return g;
+  g.s.research??=newResearch(true);initializeChronicleState(g.s);g.enforceJokerDepth();g.migrateRoomLayers();g.initializeRaidSchedule();g.s.paused=g.s.combat;g.s.immortalVersion=1;g.events=[];delete g.s.returnPhase;return g;
  }
 }
 
@@ -1805,6 +2209,8 @@ installChronicle(Game);
 installInteractions(Game);
 
 installResearch(Game);
+
+installIncursions(Game);
 
 const uncachedUpdate=Game.prototype.update;
 Game.prototype.update=function(dt){return this.withQueryCache(()=>uncachedUpdate.call(this,dt),false);};
@@ -1845,7 +2251,7 @@ function passageMaterial(room){
  if(['cave','surface','ruins','chasm'].includes(type))return 'rock';
  return 'masonry';
 }
-function passagePalette(room){return layerMaterialPalette(room.worldLayer||0,PASSAGE_MATERIALS[passageMaterial(room)])}
+function passagePalette(room){const material=layerMaterialPalette(room.worldLayer||0,PASSAGE_MATERIALS[passageMaterial(room)]);if(room.type!=='void'&&!room.voidTint)return material;const purple={floor:[18,9,31],wall:[67,39,92],light:[146,108,184]},hazard=room.hazards?.length||room.contaminant||ROOMS[room.type]?.hazard;if(!hazard)return purple;return Object.fromEntries(['floor','wall','light'].map(k=>[k,purple[k].map((v,i)=>Math.round(v*.65+material[k][i]*.35))]));}
 function passageNoise(x,y,seed){let n=Math.imul(x+seed,374761393)^Math.imul(y+seed,668265263);n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967296}
 function passageHash(text){let n=2166136261;for(const char of text)n=Math.imul(n^char.charCodeAt(0),16777619);return n>>>0}
 function passageMix(a,b,t){return a.map((v,i)=>Math.round(v+(b[i]-v)*t))}
@@ -2008,7 +2414,7 @@ class RoomAppearance{
    if(p[i+3]<32||paperDistance<36)continue;const lum=original[0]*.299+original[1]*.587+original[2]*.114,x=i/4%w,y=Math.floor(i/4/w);
    const surface=options.neighbors?.length?materialPaletteAt(shadeRoom,x,y,canvas.width,canvas.height,options.neighbors):null;let color=roomTone(lum,surface?[surface.floor,surface.wall,surface.light]:palette);
    if(crystal&&lum>95)color=roomMix(color,[176,220,247],pulse*.22*Math.min(1,(lum-95)/90));
-   for(const hazard of layers){const hMaterial=passagePalette({type:hazard,worldLayer:options.worldLayer||0}),palette=surface&&hazard===layers[0]?[surface.floor,surface.wall,surface.light]:[hMaterial.floor,hMaterial.wall,hMaterial.light],liquid=['water','lava','crater'].includes(hazard),depth=y/canvas.height;
+   for(const hazard of layers){const hMaterial=passagePalette({type:hazard,worldLayer:options.worldLayer||0,voidTint:type==='void'}),palette=surface&&hazard===layers[0]?[surface.floor,surface.wall,surface.light]:[hMaterial.floor,hMaterial.wall,hMaterial.light],liquid=['water','lava','crater'].includes(hazard),depth=y/canvas.height;
     color=roomMix(color,roomTone(lum,palette),liquid?(.4+.52*shaderSmooth(.38,.70,depth)):.72);
     // Wet glints and wisps modify only existing foreground pixels, never a box.
     if(liquid&&depth>.52&&(y%9===2&&x%13<7))color=roomMix(color,palette[2],.5);
@@ -2179,7 +2585,7 @@ class CaveAutotiler{
  constructor(renderer){this.renderer=renderer;this.geometry=new Map();this.sources=new WeakMap();}
  eligible(r){return caveTerrainRoom(this.renderer.game,r)&&!this.renderer.wholeRoom(r);}
  descriptor(r){const game=this.renderer.game;return CAVE_PORTS.filter(p=>game.linked(r,game.room(r.x+p.dx,r.y+p.dy))).map(p=>({...p,room:{...visualRoom(game,game.room(r.x+p.dx,r.y+p.dy)),hazards:game.roomHazards(game.room(r.x+p.dx,r.y+p.dy))},wide:!!caveEdgeWide(game,r,game.room(r.x+p.dx,r.y+p.dy))}));}
- lights(r){const renderer=this.renderer,game=renderer.game;if(this.lightFrame!==renderer.passageTime||this.lightGame!==game){this.lightFrame=renderer.passageTime;this.lightGame=game;this.lightBuckets=new Map();const add=source=>{const x=Math.round(source.x/180),y=Math.round(source.y/144);for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++){const id=`${x+dx},${y+dy}`;if(!this.lightBuckets.has(id))this.lightBuckets.set(id,[]);this.lightBuckets.get(id).push(source);}};for(const cell of game.rooms){const v=visualRoom(game,cell);if(['crystal','lava','crater','forge','portal'].includes(v.type))add({x:cell.x*180,y:cell.y*144-8,radius:140,intensity:.20,period:v.type==='crystal'?1300:480});if(passageArchitecture(v)==='built')for(const [dx,dy]of [[1,0],[0,1]]){const n=game.room(cell.x+dx,cell.y+dy);if(n&&game.linked(cell,n)&&passageArchitecture(visualRoom(game,n))==='built'&&!game.barricade(cell,n))add({x:(cell.x+n.x)*90,y:(cell.y+n.y)*72-13,radius:100,intensity:.17,period:270});}}}return this.lightBuckets.get(`${r.x},${r.y}`)||[];}
+ lights(r){const renderer=this.renderer,game=renderer.game;if(this.lightFrame!==renderer.passageTime||this.lightGame!==game){this.lightFrame=renderer.passageTime;this.lightGame=game;this.lightBuckets=new Map();const add=source=>{const x=Math.round(source.x/180),y=Math.round(source.y/144);for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++){const id=`${x+dx},${y+dy}`;if(!this.lightBuckets.has(id))this.lightBuckets.set(id,[]);this.lightBuckets.get(id).push(source);}};for(const cell of game.rooms){const v=visualRoom(game,cell);if(['crystal','lava','crater','forge','portal','void'].includes(v.type))add({x:cell.x*180,y:cell.y*144-8,radius:140,intensity:.20,period:v.type==='void'?2600:v.type==='crystal'?1300:480});if(passageArchitecture(v)==='built')for(const [dx,dy]of [[1,0],[0,1]]){const n=game.room(cell.x+dx,cell.y+dy);if(n&&game.linked(cell,n)&&passageArchitecture(visualRoom(game,n))==='built'&&!game.barricade(cell,n))add({x:(cell.x+n.x)*90,y:(cell.y+n.y)*72-13,radius:100,intensity:.17,period:270});}}}return this.lightBuckets.get(`${r.x},${r.y}`)||[];}
 
  shaderOptions(r,width=180,height=144){return{worldLayer:r.worldLayer||0,neighbors:this.descriptor(r),origin:{x:r.x*180-(width===180?90:80),y:r.y*144-(height===144?72:62)},scale:(width===180?180:160)/width,lights:this.lights(r)};}
  source(image){if(!image)return null;if(this.sources.has(image))return this.sources.get(image);const c=document.createElement('canvas');c.width=180;c.height=144;const ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.drawImage(image,10,10,160,107.5);const p=ctx.getImageData(0,0,180,144).data;this.sources.set(image,p);return p;}
@@ -2539,7 +2945,7 @@ class ResourceFlights{
 // Explicit semantic mapping: illustrations are presentation only; saves store
 // the original effect and choice, so adding art never replays a reward.
 const EVENT_ART={
- 'Escolher capturas':13,'Prisioneiro capturado':13,'Monstro capturado':25,'Candidato dispensado':13,'Fuga de prisioneiros':26,'Colônia dispersa':24,'Cria nascida':25,
+ 'Invasão de bandidos':26,'Ataque ao território':25,'Bandidos aguardam uma passagem':26,'Escolher capturas':13,'Prisioneiro capturado':13,'Monstro capturado':25,'Candidato dispensado':13,'Fuga de prisioneiros':26,'Colônia dispersa':24,'Cria nascida':25,
  'Dedicação do altar':20,'Sacrifício ao Devorador':1,'Instalar clérigo':20,'Persuadir prisioneiro':13,'Contratar prisioneiro':13,'Proposta de contratação':13,'Prisioneiro contratado':13,'Prisioneiro em silêncio':8,'Informação':10,'Fuga da solitária':26,'Fuga da prisão':26,'Mapear labirinto':35,'Labirinto mapeado':35,'Explorador perdido':26,'Território guardado':25,'Alimentar criatura':25,'Criatura alimentada':25,'Criatura domesticada':25,'Domesticação falhou':26,'Desafiar campeão':3,'Campeão aliado':3,'Desafio perdido':26,'Portal selado':20,'Dívida do prisioneiro':49,'Acampamento revelado':35,'Instalação recuperada':35,'Fraquezas reveladas':10,'Prisioneiros resgatados':13,
  'Gema do portão destruída':52,'Metal vivo':0,'Sussurros':1,'Fortuna':2,'Guerreiro leal':3,'Banquete de cogumelos':6,'Colheita de cogumelos':7,'Prisão antiga':8,'Fonte termal':9,'Artefato encantado':10,'Invasão planar':11,'Caverna esgotada':12,'Prisioneiro convertido':13,'Motim':14,'Resgate do hospital':15,'Retorno dos mortos':16,'Retorno do Cemitério':16,'Runa Lápide':16,'Gêmeo reanimado':16,'Ruínas da Masmorra':35,'Festival':17,'Dragão desperto':18,'Engenharia extraordinária':19,'Proteção do templo':20,'Perigo ambiental':21,'Explosão de gás':22,'Porta destruída':23,'Criatura perdida':24,'Criatura libertada':25,'Prisioneiro hostil':26,'Água':27,'Rio subterrâneo':27,'Magma':28,'Cratera de magma':28,'Cratera vulcânica':28,'Gás venenoso':29,'Miasma':30,'Gás cegante':31,'Gás inflamável':32,'Descoberta lendária':33,
  'Asas de Ícaro':36,'Escafandro':37,'Placa de Obsidiana':38,'Fábrica de Monstros':39,'Fagulha de Vida':40,'Tomo Maldito':41,'Pensador Perpétuo':42,'Templo das Fadas':43,'Salão de Hidromel':44,'Apiários':45,'Gato Rei':46,'Algemas de Mithrill':47,'O Curador':48,'Ferrugem':49,'Praga':50,'Euforia':51
@@ -2643,7 +3049,7 @@ function selectedRoom(){return game?.site(selected.x,selected.y)}
 function updateRoomPortrait(){const r=selectedRoom(),el=$('.room-portrait img');if(!r||!el)return;const url=renderer.roomURL(r,performance.now());if(url&&el.getAttribute('src')!==url)el.src=url}
 function updateStats(){if(!game)return;updateRoomPortrait();resourceFlights.collect(game);resourceFlights.paint();const s=game.s,c=game.capacities();$('#res-cap').textContent='/'+c.resources;$('#gold-cap').textContent='/'+c.gold;$('#morale').textContent=game.morale();$('#morale').setAttribute('title','Moral global da fortaleza. Bônus de área aumentam a tolerância das unidades afetadas e reduzem seu limite de motim; não somam à moral global.');$('#morale').classList.toggle('danger-text',game.morale()<10);renderer.canvas.dataset.baseLabel??=renderer.canvas.getAttribute('aria-label');renderer.canvas.setAttribute('aria-label',`Portão: ${s.lives??3} de 3 gemas restantes. ${renderer.canvas.dataset.baseLabel}`);$('#troops').textContent=game.defenders.length;$('#troop-strength').textContent=Math.round(game.defenders.reduce((sum,u)=>sum+u.power,0));$('#troop-strength').title=`Força base: ${Math.round(game.defenders.reduce((sum,u)=>sum+u.power,0))} STR · Força atual com ferimentos: ${Math.round(game.defenders.reduce((sum,u)=>sum+game.effectiveStrength(u),0))} STR · Escudos: ${Math.round(game.defenders.reduce((sum,u)=>sum+u.shield,0)/8)} STR`;$('#turn').textContent=String(s.turn).padStart(2,'0');$('#fortress-name').textContent=s.activePlane!=null?PLANES[s.activePlane].name+' · '+s.name:s.name;$('#phase-label').textContent=eventCards.blocking?'RESOLVENDO EVENTOS':s.status==='won'?'ABISMO CONQUISTADO':s.status==='lost'?'FORTALEZA CAÍDA':s.combat?s.paused?'PAUSA TÁTICA':'COMBATE EM TEMPO REAL':'EXPLORAÇÃO';$('#combat-banner').hidden=!s.combat||eventCards.blocking;$('#combat-banner b').textContent=s.paused?'COMBATE EM PAUSA':'FORTALEZA SOB ATAQUE';$('#pause-combat').innerHTML=icon(s.paused?'play':'pause')+`<span>${s.paused?'Retomar':'Pausar'}</span>`;$('#pause-combat').disabled=!s.combat||eventCards.blocking;$('#game-speed').textContent=s.speed+'×';$('#game-speed').disabled=!s.combat;$('#end-turn').disabled=s.combat||s.status!=='playing'||!!s.effectCards?.length||battlePresentationBusy();$('#end-turn').querySelector('span:nth-child(2)').textContent=selected.y<0?'Encerrar turno':game.room(selected.x,selected.y)?'Escolher direção':'Explorar';$('#end-turn').title=s.combat?'Resolva a batalha antes de explorar.':'Explorar um espaço selecionado (E)';$('#depth-label').textContent=selected.y>0?'PROFUNDIDADE '+selected.y:selected.y<0?'ALTURA '+-selected.y:'SUPERFÍCIE';$('#depth-meter').textContent=String(Math.abs(selected.y)*20).padStart(2,'0')+' M';
  $('#toolbar-hint').innerHTML=icon(s.combat?'sword':'compass')+`<span>${s.combat?`${game.enemies.length} invasores · <b>${s.paused?'retome para continuar':'defesa automática'}</b>`:s.built?'Construção concluída. <b>Explore para avançar.</b>':'Clique em uma <b>seta</b> para explorar ou abrir passagem'}</span>`;
- $('#recent-log').innerHTML=s.log.slice(0,2).map(e=>`<p><time>T. ${e.turn}</time><span>${escape(narrativeEntry(e.text))}</span></p>`).join('');$('#objective').innerHTML=s.status==='won'?'O abismo foi conquistado.<br>Sua crônica será lembrada.':s.status==='lost'?'A fortaleza caiu.<br>Uma nova história aguarda.':`Desça à profundidade 12.<br>${s.maxDepth>=12?'Derrote o Guardião do Vazio.':'Reivindique o Cristal do Vazio.'}`;
+ $('#recent-log').innerHTML=s.log.slice(0,2).map(e=>`<p><time>T. ${e.turn}</time><span>${escape(e.prose??narrativeEntry(e.text,e.narrativeVariant||0))}</span></p>`).join('');$('#objective').innerHTML=s.status==='won'?'O abismo foi conquistado.<br>Sua crônica será lembrada.':s.status==='lost'?'A fortaleza caiu.<br>Uma nova história aguarda.':`Desça à profundidade 12.<br>${s.maxDepth>=12?'Derrote o Guardião do Vazio.':'Reivindique o Cristal do Vazio.'}`;
 }
 function refresh(){if(!game)return;return game.withQueryCache(refreshPanels)}
 function refreshPanels(){updateStats();$$('.panel-tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));const panel=$('#panel-content'),scroll=panel.scrollTop;panel.innerHTML=tab==='room'?roomPanel():tab==='build'?buildPanel():tab==='army'?armyPanel():tradePanel();panel.scrollTop=scroll;updateRoomPortrait();dirty=true}
@@ -2730,7 +3136,7 @@ function modal(html,wide=false,{pause=true}={}){if(!$('#modal-root').firstChild)
 function closeModal(){const root=$('#modal-root');root.innerHTML='';if(game?.s.combat&&modalPaused!==null)game.s.paused=modalPaused;modalPaused=null;if(previousFocus?.isConnected)previousFocus.focus();previousFocus=null;updateStats()}
 function newGameDialog(){newDifficulty='normal';modal(`<span class="eyebrow">UMA NOVA CRÔNICA</span><h2 id="modal-title">Toda fortaleza começa<br>com uma ambição.</h2><p>Erga seu domínio sob a montanha. Prepare suas defesas, explore o desconhecido e conquiste o Cristal do Vazio.</p><form id="new-game-form"><label for="fortress-input">Nome da fortaleza</label><input type="text" id="fortress-input" maxlength="40" value="A Última Fortaleza" autocomplete="off" required><label for="seed-input">Semente do mundo <span style="opacity:.5">· opcional</span></label><input type="text" id="seed-input" maxlength="32" placeholder="Deixe em branco para uma nova história"><label>Escolha seu desafio</label><div class="difficulty-cards">${Object.entries(DIFFICULTIES).map(([k,d])=>`<button type="button" class="difficulty-card ${k==='normal'?'selected':''}" data-modal="difficulty" data-arg="${k}" title="${d.desc}">${icon(k==='story'?'book':k==='normal'?'shield':'skull')}${d.name}<small>${k==='story'?'Contemplativo':k==='normal'?'Equilibrado':'Implacável'}</small></button>`).join('')}</div><p id="difficulty-description" class="inline-note" style="margin-top:12px">${DIFFICULTIES.normal.desc}</p><details><summary>Camadas e runas opcionais</summary><label><input type="checkbox" id="challenge-layers"> Ativar camadas do mundo</label>${Object.entries(BLOODRUNES).map(([key,name])=>`<label><input type="checkbox" name="challenge-rune" value="${key}"> Runa: ${name}</label>`).join('')}</details>${game?'<p class="warning-note">Uma nova jornada substituirá o salvamento automático. Use os espaços manuais ou exporte a jornada atual para preservá-la.</p>':''}<button type="submit" class="primary">${icon('gate')}Fundar fortaleza<span>→</span></button></form>`)}
 $('#modal-root').addEventListener('submit',e=>{if(e.target.id==='new-game-form'){e.preventDefault();const name=$('#fortress-input').value.trim()||'A Última Fortaleza',seedText=$('#seed-input').value.trim();let seed=Date.now();if(seedText){seed=2166136261;for(const c of seedText){seed^=c.charCodeAt(0);seed=Math.imul(seed,16777619)}seed>>>=0}startGame({name,seed,difficulty:newDifficulty,challengeOptions:{layers:!!$('#challenge-layers')?.checked,runes:[...document.querySelectorAll('[name=challenge-rune]:checked')].map(el=>el.value)}})}});
-function pauseMenu(){if(!game)return;modal(`<span class="eyebrow">${escape(game.s.name)}</span><h2 id="modal-title">Um respiro na escuridão.</h2><p>Turno ${game.s.turn} · Profundidade ${game.s.maxDepth} · ${game.defenders.length} defensores</p><div class="button-stack"><button class="primary" data-modal="close">${icon('play')}Retomar jornada</button><button data-modal="save">${icon('save')}Salvar jogo</button><button data-modal="load">${icon('load')}Carregar jogo</button><button data-modal="export-fortress">${icon('download')}Exportar imagem</button><button data-modal="options">${icon('settings')}Opções</button><button data-modal="help">${icon('book')}Como jogar</button><button data-modal="new">${icon('plus')}Nova fortaleza</button><button data-modal="title">${icon('exit')}Salvar e voltar ao início</button></div>`)}
+function pauseMenu(){if(!game)return;modal(`<span class="eyebrow">${escape(game.s.name)}</span><h2 id="modal-title">Um respiro na escuridão.</h2><p>Turno ${game.s.turn} · Profundidade ${game.s.maxDepth} · ${game.defenders.length} defensores</p><div class="button-stack"><button class="primary" data-modal="close">${icon('play')}Retomar jornada</button><button data-modal="save">${icon('save')}Salvar jogo</button><button data-modal="load">${icon('load')}Carregar jogo</button><button data-modal="export-fortress">${icon('download')}Exportar imagem</button><button data-modal="journal">${icon('book')}Ler crônica</button><button data-modal="options">${icon('settings')}Opções</button><button data-modal="help">${icon('book')}Como jogar</button><button data-modal="new">${icon('plus')}Nova fortaleza</button><button data-modal="title">${icon('exit')}Salvar e voltar ao início</button></div>`)}
 function options(){modal(`<span class="eyebrow">AJUSTE SUA EXPERIÊNCIA</span><h2 id="modal-title">Opções</h2><div class="option-row"><label for="option-sound">Efeitos sonoros<small>Sons sintetizados localmente, sem downloads.</small></label><input id="option-sound" data-setting="sound" type="checkbox" ${settings.sound?'checked':''}></div><div class="option-row"><label for="option-volume">Volume</label><input id="option-volume" data-setting="volume" type="range" min="0" max="1" step="0.05" value="${settings.volume}"></div><div class="option-row"><label for="option-reduced">Reduzir movimento<small>Limita efeitos visuais e animações decorativas.</small></label><input id="option-reduced" data-setting="reduced" type="checkbox" ${settings.reduced?'checked':''}></div><div class="option-row"><label for="option-pause">Pausar ao sair da janela<small>Protege a fortaleza ao alternar aplicativos.</small></label><input id="option-pause" data-setting="autoPause" type="checkbox" ${settings.autoPause?'checked':''}></div><div class="option-row"><label for="option-cards">Revelação de cartas<small>Mostra a carta ao explorar um espaço.</small></label><input id="option-cards" data-setting="cards" type="checkbox" ${settings.cards?'checked':''}></div><div class="modal-rule"></div><p class="inline-note">Configurações salvas neste dispositivo. O jogo funciona offline após o primeiro carregamento completo da versão instalada. Não há contas, anúncios ou telemetria.</p><button data-modal="close" class="primary">Concluir</button>`)}
 $('#modal-root').addEventListener('input',e=>{const k=e.target.dataset.setting;if(!k)return;settings[k]=e.target.type==='checkbox'?e.target.checked:Number(e.target.value);applySettings();sound.resume();if(k==='volume')sound.play('click')});
 function slots(mode='load'){modal(`<span class="eyebrow">PRESERVE SUA CRÔNICA</span><h2 id="modal-title">${mode==='save'?'Salvar jornada':'Carregar jornada'}</h2><p>Três espaços manuais e um salvamento automático. Salve em arquivo para transferir entre PC e mobile.</p>${['auto','1','2','3'].map(slot=>{let g=null;try{const raw=stored(slot);if(raw)g=Game.restore(raw)}catch{}const title=slot==='auto'?'Automático':'Espaço '+slot;return `<div class="save-slot"><div class="slot-copy"><span class="eyebrow">${title}</span><strong>${g?escape(g.s.name):'Espaço vazio'}</strong><small>${g?`Turno ${g.s.turn} · Prof. ${g.s.maxDepth} · ${g.s.status==='won'?'Conquistada':g.s.status==='lost'?'Derrotada':g.s.combat?'Em combate':'Em exploração'}`:'Nenhuma crônica registrada'}</small></div><div class="slot-buttons">${mode==='save'&&slot!=='auto'?`<button class="icon-button" title="${g?'Substituir':'Salvar em'} ${title}" aria-label="Salvar em ${title}" data-modal="slot-save" data-arg="${slot}">${icon('save')}</button>`:''}${g?`<button class="icon-button" title="Carregar ${title}" aria-label="Carregar ${title}" data-modal="slot-load" data-arg="${slot}">${icon('play')}</button>`:''}</div></div>`}).join('')}<div class="file-actions"><button class="secondary" data-modal="export" ${!game?'disabled':''}>${icon('download')}Exportar jogo</button><button class="secondary" data-modal="import">${icon('load')}Importar arquivo</button></div><p class="warning-note">Dados locais podem ser apagados pelo navegador. Exporte suas jornadas importantes. Importações são verificadas antes de substituir a partida.</p>`)}
@@ -2747,7 +3153,7 @@ async function exportFortress(){
 function exportGame(){if(!game)return;const blob=new Blob([game.serialize()],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`conquer-${game.s.name.replace(/[^\p{L}\p{N}]+/gu,'-').slice(0,40)}-turno-${game.s.turn}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Arquivo de jornada exportado.')}
 $('#import-file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;if(f.size>5_000_000){toast('Arquivo muito grande. Limite de 5 MB.');e.target.value='';return}try{const raw=await f.text();Game.restore(raw);loadRaw(raw);save('auto',true)}catch(err){toast(err.message)}e.target.value=''});
 function tutorial(){modal(`<span class="eyebrow">BEM-VINDO, CONQUISTADOR</span><h2 id="modal-title">Sua primeira expedição.</h2><p>Você começa com <b>20♥, 20♦, 10 de moral</b> e cinco soldados leais. Seu objetivo é chegar à <b>profundidade 12</b> e derrotar o Guardião do Cristal do Vazio.</p><div class="help-grid"><div class="help-step"><span>01</span><div><h3>Explore uma sala</h3><p>Toque em uma seta que parte de uma sala para explorar imediatamente naquela direção. Só essa passagem será aberta. O primeiro andar não revela inimigos de ♠.</p></div></div><div class="help-step"><span>02</span><div><h3>Prepare a fortaleza</h3><p>Construa um Quartel por 8♥ em uma caverna vazia. Recrute soldados com ♦ antes de continuar a descida.</p></div></div><div class="help-step"><span>03</span><div><h3>Defenda com inteligência</h3><p>O combate acontece em tempo real. Suas tropas lutam por conta própria. Use pausa tática e controle a velocidade.</p></div></div></div><button data-modal="close" class="primary">${icon('compass')}Começar minha crônica</button>`,true)}
-function help(){modal(`<span class="eyebrow">O LIVRO DO CONQUISTADOR</span><h2 id="modal-title">A pedra guarda histórias.</h2><p>Uma adaptação single player de CONQUER. Explore por cartas, construa uma fortaleza e proteja seu último reduto. O combate foi adaptado para tempo real com IA.</p><div class="suit-guide"><span><b>♥</b> Recursos</span><span><b>♦</b> Riquezas</span><span><b>♣</b> Natureza</span><span><b>♠</b> Ruínas & ameaças</span></div><div class="help-grid"><div class="help-step"><span>01</span><div><h3>Explore por uma direção</h3><p>Clique em uma seta que parte de uma sala ativa. Só a passagem indicada será aberta; salas vizinhas não se conectam automaticamente. Para abrir uma ligação entre salas já descobertas, clique na seta correspondente: ela não compra carta nem cobra recursos, mas segue o avanço de turno da exploração. ♥ e ♦ concedem valor da carta + profundidade, até o limite de 50. Armazéns e Tesourarias aumentam o limite em 50. A exploração seguinte inicia outro turno e recolhe a produção.</p></div></div><div class="help-step"><span>02</span><div><h3>Uma sala por turno</h3><p>No subterrâneo, selecione uma caverna e abra Construir. Museu e Templo ocupam dois espaços; escolha o lado antes de pagar. O Museu fica sempre horizontal. Criadouro ocupa quatro, cobrados como uma única sala. Na superfície, construa diretamente: o térreo apoia no chão e os andares superiores exigem uma sala abaixo. Veja custos e pré-requisitos no catálogo. Armadilhas e barricadas são adicionais. Oficina reduz custos próximos; salas danificadas ou desconectadas não funcionam.</p></div></div><div class="help-step"><span>03</span><div><h3>Recrute com cuidado</h3><p>Ocupantes dividem a capacidade de seu abrigo. Recrutamentos com motim imediato aparecem em vermelho e ficam bloqueados. Se a moral cair depois, recrutados comuns ainda podem se amotinar. Festivais, Arena e Parlatório aumentam a moral global. Taverna, Sala de Jogos, Galeria de Esgoto e Lavanderia aumentam a tolerância das unidades dentro de seu alcance, sem aumentar a moral global.</p></div></div><div class="help-step"><span>04</span><div><h3>IA em tempo real</h3><p>Os defensores se dividem entre núcleos inimigos conforme força, saúde, distância pelas passagens e urgência. Não há guardas fixos no portão; invasores buscam o caminho mais curto até o portão ou trono. Arqueiros e magos disparam a até 2 salas em linha reta. Clérigos dão escudos. Tropas sobreviventes recuperam a vida e retomam seus passeios a partir de onde terminaram o combate, sem retorno em formação. Três gemas acima do portão representam suas vidas: cada derrota destrói uma, remove os invasores e restaura cinco guardiões leais. A terceira derrota comum encerra a campanha. No Cristal do Vazio, a derrota é definitiva mesmo com gemas restantes.</p></div></div><div class="help-step"><span>05</span><div><h3>O ambiente é uma arma</h3><p>Líquidos descem, gases sobem e ambos fluem até 2 salas lateralmente, apenas por passagens abertas. Paredes sem ligação isolam os perigos. Água, magma e gás venenoso derrotam unidades atingidas imediatamente, mesmo fora de combate. Magma danifica apenas construções; cavernas naturais não sofrem dano estrutural. drenar não repara o dano. Fontes naturais de água e magma não podem ser drenadas: construa pontes. Apenas salas atingidas pelo fluxo podem ser drenadas. Bombas fechadas e ambas as barricadas bloqueiam a propagação. Magma também detona gás inflamável. A cratera possui uma chaminé seca acima e magma indrenável abaixo da descoberta. Sua expansão para ao encontrar a superfície ou uma sala existente. Pontes também atravessam seus trechos secos. Passagens secretas e pontes fechadas podem isolar parte da fortaleza.</p></div></div><div class="help-step"><span>06</span><div><h3>Conquiste o abismo</h3><p>Na profundidade 12 você encontra o Cristal do Vazio e seu guardião. Vença a batalha para terminar a campanha. Portais estabilizados oferecem 13 mapas persistentes; selecione até dez unidades por expedição. Volte pelo Portal de Retorno. Invasores podem atravessá-lo e atacar sua base.</p></div></div></div><div class="modal-rule"></div><p>As 26 magias boas, 13 ruins e 13 invenções têm efeitos próprios. Cartas com escolhas aguardam sua decisão. O coringa vermelho revela artefatos; o preto desperta monstruosidades. Produtores aparecem no canto inferior esquerdo. Prisões ocupadas recebem grades; quebrá-las liberta os ocupantes. Camadas e runas opcionais são escolhidas ao fundar a fortaleza. Um Rei de Paus na exploração revela a próxima camada apenas para salas novas nessa profundidade ou abaixo; salas antigas mantêm seus efeitos e cores. No Cemitério, inimigos mortos se erguem no mesmo local ainda durante a batalha, com metade da força, como mortos-vivos que não podem ser capturados.</p><p class="key-guide"><b>PC:</b> arraste para mover · roda do mouse para zoom · <kbd>E</kbd> explorar · <kbd>Espaço</kbd> pausar combate · <kbd>F</kbd> centralizar · <kbd>Esc</kbd> menu · <kbd>Ctrl+S</kbd> salvar · setas e <kbd>Enter</kbd> para selecionar salas.<br><b>Mobile:</b> toque para selecionar, arraste com um dedo e use pinça ou +/− para zoom. As descrições também aparecem no painel, sem depender de hover.</p><p class="warning-note">Adaptação digital: a campanha base termina na profundidade 12. Cavernas vazias de todos os naipes, inclusive copas, usam 89%/7%/3%/1% para ocupar de um a quatro espaços. Chefes e formações especiais usam seu tamanho próprio, sujeito ao espaço disponível. As tabelas foram adaptadas ao combate em tempo real; existem diferenças em subeventos e combinações avançadas. Consulte o registro de cobertura 1.14 no repositório.</p><div class="modal-rule"></div><p class="inline-note">Referências fornecidas: CONQUER.odt, DELVE e RISE, de Anna Blackwell (referências de regras e arte). Ilustrações novas, sem reutilizar as páginas do PDF. CONQUER · Crônicas do Abismo · v1.18.0.</p><button data-modal="close" class="primary">Voltar à jornada</button>`,true)}
+function help(){modal(`<span class="eyebrow">O LIVRO DO CONQUISTADOR</span><h2 id="modal-title">A pedra guarda histórias.</h2><p>Uma adaptação single player de CONQUER. Explore por cartas, construa uma fortaleza e proteja seu último reduto. O combate foi adaptado para tempo real com IA.</p><div class="suit-guide"><span><b>♥</b> Recursos</span><span><b>♦</b> Riquezas</span><span><b>♣</b> Natureza</span><span><b>♠</b> Ruínas & ameaças</span></div><div class="help-grid"><div class="help-step"><span>01</span><div><h3>Explore por uma direção</h3><p>Clique em uma seta que parte de uma sala ativa. Só a passagem indicada será aberta; salas vizinhas não se conectam automaticamente. Para abrir uma ligação entre salas já descobertas, clique na seta correspondente: ela não compra carta nem cobra recursos, mas segue o avanço de turno da exploração. ♥ e ♦ concedem valor da carta + profundidade, até o limite de 50. Armazéns e Tesourarias aumentam o limite em 50. A exploração seguinte inicia outro turno e recolhe a produção.</p></div></div><div class="help-step"><span>02</span><div><h3>Uma sala por turno</h3><p>No subterrâneo, selecione uma caverna e abra Construir. Museu e Templo ocupam dois espaços; escolha o lado antes de pagar. O Museu fica sempre horizontal. Criadouro ocupa quatro, cobrados como uma única sala. Na superfície, construa diretamente: o térreo apoia no chão e os andares superiores exigem uma sala abaixo. Veja custos e pré-requisitos no catálogo. Armadilhas e barricadas são adicionais. Oficina reduz custos próximos; salas danificadas ou desconectadas não funcionam.</p></div></div><div class="help-step"><span>03</span><div><h3>Recrute com cuidado</h3><p>Ocupantes dividem a capacidade de seu abrigo. Recrutamentos com motim imediato aparecem em vermelho e ficam bloqueados. Se a moral cair depois, recrutados comuns ainda podem se amotinar. Festivais, Arena e Parlatório aumentam a moral global. Taverna, Sala de Jogos, Galeria de Esgoto e Lavanderia aumentam a tolerância das unidades dentro de seu alcance, sem aumentar a moral global.</p></div></div><div class="help-step"><span>04</span><div><h3>IA em tempo real</h3><p>Os defensores se dividem entre núcleos inimigos conforme força, saúde, distância pelas passagens e urgência. Não há guardas fixos no portão; invasores buscam o caminho mais curto até o portão ou trono. Arqueiros e magos disparam a até 2 salas em linha reta. Clérigos dão escudos. Tropas sobreviventes recuperam a vida e retomam seus passeios a partir de onde terminaram o combate, sem retorno em formação. Três gemas acima do portão representam suas vidas: cada derrota destrói uma, remove os invasores e restaura cinco guardiões leais. A terceira derrota comum encerra a campanha. No Cristal do Vazio, a derrota é definitiva mesmo com gemas restantes.</p></div></div><div class="help-step"><span>05</span><div><h3>O ambiente é uma arma</h3><p>Líquidos descem, gases sobem e ambos fluem até 2 salas lateralmente, apenas por passagens abertas. Paredes sem ligação isolam os perigos. Água, magma e gás venenoso derrotam unidades atingidas imediatamente, mesmo fora de combate. Magma danifica apenas construções; cavernas naturais não sofrem dano estrutural. drenar não repara o dano. Fontes naturais de água e magma não podem ser drenadas: construa pontes. Apenas salas atingidas pelo fluxo podem ser drenadas. Bombas fechadas e ambas as barricadas bloqueiam a propagação. Magma também detona gás inflamável. A cratera possui uma chaminé seca acima e magma indrenável abaixo da descoberta. Sua expansão para ao encontrar a superfície ou uma sala existente. Pontes também atravessam seus trechos secos. Passagens secretas e pontes fechadas podem isolar parte da fortaleza.</p></div></div><div class="help-step"><span>06</span><div><h3>Conquiste o abismo</h3><p>Na profundidade 12 você encontra o Cristal do Vazio e seu guardião. Vença a batalha para terminar a campanha. Portais estabilizados oferecem 13 mapas persistentes; selecione até dez unidades por expedição. Volte pelo Portal de Retorno. Invasores podem atravessá-lo e atacar sua base.</p></div></div></div><div class="modal-rule"></div><p>As 26 magias boas, 13 ruins e 13 invenções têm efeitos próprios. Cartas com escolhas aguardam sua decisão. O coringa vermelho revela artefatos; o preto desperta monstruosidades. Produtores aparecem no canto inferior esquerdo. Prisões ocupadas recebem grades; quebrá-las liberta os ocupantes. Camadas e runas opcionais são escolhidas ao fundar a fortaleza. Um Rei de Paus na exploração revela a próxima camada apenas para salas novas nessa profundidade ou abaixo; salas antigas mantêm seus efeitos e cores. No Cemitério, inimigos mortos se erguem no mesmo local ainda durante a batalha, com metade da força, como mortos-vivos que não podem ser capturados.</p><p class="key-guide"><b>PC:</b> arraste para mover · roda do mouse para zoom · <kbd>E</kbd> explorar · <kbd>Espaço</kbd> pausar combate · <kbd>F</kbd> centralizar · <kbd>Esc</kbd> menu · <kbd>Ctrl+S</kbd> salvar · setas e <kbd>Enter</kbd> para selecionar salas.<br><b>Mobile:</b> toque para selecionar, arraste com um dedo e use pinça ou +/− para zoom. As descrições também aparecem no painel, sem depender de hover.</p><p class="warning-note">Adaptação digital: a campanha base termina na profundidade 12. Cavernas vazias de todos os naipes, inclusive copas, usam 89%/7%/3%/1% para ocupar de um a quatro espaços. Chefes e formações especiais usam seu tamanho próprio, sujeito ao espaço disponível. As tabelas foram adaptadas ao combate em tempo real; existem diferenças em subeventos e combinações avançadas. Consulte o registro de cobertura 1.14 no repositório.</p><div class="modal-rule"></div><p class="inline-note">Referências fornecidas: CONQUER.odt, DELVE e RISE, de Anna Blackwell (referências de regras e arte). Ilustrações novas, sem reutilizar as páginas do PDF. CONQUER · Crônicas do Abismo · v1.19.0.</p><button data-modal="close" class="primary">Voltar à jornada</button>`,true)}
 function journal(){if(!game)return;modal(`<span class="eyebrow">${escape(game.s.name)}</span><h2 id="modal-title">Crônica da fortaleza</h2><p>Cada sala é uma memória. Cada batalha, uma cicatriz.</p>${chronicleEntries(game.s).map(e=>`<div class="journal-entry"><time>TURNO ${e.turn}</time><p class="${e.kind==='danger'?'danger-text':e.kind==='good'?'good-text':''}">${escape(e.text)}</p></div>`).join('')}<button data-modal="export-chronicle" class="primary">${icon('download')}Exportar crônica</button>`,true)}
 function planes(){modal(`<span class="eyebrow">ALÉM DA REALIDADE</span><h2 id="modal-title">Os treze planos</h2><p>Envie seus defensores através de um portal estável. Nesta adaptação, a expedição explora um mapa próprio. Cada expedição custa 20♦ e concede um artefato permanente.</p>${PLANES.map((p,i)=>`<div class="plane-card"><div><strong>${p.name}</strong><p>${p.desc}<br><span class="gold">${p.artifact}</span></p></div><button class="secondary" data-modal="expedition" data-arg="${i}" ${game.s.activePlane!=null||game.s.gold<20?'disabled':''}>${game.s.artifacts.includes(p.effect)?'Revisitar · 20♦':'20♦ →'}</button></div>`).join('')}`,true)}
 function showEnd(){if(!game)return;if(eventCards.blocking){pendingEnd=true;return}const s=game.s,won=s.status==='won';modal(`<span class="eyebrow">O FIM DE UMA CRÔNICA</span><div class="end-emblem">${won?'◇':'♠'}</div><h2 id="modal-title" style="text-align:center;margin-right:0">${won?'O abismo tem um novo rei.':'Até a pedra pode cair.'}</h2><p style="text-align:center">${escape(s.name)} ${won?'conquistou o Cristal do Vazio. Sua história atravessará as eras.':'resistiu à escuridão. A fortaleza caiu, mas sua história permanece.'}</p><div class="end-stats"><div><b>${s.turn}</b><small>TURNOS</small></div><div><b>${s.maxDepth}</b><small>PROFUNDIDADE</small></div><div><b>${s.kills}</b><small>INIMIGOS VENCIDOS</small></div></div><div class="button-stack"><button class="primary" data-modal="journal">${icon('book')}Ler minha crônica</button><button data-modal="export">${icon('save')}Exportar jornada</button><button data-modal="new">${icon('plus')}Fundar uma nova fortaleza</button><button data-modal="close">${icon('eye')}Contemplar o mapa</button><button data-modal="title">${icon('exit')}Menu inicial</button></div>`)}

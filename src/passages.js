@@ -34,7 +34,7 @@ export function passageMaterial(room){
  if(['cave','surface','ruins','chasm'].includes(type))return 'rock';
  return 'masonry';
 }
-export function passagePalette(room){return layerMaterialPalette(room.worldLayer||0,PASSAGE_MATERIALS[passageMaterial(room)])}
+export function passagePalette(room){const material=layerMaterialPalette(room.worldLayer||0,PASSAGE_MATERIALS[passageMaterial(room)]);if(room.type!=='void'&&!room.voidTint)return material;const purple={floor:[18,9,31],wall:[67,39,92],light:[146,108,184]},hazard=room.hazards?.length||room.contaminant||ROOMS[room.type]?.hazard;if(!hazard)return purple;return Object.fromEntries(['floor','wall','light'].map(k=>[k,purple[k].map((v,i)=>Math.round(v*.65+material[k][i]*.35))]));}
 function passageNoise(x,y,seed){let n=Math.imul(x+seed,374761393)^Math.imul(y+seed,668265263);n=Math.imul(n^(n>>>13),1274126177);return((n^(n>>>16))>>>0)/4294967296}
 function passageHash(text){let n=2166136261;for(const char of text)n=Math.imul(n^char.charCodeAt(0),16777619);return n>>>0}
 function passageMix(a,b,t){return a.map((v,i)=>Math.round(v+(b[i]-v)*t))}

@@ -13,7 +13,7 @@ Jogo single player de exploração, construção e defesa de uma fortaleza subte
 
 [Grupos de desbloqueio, com tiers preservados](reports/GRUPOS-DE-DESBLOQUEIO.md) · [Relatório de balanceamento](reports/BALANCEAMENTO-CONSTRUCOES-1.15.1.md). A árvore de pesquisa ainda é uma especificação; os bloqueios por informação não foram implementados nesta atualização.
 
-Validação: 334 testes de regras, 21 verificações gerais de navegador e um fluxo específico de captura em desktop, toque 390 px, salvar/carregar e HTML offline. `npm run test:captivity` executa esse fluxo.
+Validação: 335 testes de regras, 21 verificações gerais de navegador e um fluxo específico de captura em desktop, toque 390 px, salvar/carregar e HTML offline. `npm run test:captivity` executa esse fluxo.
 
 ## Atualização 1.15.1 — arte anterior restaurada
 

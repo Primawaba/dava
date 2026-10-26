@@ -1,6 +1,6 @@
 # Atualização de validação — 1.16.0
 
-Em 26/10/2026: 334 testes de regras passaram, incluindo captura distribuída sem duplicação, dados pendentes de salvamento, independência de Persuasão, descarte em todas as tentativas de Contratação, monstros aliados do Canil, reprodução por espécie, fugas e ratos territoriais. Os testes anteriores de comportamentos substituídos foram atualizados para as novas regras solicitadas.
+Em 26/10/2026: 335 testes de regras passaram, incluindo captura distribuída sem duplicação, dados pendentes de salvamento, independência de Persuasão, descarte em todas as tentativas de Contratação, monstros aliados do Canil, reprodução por espécie, fugas e ratos territoriais. Os testes anteriores de comportamentos substituídos foram atualizados para as novas regras solicitadas.
 
 O teste geral de navegador completou 21 verificações. O teste específico `npm run test:captivity` também passou em desktop e tela 390×844 com toque, além de confirmar restauração de seleções, exclusão de “Fera” do roster, HUD sem ratos móveis e sprites de captura incorporados no HTML offline. Sem exceções JavaScript nesses fluxos.
 

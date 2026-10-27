@@ -1,5 +1,12 @@
 # CONQUER · Crônicas do Abismo
 
+## Atualização 1.21.0 — acampamentos inimigos
+
+Áreas ocupadas têm reserva própria começando em zero. Por turno recebem **maior profundidade + quantidade de salas**, recrutam pelas construções tomadas usando o custo normal ou, sem recrutadores, replicam a unidade mais forte que conseguem pagar pelo valor de sua força. Sobras ficam guardadas. As estruturas são preservadas e os ocupantes passeiam em seus domínios; reconectar desperta as tropas reais, incluindo reforços, e só a vitória libera as salas.
+
+[Regras e compatibilidade da ocupação](reports/OCUPACAO-1.21.md). Esta versão substitui as limitações de guarnições genéricas e dano por tomada documentadas no relatório histórico 1.20.
+
+
 ## Atualização 1.20.0 — cerco, persuasão e prioridade de engajamento
 
 Virotes de cerco atravessam todos os inimigos alinhados até um bloqueio e interrompem sobreviventes por um segundo. A Sala de persuasão interroga ao final do turno, descarta o ocupante após a primeira tentativa e recebe prisioneiros de Solitárias por uma escolha no mapa. Aliados corpo a corpo avançam na frente, do maior HP atual ao menor; atiradores seguem atrás na mesma frente.

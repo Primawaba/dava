@@ -1,6 +1,6 @@
 import {ROOMS,PLANES,UNITS,ENEMIES} from './data.js';
 import {planFormation} from './formations.js';
-const WORLD_FIELDS=['rooms','passages','secretPassages','passageTraps','barricades','units','workers','cellBars','teleports','rivalDungeons','maxDepth','voidDefeated','planeWon','capturePool','hiddenMasterminds','fallenTwins','spellEntities','corpses','graveyardFallen'];
+const WORLD_FIELDS=['occupations','rooms','passages','secretPassages','passageTraps','barricades','units','workers','cellBars','teleports','rivalDungeons','maxDepth','voidDefeated','planeWon','capturePool','hiddenMasterminds','fallenTwins','spellEntities','corpses','graveyardFallen'];
 const worldKey=r=>`${r.x},${r.y}`;
 export function installWorlds(Game){const prior={};for(const n of ['action','rulesChoices','resolveEffect','endCombat','morale','income','immune','spawnEnemies','capacities','addUnit','lose','damage','addRoom','update','unitData','damageRoom'])prior[n]=Game.prototype[n];Object.assign(Game.prototype,{
   capacities(){const local=prior.capacities.call(this);if(this.s.activePlane!=null&&this.s.planarWalletCaps)return{resources:this.s.planarWalletCaps.resources+local.resources-50,gold:this.s.planarWalletCaps.gold+local.gold-50};return local;},

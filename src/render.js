@@ -172,7 +172,7 @@ export class Renderer{
   if(this.eventTargets?.length)for(const target of this.eventTargets){c.strokeStyle='#b4934b';c.lineWidth=2;this.corners(target.x*CW-82,target.y*CH-63,164,118)}
   }
   if(!this.exporting)this.gateGems(time);
-  const formation=this.unitFormation(this.transitions.renderUnits(time));
+  const formation=this.unitFormation([...this.transitions.renderUnits(time),...(this.game.campUnits?.()||[])]);
   for(const {u,x,y} of formation)this.unit(u,x,y,time);
   this.transitions.draw(time);
   for(const p of this.game.projectiles){const x=(p.x+(p.tx-p.x)*p.t)*CW,y=(p.y+(p.ty-p.y)*p.t)*CH+this.floorOffset(p.x,p.y)*(1-p.t)+this.floorOffset(p.tx,p.ty)*p.t;c.save();c.translate(x,y);c.rotate(Math.atan2((p.ty-p.y)*CH,(p.tx-p.x)*CW));c.strokeStyle=p.team==='enemy'?'#a4563e':'#2f6853';c.fillStyle=c.strokeStyle;c.lineWidth=2;if(p.kind==='arrow'||p.kind==='bolt'){if(p.kind==='bolt'){c.lineWidth=4;c.strokeStyle='#bd9a58';c.beginPath();c.moveTo(-26,0);c.lineTo(12,0);c.stroke();c.lineWidth=2;c.strokeStyle=p.team==='enemy'?'#a4563e':'#2f6853';}c.beginPath();c.moveTo(-13,0);c.lineTo(9,0);c.moveTo(4,-4);c.lineTo(10,0);c.lineTo(4,4);c.stroke();c.lineWidth=1;c.moveTo(-8,0);c.lineTo(-12,-3);c.stroke()}else{c.shadowColor=c.fillStyle;c.shadowBlur=10;c.beginPath();c.arc(0,0,p.kind==='flask'?4:5,0,Math.PI*2);c.fill();c.shadowBlur=0;c.strokeStyle='#b9c9a4';c.lineWidth=1;c.beginPath();c.moveTo(-5,0);c.lineTo(-17,0);c.stroke()}c.restore()}

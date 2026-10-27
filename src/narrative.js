@@ -344,6 +344,20 @@ export const CHRONICLE_TEMPLATES={
  'O confronto nas profundezas terminou em derrota definitiva. A proteção do portão não alcançava o Cristal do Vazio.',
  'A jornada terminou na batalha pelo Cristal do Vazio, apesar da proteção que ainda restava no portão.'
  ],
+ campGrowth:[
+ 'O acampamento recebeu {n} recursos e reuniu {count} reforços sob suas bandeiras.',
+ 'Nas salas tomadas, os invasores recolheram {n} recursos. Suas fileiras ganharam {count} reforços.',
+ 'A ocupação se fortaleceu: {n} recursos chegaram à reserva inimiga, e {count} reforços se apresentaram.',
+ 'Os ocupantes movimentaram suas provisões. A renda de {n} recursos trouxe {count} novos combatentes.',
+ 'O território inimigo rendeu {n} recursos naquele turno. O acampamento reuniu {count} reforços.'
+ ],
+ campSettlement:[
+ 'Os invasores fincaram suas bandeiras nas salas isoladas e ali montaram um acampamento.',
+ 'Sem caminho adiante, os inimigos escolheram permanecer. A área isolada tornou-se seu abrigo.',
+ 'Os corredores isolados receberam uma nova guarnição. Os invasores estavam ali para ficar.',
+ 'A tropa inimiga armou seu acampamento sob a montanha, ocupando os espaços separados da fortaleza.',
+ 'Os habitantes viram bandeiras inimigas nos túneis isolados. Os invasores haviam decidido se instalar.'
+ ],
  interrogation:[
  '{unit} foi interrogado. Ao fim da tentativa, a sala voltou a ficar livre.',
  'Os interrogadores encerraram a conversa com {unit}. Outro prisioneiro poderia ocupar a sala.',
@@ -379,6 +393,8 @@ const exactNarrativeTypes={
  'Derrota definitiva no Cristal do Vazio. As gemas restantes não podem salvar a fortaleza.':'voidDefeat'
 };
 export function classifyChronicle(text){let m;const type=exactNarrativeTypes[text];if(type)return{type,data:{}};
+ if((m=text.match(/^O acampamento inimigo recebeu (\d+) recursos e reuniu (\d+) reforços/)))return{type:'campGrowth',data:{n:m[1],count:m[2]}};
+ if(text.startsWith('Invasores se instalaram na área desconectada.'))return{type:'campSettlement',data:{}};
  if((m=text.match(/^(.+) foi interrogado\. Encerrada a tentativa/)))return{type:'interrogation',data:{unit:m[1]}};
  if((m=text.match(/^(.+) construída\. /)))return{type:'construction',data:{room:m[1]}};
  if((m=text.match(/^(.+) recrutado em (.+)\.$/)))return{type:'recruitment',data:{unit:m[1],room:m[2]}};

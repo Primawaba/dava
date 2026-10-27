@@ -1,6 +1,6 @@
 {
   "name": "conquer-fortaleza",
-  "version": "1.19.1",
+  "version": "1.20.0",
   "private": true,
   "type": "module",
   "description": "CONQUER — estratégia single player de fortaleza subterrânea",
@@ -55,7 +55,8 @@
     "test:layers": "node tests/layers-browser.mjs",
     "build:layer-art": "node scripts/layer-sprites.mjs",
     "test:narrative": "node tests/narrative-browser.mjs",
-    "test:portable": "node tests/portable.mjs"
+    "test:portable": "node tests/portable.mjs",
+    "test:siege-interrogation": "node tests/siege-interrogation-browser.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1"

@@ -1,5 +1,12 @@
 # CONQUER · Crônicas do Abismo
 
+## Atualização 1.20.0 — cerco, persuasão e prioridade de engajamento
+
+Virotes de cerco atravessam todos os inimigos alinhados até um bloqueio e interrompem sobreviventes por um segundo. A Sala de persuasão interroga ao final do turno, descarta o ocupante após a primeira tentativa e recebe prisioneiros de Solitárias por uma escolha no mapa. Aliados corpo a corpo avançam na frente, do maior HP atual ao menor; atiradores seguem atrás na mesma frente.
+
+[Regras, validação e análise do takeover existente](reports/COMBATE-E-PERSUASAO-1.20.md). O takeover é uma ocupação limitada de áreas isoladas, com guarnições persistentes e retomada por reconexão; o relatório detalha também as lacunas, sem apresentá-lo como uma economia inimiga completa.
+
+
 ## Atualização 1.19.0 — invasões, territórios e variedade narrativa
 
 - Bandidos racionais invadem na exploração após intervalos de 5–8 turnos, junto das ameaças da descoberta. Cada bandido tem 15 de força; o grupo cobre uma força-alvo de 15 + 5 × profundidade, arredondando para cima. Surgem no ponto mais profundo com caminho transitável até a fortaleza.

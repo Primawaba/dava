@@ -12,7 +12,7 @@ export const UNITS={
  alchemist:{name:'Alquimista',icon:'flask',power:2,cost:8,mutiny:10,range:1.8,speed:0.65,homes:['laboratory'],capacity:10,desc:'Arremessa frascos alquímicos de longo alcance.'},
  trapper:{name:'Armadilheiro',icon:'trap',power:1,cost:20,mutiny:0,range:0.4,speed:0.7,homes:['forge'],capacity:2,desc:'Rearma armadilhas próximas durante o combate. Sempre leal.'},
  golem:{name:'Golem',icon:'shield',size:2,power:7,cost:15,mutiny:0,range:0.5,speed:0.45,homes:['golemforge','forge'],capacity:2,requires:'golemforge',desc:'Imune a líquidos e gases. Sempre leal. Exige Forja de Golem.'},
- siege:{name:'Arma de cerco',icon:'target',size:2.6,power:30,cost:30,mutiny:0,range:2.1,speed:0,homes:['siegepost','forge'],capacity:2,requires:'forge',desc:'Um disparo devastador por combate. Não se move.'},
+ siege:{name:'Arma de cerco',icon:'target',size:2.6,power:30,cost:30,mutiny:0,range:2.1,speed:0,homes:['siegepost','forge'],capacity:2,requires:'forge',desc:'Um disparo por combate atravessa inimigos e corredores em linha reta até um bloqueio, interrompendo os atingidos por 1 segundo. Não se move.'},
  undead:{name:'Morto-vivo',icon:'skull',power:1,cost:5,mutiny:10,range:0.4,speed:0.6,homes:['crypt'],capacity:20,desc:'50% de chance de voltar à vida após o combate.'},
  hero:{name:'Aventureiro',icon:'sword',power:15,cost:10,mutiny:0,range:0.5,speed:0.8,homes:['tavern'],capacity:1,desc:'Defensor leal atraído pela taverna.'},
  berserker:{name:'Berserker',icon:'sword',power:15,cost:5,mutiny:8,range:0.4,speed:0.9,homes:['meadhall'],capacity:10,desc:'Guerreiro dos Campeões. Busca o inimigo mais próximo.'}
@@ -39,7 +39,7 @@ orefinder:{name:'Localizador de Minério',r:0,g:0,inventionOnly:6,desc:'Oferece 
  temple:{name:'Templo protetor',icon:'cross',r:20,g:20,group:'Tropas',footprint:2,desc:'Ocupa 2 espaços. Abriga 3 clérigos. Concede 20 de escudo aos defensores ao iniciar combate.'},
  prison:{name:'Prisão',icon:'bars',r:30,g:0,group:'Tropas',desc:'Recebe inimigos escolhidos na captura após uma vitória, até 20. Cheia, gera 20♦ por produção. Grades rompidas libertam os ocupantes.'},
  solitary:{name:'Solitária',icon:'bars',r:15,g:0,group:'Tropas',desc:'Guarda um inimigo racional realmente derrotado. Preserva espécie e força. Dano ou desconexão liberta o prisioneiro.'},
- persuasion:{name:'Sala de persuasão',icon:'eye',r:25,g:0,group:'Tropas',desc:'Captura um inimigo inteligente após a vitória, independentemente da Solitária. Interrogue o ocupante uma vez por turno; num 4 de 1d4 revela Informação.'},
+ persuasion:{name:'Sala de persuasão',icon:'eye',r:25,g:0,group:'Tropas',desc:'Captura um inimigo inteligente após a vitória, independentemente da Solitária. Interroga automaticamente ao final do turno; num 4 de 1d4 revela Informação. O ocupante é dispensado após a primeira tentativa. Recebe transferências de Solitárias.'},
  hiring:{name:'Setor de contratação',icon:'flag',r:20,g:10,group:'Tropas',requires:['solitary'],desc:'Usa um prisioneiro da Solitária. Uma tentativa por turno: num 4 contrata; num 3 negocia pagamento. O candidato deixa a cela após a tentativa, mesmo se ela falhar. Preserva espécie e força.'},
  hut:{name:'Cabana',icon:'home',r:5,g:0,group:'Fortaleza',desc:'Abriga até 10 unidades desleais, com soma máxima de 30 STR. Inabitável ao lado de uma Mansão.'},
  quarters:{name:'Quarto',icon:'home',r:20,g:0,group:'Fortaleza',desc:'Abriga até 10 unidades e 50 STR. Reduz seu limite de motim em 1; junto a uma Mansão passa a valer como Cabana.'},

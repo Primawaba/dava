@@ -344,6 +344,13 @@ export const CHRONICLE_TEMPLATES={
  'O confronto nas profundezas terminou em derrota definitiva. A proteção do portão não alcançava o Cristal do Vazio.',
  'A jornada terminou na batalha pelo Cristal do Vazio, apesar da proteção que ainda restava no portão.'
  ],
+ interrogation:[
+ '{unit} foi interrogado. Ao fim da tentativa, a sala voltou a ficar livre.',
+ 'Os interrogadores encerraram a conversa com {unit}. Outro prisioneiro poderia ocupar a sala.',
+ 'A tentativa de obter os segredos de {unit} chegou ao fim. A sala aguardaria um novo ocupante.',
+ 'O interrogatório de {unit} terminou naquele turno. Seus captores deram a tentativa por encerrada.',
+ 'A sala de persuasão recebeu o último relato de {unit}. Encerrada a tentativa, o lugar ficou vazio.'
+ ],
  generic:[
  '{text}',
  'Mais um acontecimento ficou registrado: {text}',
@@ -372,6 +379,7 @@ const exactNarrativeTypes={
  'Derrota definitiva no Cristal do Vazio. As gemas restantes não podem salvar a fortaleza.':'voidDefeat'
 };
 export function classifyChronicle(text){let m;const type=exactNarrativeTypes[text];if(type)return{type,data:{}};
+ if((m=text.match(/^(.+) foi interrogado\. Encerrada a tentativa/)))return{type:'interrogation',data:{unit:m[1]}};
  if((m=text.match(/^(.+) construída\. /)))return{type:'construction',data:{room:m[1]}};
  if((m=text.match(/^(.+) recrutado em (.+)\.$/)))return{type:'recruitment',data:{unit:m[1],room:m[2]}};
  if((m=text.match(/^Passagem aberta entre (.+) e (.+)\.$/)))return{type:'passage',data:{from:m[1],to:m[2]}};

@@ -1,5 +1,7 @@
 // Deterministic squad allocation on the opened-passage graph. No random draws.
 const tacticalDistance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+// Departure/contact order: melee first, then descending current HP, stable IDs.
+export function engagementPriority(game,a,b){const melee=u=>game.unitData(u).range<=.5;return Number(!melee(a))-Number(!melee(b))||(melee(a)&&melee(b)?b.hp-a.hp:0)||a.id-b.id;}
 export function combatStrength(game,u){
  const health=Math.max(0,(u.hp+u.shield)/u.maxHp);
  const upgrades=u.team==='ally'?1+game.s.blessings*.06+game.s.inventions*.15:1;
@@ -30,7 +32,7 @@ export function enemyClusters(game){
 }
 function candidate(game,u,group){
  const data=game.unitData(u),enemy=group.threat,at=game.anchor(enemy);if(!at)return null;
- const canShoot=data.range>.5&&group.members.some(e=>tacticalDistance(u,e)<=data.range&&game.lineOfSight(u,e));
+ const canShoot=data.range>.5&&group.members.some(e=>(u.type==='siege'||tacticalDistance(u,e)<=data.range)&&game.lineOfSight(u,e));
  if(data.speed<=0)return canShoot&&!u.shot?{goal:game.anchor(u),eta:0}:null;
  let goal=at,eta=travelTime(game,u,goal);
  if(!Number.isFinite(eta)){

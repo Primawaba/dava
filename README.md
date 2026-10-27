@@ -1,5 +1,10 @@
 # CONQUER · Crônicas do Abismo
 
+## Correção 1.21.1 — profundidade dos bandidos
+
+A força das invasões agora usa a profundidade do local válido mais profundo para o surgimento dos bandidos. A extensão automática da cratera, incluindo seu vão seco, não entra no cálculo. Salas danificadas, perigosas ou sem rota transitável também não inflam a força. Cada bandido continua com 15 STR e os intervalos permanecem de 5–8 turnos.
+
+
 ## Atualização 1.21.0 — acampamentos inimigos
 
 Áreas ocupadas têm reserva própria começando em zero. Por turno recebem **maior profundidade + quantidade de salas**, recrutam pelas construções tomadas usando o custo normal ou, sem recrutadores, replicam a unidade mais forte que conseguem pagar pelo valor de sua força. Sobras ficam guardadas. As estruturas são preservadas e os ocupantes passeiam em seus domínios; reconectar desperta as tropas reais, incluindo reforços, e só a vitória libera as salas.

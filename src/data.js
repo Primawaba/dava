@@ -28,6 +28,7 @@ orefinder:{name:'Localizador de Minério',r:0,g:0,inventionOnly:6,desc:'Oferece 
 
  surface:{name:'Terreno de superfície',icon:'home',desc:'Construa diretamente, sem comprar carta. Acima do térreo, exige uma sala de apoio imediatamente abaixo.'},
  gate:{name:'Portão da Fortaleza',icon:'gate',desc:'Três gemas protegem o último reduto. Cada invasão sem oposição destrói uma gema; a terceira encerra a campanha. A derrota no Cristal do Vazio é definitiva, mesmo com gemas restantes.'},
+ collapse:{name:'Caverna desabada',icon:'mountain',desc:'Escombros permanentes. Não permite passagem, construção nem escavação.'},
  cave:{name:'Caverna vazia',icon:'mountain',desc:'Espaço explorado. Pode receber uma construção.'},
  barracks:{name:'Quartel',icon:'sword',r:8,g:0,group:'Tropas',desc:'Abriga até 10 soldados ou arqueiros.'},
  kennel:{name:'Canil',icon:'paw',r:5,g:0,group:'Tropas',desc:'Recruta cães. Após uma vitória, permite capturar um monstro que se torna aliado, mantendo espécie e força. Um monstro capturado por Canil, ocupando uma vaga.'},
@@ -64,7 +65,7 @@ orefinder:{name:'Localizador de Minério',r:0,g:0,inventionOnly:6,desc:'Oferece 
  elevator:{name:'Elevador',icon:'stairs',r:5,g:0,group:'Infraestrutura',desc:'Aliados movem-se duas vezes mais rápido nesta sala.'},
  rails:{name:'Trilhos',icon:'stairs',r:5,g:0,group:'Infraestrutura',desc:'Aliados movem-se duas vezes mais rápido nesta sala.'},
  pump:{name:'Bomba de fluido',icon:'water',r:8,g:0,group:'Infraestrutura',desc:'Líquidos não atravessam nem danificam esta célula. Não protege salas vizinhas nem bloqueia gás.'},
- columns:{name:'Colunas',icon:'bars',r:1,g:0,group:'Infraestrutura',requires:['masonry'],desc:'Sala de sustentação. Pode ser substituída por outra construção.'},
+ columns:{name:'Colunas',icon:'bars',r:1,g:0,group:'Infraestrutura',requires:['masonry'],desc:'Reforça o espaço e cavernas vizinhas nas quatro direções contra desabamentos, inclusive no subterrâneo. Interrompe a cadeia de desabamentos. Pode ser substituída por outra construção.'},
  puzzle:{name:'Sala de quebra-cabeça',icon:'cards',r:12,g:5,group:'Avançadas',requires:['masonry','forge'],desc:'Inimigos movem-se 65% mais devagar nesta sala.'},
  artificer:{name:'Artificiaria',icon:'flask',r:100,g:50,group:'Avançadas',requires:['forge','library','warehouse'],desc:'Permite inventar melhorias permanentes por 50♦.'},
  breeder:{footprint:4,name:'Criadouro',icon:'paw',r:80,g:0,group:'Avançadas',requires:['artificer'],desc:'Reproduz uma criatura aliada escolhida como matriz. As crias mantêm a espécie, recebem metade da força e custam 15♦; exigem vaga e tolerância.'},

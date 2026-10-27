@@ -1,5 +1,12 @@
 # CONQUER · Crônicas do Abismo
 
+## Atualização 1.22.0 — eventos periódicos
+
+A cada intervalo de 5–8 turnos, uma exploração sorteia entre bandidos, quebra de barragem, desabamento e andarilhos, conforme os alvos disponíveis. Pilares protegem o próprio espaço e cavernas vizinhas nas quatro direções, inclusive contra a cadeia vertical de desabamentos. Escombros têm três artes próprias e bloqueiam passagem e escavação. Andarilhos oferecem capangas leais por −2 moral ou uma recusa com 50% de chance de ataque.
+
+[Regras, proteções, decisões e arte](reports/EVENTOS-1.22.md).
+
+
 ## Correção 1.21.1 — profundidade dos bandidos
 
 A força das invasões agora usa a profundidade do local válido mais profundo para o surgimento dos bandidos. A extensão automática da cratera, incluindo seu vão seco, não entra no cálculo. Salas danificadas, perigosas ou sem rota transitável também não inflam a força. Cada bandido continua com 15 STR e os intervalos permanecem de 5–8 turnos.

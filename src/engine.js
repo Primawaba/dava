@@ -1,3 +1,4 @@
+import {installWorldEvents,validWorldEventInput} from './world-events.js';
 import {installOccupations,validateOccupations} from './occupation.js';
 import {initializeChronicleState,makeChronicleRecord,validateChronicle} from './narrative.js';
 import {installIncursions,validateIncursions} from './incursions.js';
@@ -655,7 +656,7 @@ export class Game {
   const gasTypes=['gas','flammable','miasma','blindgas'];
   // Fluid occupation persists after a source stops, closes or is drained elsewhere.
   for(const r of this.rooms){if(r.contaminant){if(gasTypes.includes(r.contaminant))r.gas??=r.contaminant;else r.fluid??=r.contaminant}}
-  for(const source of this.rooms.filter(r=>!(r.type==='crater'&&r.craterPart==='dry')&&(ROOMS[r.type]?.hazard||this.fluidSource(r)||r.extraFluid))){
+  for(const source of this.rooms.filter(r=>r.type!=='collapse'&&!(r.type==='crater'&&r.craterPart==='dry')&&(ROOMS[r.type]?.hazard||this.fluidSource(r)||r.extraFluid))){
    const sourceType=source.extraFluid||this.fluidSource(source)||source.type,gas=gasTypes.includes(sourceType),sourceKey=key(source.x,source.y),queue=[{r:source,lateral:0}],seen=new Map();
    for(let i=0;i<queue.length;i++){
     const {r,lateral}=queue[i],rk=key(r.x,r.y);if((seen.get(rk)??Infinity)<=lateral)continue;seen.set(rk,lateral);
@@ -663,7 +664,7 @@ export class Game {
     r.hazardOrigins??=[];if(!r.hazardOrigins.includes(sourceKey))r.hazardOrigins.push(sourceKey);const localFluid=!gas&&sourceType==='water'&&this.layer(r)===1?'lava':sourceType;if(gas)r.gas=sourceType;else r.fluid=localFluid;
     if(!gas&&['lava','crater'].includes(localFluid)&&!(this.s.artifacts.includes('lava')&&this.damageable(r))&&!(['bridge','drawbridge'].includes(r.type)||r.type==='pump'&&!r.pumpOpen))this.damageRoom(r);
     if(!gas&&source.flowActive===false)continue;
-    for(const[dx,dy]of DIRS){if((this.s.activePlane!==5&&(gas&&dy===1||!gas&&dy===-1))||dx&&lateral>=2)continue;const n=this.room(r.x+dx,r.y+dy);if(n&&this.linked(r,n)&&!this.barricade(r,n))queue.push({r:n,lateral:lateral+(dx?1:0)})}
+    for(const[dx,dy]of DIRS){if((this.s.activePlane!==5&&(gas&&dy===1||!gas&&dy===-1))||dx&&lateral>=2)continue;const n=this.room(r.x+dx,r.y+dy);if(n&&n.type!=='collapse'&&this.linked(r,n)&&!this.barricade(r,n))queue.push({r:n,lateral:lateral+(dx?1:0)})}
    }
   }
   const burning=this.rooms.filter(r=>r.gas==='flammable'&&(['forge','tavern','barracks'].includes(r.type)||this.roomHazards(r).some(h=>['lava','crater'].includes(h)))),ignited=new Set();
@@ -698,7 +699,7 @@ export class Game {
   }
   s.effectCards??=[];s.nextEffectId??=1;
   if(!Array.isArray(s.effectCards)||s.effectCards.length>2000||!Number.isInteger(s.nextEffectId)||s.nextEffectId<1)throw Error('Fila de eventos inválida.');
-  const effectIds=new Set();for(const c of s.effectCards){if(!c||!Number.isInteger(c.id)||c.id<1||c.id>=s.nextEffectId||effectIds.has(c.id)||typeof c.title!=='string'||c.title.length>200||typeof c.description!=='string'||c.description.length>2000||!['good','bad','neutral'].includes(c.tone))throw Error('Carta de evento inválida.');effectIds.add(c.id);if(c.input&&!(c.input.kind==='unit-home'&&Number.isInteger(c.input.unitId)&&c.input.unitId>0||c.input.kind==='prison'&&Number.isInteger(c.input.x)&&Number.isInteger(c.input.y)&&s.rooms[key(c.input.x,c.input.y)]||validRiseInput(c.input,s)||validColonyInput(c.input,s)||validRulesInput(c.input,s)))throw Error('Escolha de evento inválida.');}
+  const effectIds=new Set();for(const c of s.effectCards){if(!c||!Number.isInteger(c.id)||c.id<1||c.id>=s.nextEffectId||effectIds.has(c.id)||typeof c.title!=='string'||c.title.length>200||typeof c.description!=='string'||c.description.length>2000||!['good','bad','neutral'].includes(c.tone))throw Error('Carta de evento inválida.');effectIds.add(c.id);if(c.input&&!(c.input.kind==='unit-home'&&Number.isInteger(c.input.unitId)&&c.input.unitId>0||c.input.kind==='prison'&&Number.isInteger(c.input.x)&&Number.isInteger(c.input.y)&&s.rooms[key(c.input.x,c.input.y)]||validRiseInput(c.input,s)||validColonyInput(c.input,s)||validRulesInput(c.input,s)||validWorldEventInput(c.input)))throw Error('Escolha de evento inválida.');}
   s.rivalDungeons??=[];
   if(!Array.isArray(s.rivalDungeons)||s.rivalDungeons.length>2000)throw Error('Masmorras rivais inválidas.');
   const dungeonRoots=new Set();for(const d of s.rivalDungeons){
@@ -786,6 +787,7 @@ installResearch(Game);
 
 installIncursions(Game);
 installOccupations(Game);
+installWorldEvents(Game);
 
 const uncachedUpdate=Game.prototype.update;
 Game.prototype.update=function(dt){return this.withQueryCache(()=>uncachedUpdate.call(this,dt),false);};

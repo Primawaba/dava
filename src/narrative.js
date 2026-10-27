@@ -344,6 +344,27 @@ export const CHRONICLE_TEMPLATES={
  'O confronto nas profundezas terminou em derrota definitiva. A proteção do portão não alcançava o Cristal do Vazio.',
  'A jornada terminou na batalha pelo Cristal do Vazio, apesar da proteção que ainda restava no portão.'
  ],
+ collapseEvent:[
+ 'A montanha cedeu. {n} cavernas foram soterradas por pedra e poeira.',
+ 'Um estrondo percorreu os túneis. {n} cavernas desapareceram sob os escombros.',
+ 'O teto de pedra não resistiu. O desabamento enterrou {n} cavernas.',
+ 'Os corredores estremeceram, e {n} cavernas se fecharam para sempre sob a rocha caída.',
+ 'A pedra tomou de volta {n} cavernas. Onde havia passagem, restaram escombros.'
+ ],
+ damEvent:[
+ 'Uma barragem cedeu, e o perigo alcançou mais {n} espaços da fortaleza.',
+ 'A contenção se rompeu. Mais {n} espaços foram tomados pela propagação.',
+ 'O que estava contido avançou pelos corredores e atingiu {n} novos espaços.',
+ 'Uma ruptura abriu caminho ao perigo. A fortaleza viu {n} espaços adicionais serem alcançados.',
+ 'A barreira cedeu sob a pressão, deixando o perigo invadir mais {n} espaços.'
+ ],
+ refugeeEvent:[
+ '{n} andarilhos leais encontraram abrigo atrás do portão da fortaleza.',
+ 'O portão se abriu para {n} viajantes. Eles juraram lealdade ao novo lar.',
+ '{n} capangas deixaram a vida errante e assumiram a vigília do portão.',
+ 'A fortaleza acolheu {n} andarilhos, que passaram a defendê-la com lealdade.',
+ 'Vindos dos caminhos de fora, {n} viajantes encontraram um lar e uma nova vigília.'
+ ],
  campGrowth:[
  'O acampamento recebeu {n} recursos e reuniu {count} reforços sob suas bandeiras.',
  'Nas salas tomadas, os invasores recolheram {n} recursos. Suas fileiras ganharam {count} reforços.',
@@ -393,6 +414,9 @@ const exactNarrativeTypes={
  'Derrota definitiva no Cristal do Vazio. As gemas restantes não podem salvar a fortaleza.':'voidDefeat'
 };
 export function classifyChronicle(text){let m;const type=exactNarrativeTypes[text];if(type)return{type,data:{}};
+ if((m=text.match(/^A montanha cedeu\. (\d+) cavernas/)))return{type:'collapseEvent',data:{n:m[1]}};
+ if((m=text.match(/^Uma barragem cedeu\. (\d+) espaços/)))return{type:'damEvent',data:{n:m[1]}};
+ if((m=text.match(/^(\d+) andarilhos leais/)))return{type:'refugeeEvent',data:{n:m[1]}};
  if((m=text.match(/^O acampamento inimigo recebeu (\d+) recursos e reuniu (\d+) reforços/)))return{type:'campGrowth',data:{n:m[1],count:m[2]}};
  if(text.startsWith('Invasores se instalaram na área desconectada.'))return{type:'campSettlement',data:{}};
  if((m=text.match(/^(.+) foi interrogado\. Encerrada a tentativa/)))return{type:'interrogation',data:{unit:m[1]}};

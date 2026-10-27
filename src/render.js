@@ -209,7 +209,7 @@ export class Renderer{
  unitFormation(units=this.game.s.units){
   const living=units.filter(u=>u.hp>0),groups=new Map(),positions=[];
   for(const u of living){const rx=Math.round(u.x),ry=Math.round(u.y),distance=Math.max(Math.abs(u.x-rx),Math.abs(u.y-ry));
-   if(distance>=.12){positions.push({u,x:u.x*CW,y:u.y*CH+this.floorOffset(u.x,u.y)});continue}
+   if(distance>=.12){positions.push({u,x:u.x*CW+(u.holdingFire&&this.game.s.combat&&Math.abs(u.y-ry)>.01?6:0),y:u.y*CH+this.floorOffset(u.x,u.y)-(u.holdingFire&&this.game.s.combat&&Math.abs(u.y-ry)<.01?6:0)});continue}
    const id=`${rx},${ry}:${u.team}`;if(!groups.has(id))groups.set(id,[]);groups.get(id).push(u);
   }
   for(const group of groups.values()){

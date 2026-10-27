@@ -1,5 +1,11 @@
 # CONQUER · Crônicas do Abismo
 
+## Atualização 1.23.0 — circulação, engenharia e camadas
+
+NPCs chegam pelo portão e seguem os corredores até suas oficinas. Arqueiros interrompem o avanço quando já podem disparar em linha reta, permitindo a passagem da linha de frente. Os controles de engenharia exibem o impedimento atual e usam a mesma validação da ação. A dívida do prisioneiro foi removida. Camadas passam a ter chance acumulativa por nova profundidade explorada.
+
+[Alterações e regras de compatibilidade](reports/AJUSTES-1.23.md).
+
 ## Atualização 1.22.0 — eventos periódicos
 
 A cada intervalo de 5–8 turnos, uma exploração sorteia entre bandidos, quebra de barragem, desabamento e andarilhos, conforme os alvos disponíveis. Pilares protegem o próprio espaço e cavernas vizinhas nas quatro direções, inclusive contra a cadeia vertical de desabamentos. Escombros têm três artes próprias e bloqueiam passagem e escavação. Andarilhos oferecem capangas leais por −2 moral ou uma recusa com 50% de chance de ataque.

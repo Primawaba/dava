@@ -28,7 +28,7 @@ export function installResearch(Game){
   damage(u,amount,options){const wasAlive=u.hp>0;prior.damage.call(this,u,amount,options);if(wasAlive&&u.hp<=0&&u.team==='enemy'&&(u.monstrosity||u.size>1.5)){const r=this.researchState();r.species??=[];if(!r.species.includes(u.type))r.species.push(u.type);}},
   information(cell){this.gainInformation();return prior.information.call(this,cell);},
   buildReason(type,r){if(!this.constructionUnlocked(type))return'Projeto bloqueado. Desbloqueie em Pesquisas com informações de prisioneiros.';return prior.buildReason.call(this,type,r);},
-  engineeringLock(tool){const type=['damage','delay'].includes(tool)?'forge':tool==='defensive'?'masonry':tool;return this.constructionUnlocked(type)?'':'Projeto bloqueado. Desbloqueie em Pesquisas.';},
+  engineeringLock(tool){const type=['damage','delay'].includes(tool)?'forge':tool==='defensive'?'masonry':tool;const project=RESEARCH_PROJECTS.find(p=>p.rooms.includes(type)||p.id===type);return this.constructionUnlocked(type)?'':`Projeto bloqueado: pesquise ${project?.name||type} em Construções → Pesquisas.`;},
   requestEngineering(mode,tool,...args){const reason=this.engineeringLock(tool);return reason?{ok:false,reason}:prior.requestEngineering.call(this,mode,tool,...args);},
   fortifyPassage(a,b,kind){const reason=this.engineeringLock(kind);return reason?{ok:false,reason}:prior.fortifyPassage.call(this,a,b,kind);},
   action(name,x,y,arg){const tool=name==='defense'?arg:name==='rails'?'rails':null,reason=tool&&this.engineeringLock(tool);return reason?{ok:false,reason}:prior.action.call(this,name,x,y,arg);},

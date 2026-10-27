@@ -445,7 +445,7 @@ export class Game {
   return true;
  }
  beginCombat(){for(const group of this.s.rivalDungeons||[])if(!group.claimed&&this.enemies.some(u=>group.enemyIds.includes(u.id)))group.fought=true;if(this.s.combat)return;this.s.combat=true;this.s.paused=false;this.dead=[];this._tactics=null;this._tacticsDirty=true;
-  for(const u of this.s.units){u.shot=false;u.cooldown=this.random();u.shield=0;u.targetId=null;
+  for(const u of this.s.units){u.shot=false;u.holdingFire=false;u.cooldown=this.random();u.shield=0;u.targetId=null;
    if(u.team==='ally'){u.order='defend';u.frontTarget=null;if(this.rooms.some(r=>r.type==='temple'&&!r.dedication&&this.active(r)))u.shield+=20}
   }
   this.spreadHazards();
@@ -482,7 +482,7 @@ export class Game {
   const dx=next.x-origin.x,dy=next.y-origin.y,progress=(u.x-origin.x)*dx+(u.y-origin.y)*dy,destination=key(next.x,next.y);
   let allowed=travel;
   for(const v of [...this.s.units,...(this.s.workers||[]),...this.campUnits()]){
-   if(v===u||v.hp<=0||v.team!==u.team)continue;
+   if(v===u||v.hp<=0||v.team!==u.team)continue;if(this.s.combat&&v.holdingFire&&this.unitData(v).range>.5&&this.unitData(u).range<=.5)continue;
    if(u.team==='ally'&&this.s.combat&&u.frontTarget&&u.frontTarget===v.frontTarget&&progress<.12&&engagementPriority(this,v,u)<0&&this.unitData(v).speed>0&&!(v.stun>0)&&distance(v,origin)<.12&&(!v.moveTarget||v.moveTarget===destination)){const goal=this._tactics?.assignments.get(v.id)?.goal,route=goal&&this.path(this.anchor(v),goal,'ally',v);if(v.moveTarget===destination||route?.[0]===next)allowed=0;}
    const inside=Math.max(Math.abs(v.x-Math.round(v.x)),Math.abs(v.y-Math.round(v.y)))>=.12;
    if(v.moveTarget!==destination&&(v.moveTarget||!inside))continue;
@@ -532,8 +532,10 @@ export class Game {
    const d=this.unitData(u),at=this.room(Math.round(u.x),Math.round(u.y));if(!at)continue;
    if(this.lethalHazard(at,u)){this.killInstant(u);continue}
    if(this.advanceBurrow(u,dt))continue;
+   const firingFoe=d.range>.5&&!u.nonAttacking&&actors.some(v=>v.team!==u.team&&v.hp>0&&(u.type==='siege'||distance(u,v)<=d.range)&&this.lineOfSight(u,v));
+   u.holdingFire=!!firingFoe;
    const crossingFoe=d.range<=.5&&actors.some(v=>v.team!==u.team&&v.hp>0&&this.meleeContact(u,v));
-   if(u.moveTarget&&!crossingFoe){const destination=this.s.rooms[u.moveTarget];if(destination&&this.passable(destination,u.team,u)&&((at.x===destination.x&&at.y===destination.y)||this.linked(at,destination))){this.moveUnit(u,destination,dt);continue}u.moveTarget=null;u.x=Math.round(u.x);u.y=Math.round(u.y);}
+   if(u.moveTarget&&!crossingFoe&&!firingFoe){const destination=this.s.rooms[u.moveTarget];if(destination&&this.passable(destination,u.team,u)&&((at.x===destination.x&&at.y===destination.y)||this.linked(at,destination))){this.moveUnit(u,destination,dt);continue}u.moveTarget=null;u.x=Math.round(u.x);u.y=Math.round(u.y);}
    if(u.team==='enemy'&&at.type==='arena'&&!u.loyal){this.damage(u,99999);this.s.baseMorale+=10;continue}
    if((u.team==='enemy'||this.s.madTraps)&&at.trap?.armed&&!u.traits?.includes(7)){if(at.trap.kind==='damage')this.damage(u,at.trap.level*10*8,{source:'trap'});else u.stun=at.trap.level*2;at.trap.armed=false;if(u.hp<=0)continue}
    if(u.type==='trapper'){for(const r of this.rooms)if(r.trap&&distance(r,u)<1.5)r.trap.armed=true}
@@ -541,7 +543,7 @@ export class Game {
    if(u.team==='enemy'&&u.defendingTerritory&&u.awaitingAttack){u.walk=0;continue;}
    const opponents=actors.filter(v=>v.team!==u.team&&v.hp>0&&(u.type!=='rat'||at.type==='sewer'&&Math.round(v.x)===at.x&&Math.round(v.y)===at.y)).sort((a,b)=>distance(u,a)-distance(u,b)||a.id-b.id);
    let target=!u.nonAttacking&&opponents.find(v=>d.range>.5?(u.type==='siege'||distance(u,v)<=d.range)&&this.lineOfSight(u,v):this.meleeContact(u,v));
-   if(target&&!(u.type==='siege'&&u.shot)){
+   if(target&&!(u.type==='siege'&&u.shot)){u.walk=0;
     if(u.cooldown<=0){let damage=u.power*1.8;if(u.team==='ally'){damage*=1+this.s.blessings*0.06+this.s.inventions*0.15;if(this.nearby(at,'kitchen',1).length)damage*=1.5;damage+=this.museumBonus(u,target)*1.8;if(this.s.artifacts.includes('power'))damage*=1.1;if(this.s.artifacts.includes('invention'))damage*=1.2}
      if(target.x!==u.x)u.facing=Math.sign(target.x-u.x);this.onAttack(u,target);if(u.hp<=0||target.team===u.team)continue;u.attack=0.35;u.cooldown=u.type==='archer'?1.35:u.type==='mage'?1.5:1.1;u.shot=true;this.events.push({type:'attack',ranged:d.range>0.5,attacker:u.id,target:target.id,team:u.team});
      if(u.type==='siege'){this.fireSiegeShot(u,target,damage);}else if(d.range>0.5){this.projectiles.push({x:u.x,y:u.y,tx:target.x,ty:target.y,target:target.id,damage,t:0,duration:Math.max(0.18,distance(u,target)*0.2),attacker:u.id,kind:u.type==='archer'?'arrow':u.type==='siege'?'bolt':u.type==='alchemist'?'flask':'orb',team:u.team})}else hits.push({target,damage,attacker:u.id});
@@ -757,7 +759,7 @@ export class Game {
   }else if(r.immortalId)throw Error('Criatura imortal fora da câmara.');}
   for(const u of g.s.units)if(u.type==='immortal'&&(u.hp<=0||u.team!=='neutral'||g.s.rooms[u.home]?.type!=='invincible'||g.s.rooms[u.home].immortalId!==u.id||u.x!==g.s.rooms[u.home].x||u.y!==g.s.rooms[u.home].y))throw Error('Criatura imortal inválida.');
   for(const r of g.rooms)if(r.type==='sealed'&&r.damaged)g.openSealedRoom(r,true);
-  g.s.research??=newResearch(true);initializeChronicleState(g.s);g.enforceJokerDepth();g.migrateRoomLayers();g.initializeRaidSchedule();g.migrateOccupations();g.s.paused=g.s.combat;g.s.immortalVersion=1;g.events=[];delete g.s.returnPhase;return g;
+  g.s.research??=newResearch(true);initializeChronicleState(g.s);g.enforceJokerDepth();g.migrateRoomLayers();g.initializeRaidSchedule();g.migrateOccupations();g.s.paused=g.s.combat;g.s.immortalVersion=1;g.s.effectCards=g.s.effectCards.filter(c=>c.input?.action!=='informationDebt');g.events=[];delete g.s.returnPhase;return g;
  }
 }
 
